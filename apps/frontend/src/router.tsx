@@ -6,6 +6,7 @@ import NotFound from "./pages/NotFound.tsx";
 import LogIn from "./pages/LogIn.tsx";
 import OAuthCallback from "./pages/OAuthCallback.tsx";
 import { GuestRoute, ProtectedRoute } from "./components/AuthRoutes.tsx";
+import AppLayout from "./layouts/AppLayout.tsx";
 
 async function homeLoader() {
   const token = localStorage.getItem("token");
@@ -24,7 +25,14 @@ const router = createBrowserRouter([
     children: [
       {
         Component: ProtectedRoute,
-        children: [{ index: true, Component: Home, loader: homeLoader }],
+        children: [
+          {
+            Component: AppLayout, children: [
+              { index: true, Component: Home, loader: homeLoader },
+              
+            ]
+          },
+        ],
       },
       {
         Component: GuestRoute,

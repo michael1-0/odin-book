@@ -1,11 +1,11 @@
+import Logo from "../components/Logo";
+
 function LogIn() {
   return (
     <div className="flex min-h-screen items-center justify-center px-2 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 rounded-sm bg-white p-8 border">
+      <div className="w-full max-w-md space-y-8 rounded-sm bg-white p-8">
         <div>
-          <h2 className="mt-6 text-center text-5xl font-light tracking-tight">
-            <span className="font-bold">Ark</span>
-          </h2>
+          <Logo isBig={true} />
         </div>
         <div className="mt-8">
           <button

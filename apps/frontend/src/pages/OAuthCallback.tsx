@@ -17,8 +17,8 @@ function OAuthCallback() {
   }, [searchParams, navigate]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-lg">Authenticating...</p>
+    <div className="flex flex-1 items-center justify-center min-h-dvh animate-pulse">
+      <p>Loading...</p>
     </div>
   );
 }

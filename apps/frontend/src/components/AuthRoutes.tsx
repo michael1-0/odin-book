@@ -39,7 +39,7 @@ export function ProtectedRoute() {
 
   if (isValidating) {
     return (
-      <div className="flex flex-1 items-center justify-center min-h-dvh">
+      <div className="flex flex-1 items-center justify-center min-h-dvh animate-pulse">
         <p>Authenticating...</p>
       </div>
     );
