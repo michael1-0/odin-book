@@ -1,7 +1,7 @@
 import type { Router as RouterType } from "express";
 import { Router } from "express";
 import passport from "../middlewares/passportMiddleware.ts";
-import { githubCallback } from "../controllers/authController.ts";
+import { githubCallback, postLogout } from "../controllers/authController.ts";
 import { getMe } from "../controllers/indexController.ts";
 import requireAuth from "../middlewares/authMiddleware.ts";
 
@@ -14,5 +14,6 @@ authRouter.get(
   githubCallback,
 );
 authRouter.get("/me", requireAuth, getMe);
+authRouter.post("/logout", requireAuth, postLogout);
 
 export default authRouter;

@@ -4,7 +4,8 @@ import type { Profile } from "passport-github2";
 import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import { prisma } from "../db/prisma.ts";
-import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
+import { Strategy as JwtStrategy } from "passport-jwt";
+import cookieExtractor from "../utils/cookieExtractor.ts";
 
 passport.use(
   new GitHubStrategy(
@@ -49,7 +50,7 @@ passport.use(
 passport.use(
   new JwtStrategy(
     {
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: cookieExtractor,
       secretOrKey: process.env.JWT_SECRET || "default_secret",
     },
     async (jwtPayload: JwtPayload, done: DoneCallback) => {

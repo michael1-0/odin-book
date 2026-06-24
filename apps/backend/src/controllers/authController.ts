@@ -1,7 +1,7 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
-export function githubCallback(req: Request, res: Response) {
+function githubCallback(req: Request, res: Response) {
   if (!req.user) {
     return res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
   }
@@ -18,7 +18,25 @@ export function githubCallback(req: Request, res: Response) {
     expiresIn: "1d",
   });
 
-  // Redirect back to frontend
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-  res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
+  res.cookie("token", token, {
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+  });
+  res.redirect(process.env.FRONTEND_URL || "http://localhost:5173");
 }
+
+function postLogout(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "lax",
+    });
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export { githubCallback, postLogout };

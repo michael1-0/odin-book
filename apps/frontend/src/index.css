@@ -2,4 +2,5 @@
 @import "tailwindcss";
 @theme {
   --font-ark: "Source Code Pro";
+  --tracking-tightest: -0.1em;
 }

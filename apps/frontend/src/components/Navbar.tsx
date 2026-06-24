@@ -1,13 +1,27 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import Logo from "./Logo";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   function toggleSidebar() {
     setIsOpen(!isOpen);
+  }
+
+  async function handleLogout() {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      navigate("/login");
+    } catch {
+      navigate("/");
+    }
   }
 
   useEffect(() => {
@@ -47,6 +61,12 @@ function Navbar() {
           >
             Profile
           </Link>
+          <button
+            className="text-sm border p-2 rounded-sm"
+            onClick={handleLogout}
+          >
+            Log out
+          </button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -97,6 +117,12 @@ function Navbar() {
           >
             Profile
           </Link>
+          <button
+            className="text-sm border p-2 rounded-sm "
+            onClick={handleLogout}
+          >
+            Log out
+          </button>
         </div>
       </div>
     </>
