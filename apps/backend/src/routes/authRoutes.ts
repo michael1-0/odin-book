@@ -2,7 +2,7 @@ import type { Router as RouterType } from "express";
 import { Router } from "express";
 import passport from "../middlewares/passportMiddleware.ts";
 import { githubCallback, postLogout } from "../controllers/authController.ts";
-import { getMe } from "../controllers/indexController.ts";
+import { getMe } from "../controllers/authController.ts";
 import requireAuth from "../middlewares/authMiddleware.ts";
 
 const authRouter: RouterType = Router();

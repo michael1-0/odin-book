@@ -8,11 +8,12 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  githubId  String   @unique
-  username  String  @db.VarChar(30)
-  noteToAll String   @default("") @db.VarChar(280)
-  createdAt DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  githubId   String   @unique
+  username   String   @db.VarChar(30)
+  noteToAll  String   @default("") @db.VarChar(280)
+  createdAt  DateTime @default(now())
+  profileUrl String?
 
   @@map("users")
 }

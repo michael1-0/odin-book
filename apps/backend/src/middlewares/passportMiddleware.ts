@@ -6,6 +6,7 @@ import { Strategy as GitHubStrategy } from "passport-github2";
 import { prisma } from "../db/prisma.ts";
 import { Strategy as JwtStrategy } from "passport-jwt";
 import cookieExtractor from "../utils/cookieExtractor.ts";
+import createGravatarUrl from "../utils/createGravatarUrl.ts";
 
 passport.use(
   new GitHubStrategy(
@@ -13,6 +14,7 @@ passport.use(
       clientID: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
       callbackURL: process.env.GITHUB_CALLBACK_URL!,
+      scope: ["user:email"],
     },
     async function (
       _accessToken: string,
@@ -32,10 +34,12 @@ passport.use(
 
       try {
         if (!findUser) {
+          const primaryEmail = profile.emails?.[0]?.value || "";
           const newUser = await prisma.user.create({
             data: {
               githubId: profile.id,
-              username: profile.username ?? "",
+              username: profile.username ?? "user",
+              profileUrl: createGravatarUrl(primaryEmail),
             },
           });
           return done(null, newUser);

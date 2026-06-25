@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { AppError } from "../errors/AppError.ts";
 
 function githubCallback(req: Request, res: Response) {
   if (!req.user) {
@@ -26,6 +27,14 @@ function githubCallback(req: Request, res: Response) {
   res.redirect(process.env.FRONTEND_URL || "http://localhost:5173");
 }
 
+async function getMe(req: Request, res: Response) {
+  if (!req.user) {
+    throw new AppError("Unauthorized", 401);
+  }
+
+  return res.json(req.user);
+}
+
 function postLogout(req: Request, res: Response, next: NextFunction) {
   try {
     res.clearCookie("token", {
@@ -39,4 +48,4 @@ function postLogout(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export { githubCallback, postLogout };
+export { githubCallback, postLogout, getMe };
