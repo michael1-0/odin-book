@@ -15,5 +15,19 @@ model User {
   createdAt  DateTime @default(now())
   profileUrl String?
 
+  followedBy Follow[] @relation("followedBy")
+  following  Follow[] @relation("following")
+
   @@map("users")
+}
+
+model Follow {
+  followedById Int
+  followingId  Int
+
+  followedBy User @relation("followedBy", fields: [followedById], references: [id])
+  following  User @relation("following", fields: [followingId], references: [id])
+
+  @@id([followedById, followingId])
+  @@map("follows")
 }
