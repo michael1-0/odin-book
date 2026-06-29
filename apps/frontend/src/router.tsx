@@ -1,13 +1,10 @@
 import { createBrowserRouter } from "react-router";
-
 import AppLayout from "./layouts/AppLayout.tsx";
-
 import App from "./App.tsx";
 import Home from "./pages/Home.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import LogIn from "./pages/LogIn.tsx";
-
-import { guestLoader, protectedLoader } from "./loaders/authLoader.ts";
+import Users from "./pages/Users.tsx";
 
 const router = createBrowserRouter([
   {
@@ -16,16 +13,24 @@ const router = createBrowserRouter([
     children: [
       {
         id: "user-data",
-        loader: protectedLoader,
+        loader: App.protectedLoader,
         children: [
           {
             Component: AppLayout,
-            children: [{ index: true, Component: Home }],
+            children: [
+              { index: true, Component: Home },
+              {
+                path: "/users",
+                Component: Users,
+                loader: Users.loader,
+                action: Users.action,
+              },
+            ],
           },
         ],
       },
       {
-        loader: guestLoader,
+        loader: App.guestLoader,
         children: [{ path: "/login", Component: LogIn }],
       },
       { path: "*", Component: NotFound },

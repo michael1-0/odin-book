@@ -1,0 +1,86 @@
+import type { ActionFunctionArgs } from "react-router";
+import type { User, UserWithFollowStatus } from "@repo/zod-validations";
+import { useFetcher, useLoaderData, useRouteLoaderData } from "react-router";
+
+async function loader() {
+  const response = await fetch("/api/users");
+  const users = await response.json();
+
+  return users.data;
+}
+
+async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const currentUserId = formData.get("currentUserId");
+  const targetUserId = formData.get("targetUserId");
+  const isFollowing = formData.get("isFollowing") === "true";
+
+  const method = isFollowing ? "DELETE" : "POST";
+
+  const response = await fetch(
+    `/api/users/${currentUserId}/following/${targetUserId}`,
+    {
+      method: method,
+    },
+  );
+  const follow = await response.json();
+
+  return follow.data;
+}
+
+function Users() {
+  const currentUser: User = useRouteLoaderData("user-data").user;
+  const users: UserWithFollowStatus[] = useLoaderData();
+  const fetcher = useFetcher();
+
+  return (
+    <div className="p-4 pt-10">
+      <h2 className="text-xl text-center mb-6">Explore Users</h2>
+      {users.map((user) => {
+        const isSubmittingThisUser =
+          fetcher.state !== "idle" &&
+          fetcher.formData?.get("targetUserId") === String(user.id);
+
+        return (
+          <div
+            className="mt-8 p-4 border rounded-sm flex flex-col items-center justify-center gap-3"
+            key={user.id}
+          >
+            <img
+              src={user.profileUrl}
+              alt={`${user.username} profile image`}
+              className="rounded-full max-w-24 max-h-24"
+            />
+            <div>{user.username}</div>
+            <fetcher.Form method="POST" action="/users">
+              <input
+                type="hidden"
+                name="currentUserId"
+                value={currentUser.id}
+              />
+              <input type="hidden" name="targetUserId" value={user.id} />
+              <input
+                type="hidden"
+                name="isFollowing"
+                value={String(user.isFollowing)}
+              />
+              <button
+                disabled={isSubmittingThisUser}
+                className={`border rounded-sm p-2 text-xs w-20 ${
+                  isSubmittingThisUser ? "opacity-50" : ""
+                }`}
+              >
+                {user.isFollowing ? "Unfollow" : "Follow"}
+              </button>
+            </fetcher.Form>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+Users.loader = loader;
+Users.action = action;
+
+export default Users;
