@@ -15,8 +15,10 @@ model User {
   createdAt  DateTime @default(now())
   profileUrl String?
 
-  followedBy Follow[] @relation("followedBy")
-  following  Follow[] @relation("following")
+  followedBy Follow[]  @relation("followedBy")
+  following  Follow[]  @relation("following")
+  posts      Post[]
+  comments   Comment[]
 
   @@map("users")
 }
@@ -30,4 +32,31 @@ model Follow {
 
   @@id([followedById, followingId])
   @@map("follows")
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  content   String
+  likes     Int?     @default(0)
+  posterId  Int
+  createdAt DateTime @default(now())
+
+  user     User      @relation(fields: [posterId], references: [id])
+  comments Comment[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  postId    Int
+  content   String
+  likes     Int
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("comments")
 }
