@@ -18,7 +18,12 @@ const router = createBrowserRouter([
           {
             Component: AppLayout,
             children: [
-              { index: true, Component: Home },
+              {
+                index: true,
+                Component: Home,
+                loader: Home.loader,
+                action: Home.action,
+              },
               {
                 path: "/users",
                 Component: Users,
