@@ -19,6 +19,7 @@ model User {
   following  Follow[]  @relation("following")
   posts      Post[]
   comments   Comment[]
+  likes      Like[]
 
   @@map("users")
 }
@@ -37,14 +38,26 @@ model Follow {
 model Post {
   id        Int      @id @default(autoincrement())
   content   String
-  likes     Int?     @default(0)
   posterId  Int
   createdAt DateTime @default(now())
 
   user     User      @relation(fields: [posterId], references: [id])
   comments Comment[]
+  likes    Like[] // Relation to see who liked this post
 
   @@map("posts")
+}
+
+model Like {
+  userId    Int
+  postId    Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@map("likes")
 }
 
 model Comment {
@@ -52,7 +65,6 @@ model Comment {
   userId    Int
   postId    Int
   content   String
-  likes     Int
   createdAt DateTime @default(now())
 
   post Post @relation(fields: [postId], references: [id])

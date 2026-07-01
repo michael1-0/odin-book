@@ -13,7 +13,7 @@ function LogIn() {
             onClick={() => {
               window.location.href = `${import.meta.env.VITE_API_URL}/auth/github`;
             }}
-            className="group relative flex w-full justify-center items-center rounded-sm border px-4 py-2 text-sm font-semibold focus:outline-none focus:ring-2 gap-2"
+            className="bg-black text-white relative flex w-full justify-center items-center rounded-sm border px-4 py-2 text-sm font-semibold focus:outline-none focus:ring-2 gap-2"
           >
             <svg
               className="h-6 w-6"

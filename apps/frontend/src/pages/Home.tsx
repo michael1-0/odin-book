@@ -4,53 +4,49 @@ import {
   useLoaderData,
   type ActionFunctionArgs,
 } from "react-router";
-import { LucideHeart, MessageSquare } from "lucide-react";
 import type { PostFeedItem } from "@repo/zod-validations";
 import { useEffect, useRef } from "react";
+import { createPost, likePost, loadPosts, unlikePost } from "../services/posts";
+import PostItem from "../components/PostItem";
 
 async function loader() {
-  const response = await fetch("/api/posts");
-  const posts = await response.json();
-
-  return posts.data;
+  return await loadPosts();
 }
 
 async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
+  const intent = formData.get("intent");
 
-  const userId = formData.get("currentUserId");
-  const content = formData.get("content");
-
-  const response = await fetch(`/api/users/${userId}/posts`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ content }),
-  });
-  const post = await response.json();
-
-  return post.data;
+  switch (intent) {
+    case "create-post":
+      return await createPost(formData);
+    case "like-post":
+      return await likePost(formData);
+    case "unlike-post":
+      return await unlikePost(formData);
+    default:
+      throw new Response("Unknown intent", { status: 400 });
+  }
 }
 
 function Home() {
   const { user } = useRouteLoaderData("user-data");
   const posts: PostFeedItem[] = useLoaderData();
 
-  const fetcher = useFetcher();
+  const postFetcher = useFetcher();
   const formRef = useRef<HTMLFormElement>(null);
-  const isDone = fetcher.state === "idle" && fetcher.data != null;
+  const isDone = postFetcher.state === "idle" && postFetcher.data != null;
 
   useEffect(() => {
-    if (isDone && !fetcher.data?.error) {
+    if (isDone && !postFetcher.data?.error) {
       formRef.current?.reset();
     }
-  }, [isDone, fetcher.data]);
+  }, [isDone, postFetcher.data]);
 
-  const isSubmitting = fetcher.state === "submitting";
+  const isPosting = postFetcher.state === "submitting";
 
   return (
-    <div className="flex flex-1 items-center justify-center px-6 mt-20">
+    <div className="flex flex-1 items-center justify-center px-4 mt-20">
       <main className="w-full max-w-2xl space-y-4 text-center">
         <div className="flex flex-col gap-4 items-center">
           <img
@@ -61,11 +57,8 @@ function Home() {
           <p className="text-base opacity-80">
             Hello, {user.username}, what would you like to post today?
           </p>
-          <div className="w-full border rounded-lg p-4 bg-white shadow-sm text-left mb-24">
-            <div className="text-lg font-semibold mb-3 text-center text-gray-800">
-              New Post
-            </div>
-            <fetcher.Form method="POST" className="space-y-4" ref={formRef}>
+          <div className="w-full rounded-lg py-4 bg-white text-left mb-24">
+            <postFetcher.Form method="POST" className="space-y-4" ref={formRef}>
               <input type="hidden" name="currentUserId" value={user.id} />
               <div>
                 <label htmlFor="content" className="sr-only">
@@ -77,59 +70,27 @@ function Home() {
                   rows={4}
                   required
                   placeholder="Share something interesting..."
-                  className="w-full p-3 border rounded-sm resize-none focus:outline-none focus:ring-2"
-                  disabled={isSubmitting}
+                  className="w-full p-3 shadow-sm rounded-sm resize-none focus:outline-none focus:ring-2"
+                  disabled={isPosting}
                 />
               </div>
-
               <div className="flex justify-stretch">
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 w-full border rond font-medium rounded-sm focus:outline-none focus:ring-2 disabled:opacity-50 transition-colors"
+                  disabled={isPosting}
+                  className="px-4 py-2 w-full bg-black text-white font-medium rounded-sm focus:outline-none focus:ring-2 disabled:opacity-50 transition-colors"
+                  name="intent"
+                  value="create-post"
                 >
-                  {isSubmitting ? "Posting..." : "Post"}
+                  {isPosting ? "Posting..." : "Post"}
                 </button>
               </div>
-            </fetcher.Form>
-            <div></div>
+            </postFetcher.Form>
           </div>
           <div className="flex flex-col gap-4 w-full mb-24">
-            {posts.map((post) => {
-              return (
-                <div
-                  className="border rounded-sm flex flex-col items-start"
-                  key={post.id}
-                >
-                  <div className="flex gap-5 items-center p-3">
-                    <img
-                      src={post.user.profileUrl}
-                      className="max-w-10 max-h-20 rounded-full"
-                      alt={`${post.user.username} profile`}
-                    />
-                    <div>{post.user.username}</div>
-                  </div>
-                  <div className="p-3">{post.content}</div>
-                  <div className="flex items-center p-3 gap-4 w-full">
-                    <div className="flex gap-1">
-                      <LucideHeart />
-                      <div>{post.likes}</div>
-                    </div>
-                    <div className="flex gap-1">
-                      <MessageSquare />
-                      <div>{post._count.comments}</div>
-                    </div>
-                    <div className="text-sm ml-auto ">
-                      {new Date(post.createdAt).toLocaleDateString(undefined, {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {posts.map((post) => (
+              <PostItem key={post.id} post={post} userId={user.id} />
+            ))}
           </div>
         </div>
       </main>

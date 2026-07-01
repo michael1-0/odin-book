@@ -43,7 +43,7 @@ function Users() {
 
         return (
           <div
-            className="mt-8 p-4 border rounded-sm flex flex-col items-center justify-center gap-3"
+            className="mt-8 p-4 rounded-sm flex flex-col items-center justify-center gap-3"
             key={user.id}
           >
             <img
@@ -66,7 +66,7 @@ function Users() {
               />
               <button
                 disabled={isSubmittingThisUser}
-                className={`border rounded-sm p-2 text-xs w-20 ${
+                className={`bg-black text-white rounded-sm p-2 text-xs w-20 ${
                   isSubmittingThisUser ? "opacity-50" : ""
                 }`}
               >

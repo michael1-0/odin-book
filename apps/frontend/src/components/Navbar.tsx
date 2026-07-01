@@ -62,7 +62,7 @@ function Navbar() {
             Profile
           </Link>
           <button
-            className="text-sm border p-2 rounded-sm"
+            className="bg-black text-white text-sm border p-2 rounded-sm"
             onClick={handleLogout}
           >
             Log out
@@ -118,7 +118,7 @@ function Navbar() {
             Profile
           </Link>
           <button
-            className="text-sm border p-2 rounded-sm "
+            className="text-sm bg-black text-white p-2 rounded-sm"
             onClick={handleLogout}
           >
             Log out

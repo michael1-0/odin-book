@@ -11,8 +11,13 @@ import {
   FollowSchema,
   PostCreateSchema,
   PostCreateParamsSchema,
+  PostLikeParamsSchema,
 } from "@repo/zod-validations";
-import { postPost } from "../controllers/postsController.ts";
+import {
+  likePost,
+  postPost,
+  unlikePost,
+} from "../controllers/postsController.ts";
 
 const usersRouter: RouterType = Router();
 
@@ -36,6 +41,18 @@ usersRouter.post(
     body: PostCreateSchema,
   }),
   postPost,
+);
+usersRouter.post(
+  "/:userId/posts/:postId/like",
+  validate({ params: PostLikeParamsSchema }),
+  likePost,
+);
+usersRouter.delete(
+  "/:userId/posts/:postId/like",
+  validate({
+    params: PostLikeParamsSchema,
+  }),
+  unlikePost,
 );
 
 export default usersRouter;
