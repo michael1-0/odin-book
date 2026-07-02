@@ -1,6 +1,6 @@
 import express from "express";
 import type { Express } from "express";
-import indexRouter from "./routes/indexRouter.ts";
+import indexRouter from "./routes/indexRoutes.ts";
 import { errorHandler, notFound } from "./middlewares/errorMiddleware.ts";
 import cookieParser from "cookie-parser";
 

@@ -4,7 +4,7 @@ import { getHealth } from "../controllers/indexController.ts";
 import authRouter from "./authRoutes.ts";
 import usersRouter from "./usersRoutes.ts";
 import postsRouter from "./postsRoutes.ts";
-import commentsRouter from "./commentsRouter.ts";
+import commentsRouter from "./commentsRoutes.ts";
 
 const indexRouter: RouterType = Router();
 
