@@ -5,6 +5,7 @@ import Home from "./pages/Home.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import LogIn from "./pages/LogIn.tsx";
 import Users from "./pages/Users.tsx";
+import PostDetail from "./pages/PostDetail.tsx";
 
 const router = createBrowserRouter([
   {
@@ -29,6 +30,12 @@ const router = createBrowserRouter([
                 Component: Users,
                 loader: Users.loader,
                 action: Users.action,
+              },
+              {
+                path: "/posts/:postId",
+                Component: PostDetail,
+                loader: PostDetail.loader,
+                action: PostDetail.action,
               },
             ],
           },

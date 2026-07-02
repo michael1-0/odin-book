@@ -2,6 +2,8 @@ import type { NextFunction, Request, Response } from "express";
 import type {
   PostCreate,
   PostCreateParams,
+  PostGetParams,
+  PostGetQuery,
   PostLikeParams,
 } from "@repo/zod-validations";
 import { prisma } from "../db/prisma.ts";
@@ -106,4 +108,66 @@ async function unlikePost(
   }
 }
 
-export { getPosts, postPost, likePost, unlikePost };
+async function getPost(
+  req: Request<PostGetParams, unknown, unknown, PostGetQuery>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const { postId } = req.params;
+    const { include } = req.query;
+
+    const post = await prisma.post.findUnique({
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        _count: {
+          select: {
+            comments: true,
+            likes: true,
+          },
+        },
+        user: {
+          select: {
+            username: true,
+            profileUrl: true,
+          },
+        },
+        likes: {
+          select: {
+            userId: true,
+          },
+        },
+        comments:
+          include === "comments"
+            ? {
+                select: {
+                  id: true,
+                  user: {
+                    select: {
+                      profileUrl: true,
+                      username: true,
+                    },
+                  },
+                  content: true,
+                  createdAt: true,
+                },
+                orderBy: {
+                  createdAt: "desc",
+                },
+              }
+            : false,
+      },
+      where: {
+        id: postId,
+      },
+    });
+
+    return res.status(200).json({ data: post });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export { getPosts, postPost, likePost, unlikePost, getPost };

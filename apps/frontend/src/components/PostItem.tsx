@@ -1,6 +1,6 @@
 import type { LikeFeed, PostFeedItem } from "@repo/zod-validations";
 import { LucideHeart, MessageSquare } from "lucide-react";
-import { useFetcher } from "react-router";
+import { Link, useFetcher } from "react-router";
 
 function PostItem({ post, userId }: { post: PostFeedItem; userId: number }) {
   const likeFetcher = useFetcher();
@@ -12,7 +12,10 @@ function PostItem({ post, userId }: { post: PostFeedItem; userId: number }) {
   const isLikedByMe = checkIfLiked(post.likes);
 
   return (
-    <div className="rounded-sm flex flex-col gap-5 py-6 items-start">
+    <Link
+      to={`/posts/${post.id}`}
+      className="rounded-sm flex flex-col gap-5 py-6 items-start"
+    >
       <div className="flex gap-5 items-center">
         <img
           src={post.user.profileUrl}
@@ -33,6 +36,7 @@ function PostItem({ post, userId }: { post: PostFeedItem; userId: number }) {
             type="submit"
             name="intent"
             value={isLikedByMe ? "unlike-post" : "like-post"}
+            onClick={(e) => e.stopPropagation()}
           >
             <LucideHeart
               className={`transition-colors ${isLikedByMe && "fill-black"}`}
@@ -52,7 +56,7 @@ function PostItem({ post, userId }: { post: PostFeedItem; userId: number }) {
           })}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

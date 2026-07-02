@@ -45,4 +45,11 @@ async function unlikePost(formData: FormData) {
   return unlikedPost.data;
 }
 
-export { loadPosts, createPost, likePost, unlikePost };
+async function getPostWithComments(postId: string | undefined) {
+  const response = await fetch(`/api/posts/${postId}?include=comments`);
+  const post = await response.json();
+
+  return post.data;
+}
+
+export { loadPosts, createPost, likePost, unlikePost, getPostWithComments };

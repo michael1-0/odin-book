@@ -34,7 +34,7 @@ function Users() {
   const fetcher = useFetcher();
 
   return (
-    <div className="p-4 pt-10">
+    <div className="px-4 mt-20">
       <h2 className="text-xl text-center mb-6">Explore Users</h2>
       {users.map((user) => {
         const isSubmittingThisUser =

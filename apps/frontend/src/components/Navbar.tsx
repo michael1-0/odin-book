@@ -40,7 +40,9 @@ function Navbar() {
     <>
       {/* Desktop Menu */}
       <nav className="sticky top-0 z-50 flex justify-between items-center p-4 bg-white/75 backdrop-blur-lg">
-        <Logo />
+        <Link to={"/"}>
+          <Logo />
+        </Link>
 
         <div className="hidden md:flex gap-6 items-center">
           <Link

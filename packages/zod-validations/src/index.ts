@@ -46,6 +46,25 @@ type LikeFeed = z.infer<typeof LikeFeedSchema>;
 export { LikeSchema, LikeFeedSchema };
 export type { Like, LikeFeed };
 
+// Comments
+const CommentSchema = z.object({
+  id: z.number().int().positive().optional(),
+  userId: z.number().int().positive(),
+  postId: z.number().int().positive(),
+  content: z.string().min(1, "Comment content cannot be empty"),
+  createdAt: z.date().default(() => new Date()),
+});
+const CommentCreateBodySchema = z.object({
+  content: z.string().min(1, "Comment content cannot be empty"),
+  postId: z.coerce.number().int().positive(),
+});
+
+type Comment = z.infer<typeof CommentSchema>;
+type CommentCreateBody = z.infer<typeof CommentCreateBodySchema>;
+
+export { CommentSchema, CommentCreateBodySchema };
+export type { Comment, CommentCreateBody };
+
 // Posts
 const PostSchema = z.object({
   id: z.number().int().positive(),
@@ -72,6 +91,20 @@ const PostFeedItemSchema = PostSchema.pick({
     }),
   ),
 });
+const PostFeedItemWithCommentsSchema = PostFeedItemSchema.extend({
+  comments: z.array(
+    CommentSchema.pick({
+      id: true,
+      content: true,
+      createdAt: true,
+    }).extend({
+      user: UserSchema.pick({
+        username: true,
+        profileUrl: true,
+      }),
+    }),
+  ),
+});
 const PostCreateSchema = PostSchema.omit({
   id: true,
   createdAt: true,
@@ -84,26 +117,41 @@ const PostLikeParamsSchema = z.object({
   userId: z.coerce.number().int().positive(),
   postId: z.coerce.number().int().positive(),
 });
+const PostGetParamsSchema = z.object({
+  postId: z.coerce.number().int().positive(),
+});
+const PostGetQuerySchema = z.object({
+  include: z.literal("comments"),
+});
 
 type Post = z.infer<typeof PostSchema>;
 type PostFeedItem = z.infer<typeof PostFeedItemSchema>;
+type PostFeedItemWithComments = z.infer<typeof PostFeedItemWithCommentsSchema>;
 type PostCreate = z.infer<typeof PostCreateSchema>;
 type PostCreateParams = z.infer<typeof PostCreateParamsSchema>;
 type PostLikeParams = z.infer<typeof PostLikeParamsSchema>;
+type PostGetParams = z.infer<typeof PostGetParamsSchema>;
+type PostGetQuery = z.infer<typeof PostGetQuerySchema>;
 
 export {
   PostSchema,
   PostFeedItemSchema,
+  PostFeedItemWithCommentsSchema,
   PostCreateSchema,
   PostCreateParamsSchema,
   PostLikeParamsSchema,
+  PostGetParamsSchema,
+  PostGetQuerySchema,
 };
 export type {
   Post,
   PostFeedItem,
+  PostFeedItemWithComments,
   PostCreate,
   PostCreateParams,
   PostLikeParams,
+  PostGetParams,
+  PostGetQuery,
 };
 
 export default z;
