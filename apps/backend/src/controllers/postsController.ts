@@ -1,12 +1,12 @@
 import type { NextFunction, Request, Response } from "express";
 import type {
   PostCreate,
-  PostCreateParams,
   PostGetParams,
   PostGetQuery,
   PostLikeParams,
 } from "@repo/zod-validations";
 import { prisma } from "../db/prisma.ts";
+import { AppError } from "../errors/AppError.ts";
 
 async function getPosts(req: Request, res: Response, next: NextFunction) {
   try {
@@ -45,14 +45,18 @@ async function getPosts(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-async function postPost(
-  req: Request<PostCreateParams, unknown, PostCreate>,
+async function createPost(
+  req: Request<unknown, unknown, PostCreate>,
   res: Response,
   next: NextFunction,
 ) {
   try {
+    if (!req.user) {
+      throw new AppError("Unauthorized", 403);
+    }
+
+    const userId = req.user.id;
     const { content } = req.body;
-    const { userId } = req.params;
 
     const newPost = await prisma.post.create({
       data: {
@@ -170,4 +174,4 @@ async function getPost(
   }
 }
 
-export { getPosts, postPost, likePost, unlikePost, getPost };
+export { getPosts, createPost, likePost, unlikePost, getPost };

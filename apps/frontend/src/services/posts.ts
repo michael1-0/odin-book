@@ -6,10 +6,9 @@ async function loadPosts() {
 }
 
 async function createPost(formData: FormData) {
-  const userId = formData.get("currentUserId");
   const content = formData.get("content");
 
-  const response = await fetch(`/api/users/${userId}/posts`, {
+  const response = await fetch("/api/posts", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

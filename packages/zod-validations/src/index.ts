@@ -114,9 +114,6 @@ const PostCreateSchema = PostSchema.omit({
   createdAt: true,
   posterId: true,
 });
-const PostCreateParamsSchema = z.object({
-  userId: z.coerce.number().int().positive(),
-});
 const PostLikeParamsSchema = z.object({
   userId: z.coerce.number().int().positive(),
   postId: z.coerce.number().int().positive(),
@@ -132,7 +129,6 @@ type Post = z.infer<typeof PostSchema>;
 type PostFeedItem = z.infer<typeof PostFeedItemSchema>;
 type PostFeedItemWithComments = z.infer<typeof PostFeedItemWithCommentsSchema>;
 type PostCreate = z.infer<typeof PostCreateSchema>;
-type PostCreateParams = z.infer<typeof PostCreateParamsSchema>;
 type PostLikeParams = z.infer<typeof PostLikeParamsSchema>;
 type PostGetParams = z.infer<typeof PostGetParamsSchema>;
 type PostGetQuery = z.infer<typeof PostGetQuerySchema>;
@@ -142,7 +138,6 @@ export {
   PostFeedItemSchema,
   PostFeedItemWithCommentsSchema,
   PostCreateSchema,
-  PostCreateParamsSchema,
   PostLikeParamsSchema,
   PostGetParamsSchema,
   PostGetQuerySchema,
@@ -152,7 +147,6 @@ export type {
   PostFeedItem,
   PostFeedItemWithComments,
   PostCreate,
-  PostCreateParams,
   PostLikeParams,
   PostGetParams,
   PostGetQuery,

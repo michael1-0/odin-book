@@ -59,7 +59,6 @@ function Home() {
           </p>
           <div className="w-full rounded-lg py-4 bg-white text-left mb-24">
             <postFetcher.Form method="POST" className="space-y-4" ref={formRef}>
-              <input type="hidden" name="currentUserId" value={user.id} />
               <div>
                 <label htmlFor="content" className="sr-only">
                   Post Content
