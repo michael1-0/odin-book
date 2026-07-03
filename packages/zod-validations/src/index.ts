@@ -21,14 +21,18 @@ export type { User, UserWithFollowStatus };
 
 // Follows
 const FollowSchema = z.object({
-  followedById: z.coerce.number(),
-  followingId: z.coerce.number(),
+  followedById: z.number().int(),
+  followingId: z.number().int(),
+});
+const FollowParamsSchema = z.object({
+  followingId: z.coerce.number().int(),
 });
 
 type Follow = z.infer<typeof FollowSchema>;
+type FollowParams = z.infer<typeof FollowParamsSchema>;
 
-export { FollowSchema };
-export type { Follow };
+export { FollowSchema, FollowParamsSchema };
+export type { Follow, FollowParams };
 
 // Likes
 const LikeSchema = z.object({

@@ -1,6 +1,7 @@
 import type { ActionFunctionArgs } from "react-router";
-import type { User, UserWithFollowStatus } from "@repo/zod-validations";
-import { useFetcher, useLoaderData, useRouteLoaderData } from "react-router";
+import type { UserWithFollowStatus } from "@repo/zod-validations";
+import { useFetcher, useLoaderData } from "react-router";
+import { followUser, unfollowUser } from "../services/follows";
 
 async function loader() {
   const response = await fetch("/api/users");
@@ -11,25 +12,19 @@ async function loader() {
 
 async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const currentUserId = formData.get("currentUserId");
-  const targetUserId = formData.get("targetUserId");
-  const isFollowing = formData.get("isFollowing") === "true";
+  const intent = formData.get("intent");
 
-  const method = isFollowing ? "DELETE" : "POST";
-
-  const response = await fetch(
-    `/api/users/${currentUserId}/following/${targetUserId}`,
-    {
-      method: method,
-    },
-  );
-  const follow = await response.json();
-
-  return follow.data;
+  switch (intent) {
+    case "follow-user":
+      return await followUser(formData);
+    case "unfollow-user":
+      return await unfollowUser(formData);
+    default:
+      throw new Response("Unknown intent", { status: 400 });
+  }
 }
 
 function Users() {
-  const currentUser: User = useRouteLoaderData("user-data").user;
   const users: UserWithFollowStatus[] = useLoaderData();
   const fetcher = useFetcher();
 
@@ -53,16 +48,11 @@ function Users() {
             />
             <div>{user.username}</div>
             <fetcher.Form method="POST" action="/users">
-              <input
-                type="hidden"
-                name="currentUserId"
-                value={currentUser.id}
-              />
               <input type="hidden" name="targetUserId" value={user.id} />
               <input
                 type="hidden"
-                name="isFollowing"
-                value={String(user.isFollowing)}
+                name="intent"
+                value={user.isFollowing ? "unfollow-user" : "follow-user"}
               />
               <button
                 disabled={isSubmittingThisUser}
