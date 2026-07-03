@@ -26,11 +26,7 @@ function PostItem({ post, userId }: { post: PostFeedItem; userId: number }) {
       </div>
       <div className="">{post.content}</div>
       <div className="flex items-center gap-4 w-full">
-        <likeFetcher.Form
-          className="flex gap-1"
-          method={isLikedByMe ? "DELETE" : "POST"}
-        >
-          <input type="hidden" name="currentUserId" value={userId} />
+        <likeFetcher.Form className="flex gap-1" method="POST">
           <input type="hidden" name="postId" value={post.id} />
           <button
             type="submit"

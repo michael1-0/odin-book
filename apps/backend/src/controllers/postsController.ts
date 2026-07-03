@@ -3,7 +3,6 @@ import type {
   PostCreate,
   PostGetParams,
   PostGetQuery,
-  PostLikeParams,
 } from "@repo/zod-validations";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
@@ -71,47 +70,6 @@ async function createPost(
   }
 }
 
-async function likePost(
-  req: Request<PostLikeParams>,
-  res: Response,
-  next: NextFunction,
-) {
-  try {
-    const { postId, userId } = req.params;
-
-    const likedPost = await prisma.like.create({
-      data: { userId, postId },
-    });
-
-    return res.status(200).json({ data: likedPost });
-  } catch (error) {
-    next(error);
-  }
-}
-
-async function unlikePost(
-  req: Request<PostLikeParams>,
-  res: Response,
-  next: NextFunction,
-) {
-  try {
-    const { postId, userId } = req.params;
-
-    const unlikedPost = await prisma.like.delete({
-      where: {
-        userId_postId: {
-          userId,
-          postId,
-        },
-      },
-    });
-
-    return res.status(200).json({ data: unlikedPost });
-  } catch (error) {
-    next(error);
-  }
-}
-
 async function getPost(
   req: Request<PostGetParams, unknown, unknown, PostGetQuery>,
   res: Response,
@@ -174,4 +132,4 @@ async function getPost(
   }
 }
 
-export { getPosts, createPost, likePost, unlikePost, getPost };
+export { getPosts, createPost, getPost };

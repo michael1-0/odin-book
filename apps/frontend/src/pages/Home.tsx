@@ -6,8 +6,9 @@ import {
 } from "react-router";
 import type { PostFeedItem } from "@repo/zod-validations";
 import { useEffect, useRef } from "react";
-import { createPost, likePost, loadPosts, unlikePost } from "../services/posts";
+import { createPost, loadPosts } from "../services/posts";
 import PostItem from "../components/PostItem";
+import { likePost, unlikePost } from "../services/likes";
 
 async function loader() {
   return await loadPosts();

@@ -5,11 +5,12 @@ import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "react-router";
-import { getPostWithComments, likePost, unlikePost } from "../services/posts";
+import { getPostWithComments } from "../services/posts";
 import type { PostFeedItemWithComments } from "@repo/zod-validations";
 import PostItem from "../components/PostItem";
 import { createComment } from "../services/comments";
 import { useEffect, useRef } from "react";
+import { likePost, unlikePost } from "../services/likes";
 
 async function loader({ params }: LoaderFunctionArgs) {
   return await getPostWithComments(params.postId);

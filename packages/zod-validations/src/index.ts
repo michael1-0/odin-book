@@ -115,7 +115,6 @@ const PostCreateSchema = PostSchema.omit({
   posterId: true,
 });
 const PostLikeParamsSchema = z.object({
-  userId: z.coerce.number().int().positive(),
   postId: z.coerce.number().int().positive(),
 });
 const PostGetParamsSchema = z.object({
