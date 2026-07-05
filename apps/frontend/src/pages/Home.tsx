@@ -5,7 +5,6 @@ import {
   type ActionFunctionArgs,
 } from "react-router";
 import type { PostFeedItem } from "@repo/zod-validations";
-import { useEffect, useRef } from "react";
 import { createPost, loadPosts } from "../services/posts";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
@@ -33,17 +32,12 @@ async function action({ request }: ActionFunctionArgs) {
 function Home() {
   const { user } = useRouteLoaderData("user-data");
   const posts: PostFeedItem[] = useLoaderData();
-
   const postFetcher = useFetcher();
-  const formRef = useRef<HTMLFormElement>(null);
-  const isDone = postFetcher.state === "idle" && postFetcher.data != null;
-
-  useEffect(() => {
-    if (isDone && !postFetcher.data?.error) {
-      formRef.current?.reset();
-    }
-  }, [isDone, postFetcher.data]);
-
+  
+  const submissionId =
+    postFetcher.data && !postFetcher.data.error
+      ? postFetcher.data.id
+      : "initial";
   const isPosting = postFetcher.state === "submitting";
 
   return (
@@ -59,7 +53,11 @@ function Home() {
             Hello, {user.username}, what would you like to post today?
           </p>
           <div className="w-full rounded-lg py-4 bg-white text-left mb-24">
-            <postFetcher.Form method="POST" className="space-y-4" ref={formRef}>
+            <postFetcher.Form
+              method="POST"
+              className="space-y-4"
+              key={submissionId}
+            >
               <div>
                 <label htmlFor="content" className="sr-only">
                   Post Content

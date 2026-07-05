@@ -9,7 +9,6 @@ import { getPostWithComments } from "../services/posts";
 import type { PostFeedItemWithComments } from "@repo/zod-validations";
 import PostItem from "../components/PostItem";
 import { createComment } from "../services/comments";
-import { useEffect, useRef } from "react";
 import { likePost, unlikePost } from "../services/likes";
 
 async function loader({ params }: LoaderFunctionArgs) {
@@ -36,16 +35,12 @@ function PostDetail() {
   const { user } = useRouteLoaderData("user-data");
   const post: PostFeedItemWithComments = useLoaderData();
   const commentFetcher = useFetcher();
-  const formRef = useRef<HTMLFormElement>(null);
-
-  const isDone = commentFetcher.state === "idle" && commentFetcher.data != null;
-  useEffect(() => {
-    if (isDone && !commentFetcher.data?.error) {
-      formRef.current?.reset();
-    }
-  }, [isDone, commentFetcher.data]);
 
   const isPosting = commentFetcher.state === "submitting";
+  const submissionId =
+    commentFetcher.data && !commentFetcher.data.error
+      ? commentFetcher.data.id
+      : "initial";
 
   return (
     <div className="px-4 mt-20 flex flex-col gap-14">
@@ -53,7 +48,7 @@ function PostDetail() {
       <commentFetcher.Form
         className=" flex flex-col items-stretch gap-4"
         method="POST"
-        ref={formRef}
+        key={submissionId}
       >
         <input type="hidden" name="postId" value={post.id} />
         <textarea
