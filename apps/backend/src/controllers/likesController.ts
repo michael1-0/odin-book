@@ -10,7 +10,7 @@ async function likePost(
 ) {
   try {
     if (!req.user) {
-      throw new AppError("Unauthorized", 403);
+      throw new AppError("Unauthenticated", 401);
     }
 
     const userId = req.user.id;
@@ -33,7 +33,7 @@ async function unlikePost(
 ) {
   try {
     if (!req.user) {
-      throw new AppError("Unauthorized", 403);
+      throw new AppError("Unauthenticated", 401);
     }
 
     const userId = req.user.id;

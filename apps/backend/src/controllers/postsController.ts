@@ -14,7 +14,7 @@ async function getPosts(req: Request, res: Response, next: NextFunction) {
 
     if (req.query.scope === "me") {
       if (!req.user) {
-        throw new AppError("Unauthorized", 403);
+        throw new AppError("Unauthenticated", 401);
       }
       where.user = { id: req.user.id };
     }
@@ -62,7 +62,7 @@ async function createPost(
 ) {
   try {
     if (!req.user) {
-      throw new AppError("Unauthorized", 403);
+      throw new AppError("Unauthenticated", 401);
     }
 
     const userId = req.user.id;

@@ -10,7 +10,7 @@ async function getUsersWithoutCurrentUser(
 ) {
   try {
     if (!req.user) {
-      throw new AppError("Unauthorized", 403);
+      throw new AppError("Unauthenticated", 401);
     }
 
     const currentUserId = req.user.id;

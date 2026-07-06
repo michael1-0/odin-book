@@ -10,7 +10,7 @@ async function followUser(
 ) {
   try {
     if (!req.user) {
-      throw new AppError("Unauthorized", 403);
+      throw new AppError("Unauthenticated", 401);
     }
 
     const followedById = req.user.id;
@@ -49,7 +49,7 @@ async function unfollowUser(
 ) {
   try {
     if (!req.user) {
-      throw new AppError("Unauthorized", 403);
+      throw new AppError("Unauthenticated", 401);
     }
     const followedById = req.user.id;
     const followingId = req.params.followingId;

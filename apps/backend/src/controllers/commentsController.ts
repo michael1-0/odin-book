@@ -5,7 +5,7 @@ import { prisma } from "../db/prisma.ts";
 async function createComment(req: Request, res: Response, next: NextFunction) {
   try {
     if (!req.user) {
-      throw new AppError("Unauthorized", 403);
+      throw new AppError("Unauthenticated", 401);
     }
 
     const userId = req.user.id;
