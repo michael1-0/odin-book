@@ -1,3 +1,4 @@
+import { Toaster } from "react-hot-toast";
 import { Outlet } from "react-router";
 
 async function checkAuth() {
@@ -45,6 +46,15 @@ async function guestLoader() {
 function App() {
   return (
     <div className="container min-h-dvh mx-auto font-ark">
+      <Toaster
+        toastOptions={{
+          position: "bottom-center",
+          iconTheme: {
+            primary: "black",
+            secondary: "white",
+          },
+        }}
+      />
       <Outlet />
     </div>
   );

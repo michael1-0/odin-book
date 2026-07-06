@@ -9,6 +9,8 @@ import type { PostFeedItem } from "@repo/zod-validations";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
 import { updateUser } from "../services/users";
+import toast from "react-hot-toast";
+import { useEffect } from "react";
 
 async function loader() {
   return await getCurrentUserPosts();
@@ -36,6 +38,16 @@ function Profile() {
   const posts: PostFeedItem[] = useLoaderData();
 
   const isUpdating = fetcher.state === "submitting";
+
+  useEffect(() => {
+    if (fetcher.data) {
+      if ("error" in fetcher.data) {
+        toast.error("Error");
+      } else {
+        toast.success("Profile updated successfully!");
+      }
+    }
+  }, [fetcher.data]);
 
   return (
     <div className="px-4 mt-20 flex flex-col gap-20">
