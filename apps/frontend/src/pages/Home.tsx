@@ -33,7 +33,7 @@ function Home() {
   const { user } = useRouteLoaderData("user-data");
   const posts: PostFeedItem[] = useLoaderData();
   const postFetcher = useFetcher();
-  
+
   const submissionId =
     postFetcher.data && !postFetcher.data.error
       ? postFetcher.data.id

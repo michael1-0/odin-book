@@ -27,4 +27,11 @@ async function getPostWithComments(postId: string | undefined) {
   return post.data;
 }
 
-export { loadPosts, createPost, getPostWithComments };
+async function getCurrentUserPosts() {
+  const response = await fetch("/api/posts?scope=me");
+  const posts = await response.json();
+
+  return posts.data;
+}
+
+export { loadPosts, createPost, getPostWithComments, getCurrentUserPosts };

@@ -6,9 +6,19 @@ import type {
 } from "@repo/zod-validations";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
+import type { PostWhereInput } from "../db/generated/prisma/models.ts";
 
 async function getPosts(req: Request, res: Response, next: NextFunction) {
   try {
+    const where: PostWhereInput = {};
+
+    if (req.query.scope === "me") {
+      if (!req.user) {
+        throw new AppError("Unauthorized", 403);
+      }
+      where.user = { id: req.user.id };
+    }
+
     const posts = await prisma.post.findMany({
       select: {
         id: true,
@@ -32,6 +42,7 @@ async function getPosts(req: Request, res: Response, next: NextFunction) {
           },
         },
       },
+      where,
       orderBy: {
         createdAt: "desc",
       },

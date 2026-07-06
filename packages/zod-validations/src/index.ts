@@ -12,12 +12,27 @@ const UserSchema = z.object({
 const UserWithFollowStatusSchema = UserSchema.extend({
   isFollowing: z.boolean(),
 });
+const UserUpdateBodySchema = UserSchema.pick({
+  username: true,
+  // profileUrl: true,
+  noteToAll: true,
+});
+const UserUpdateParamsSchema = z.object({
+  userId: z.coerce.number().int(),
+});
 
 type User = z.infer<typeof UserSchema>;
 type UserWithFollowStatus = z.infer<typeof UserWithFollowStatusSchema>;
+type UserUpdateBody = z.infer<typeof UserUpdateBodySchema>;
+type UserUpdateParams = z.infer<typeof UserUpdateParamsSchema>;
 
-export { UserSchema, UserWithFollowStatusSchema };
-export type { User, UserWithFollowStatus };
+export {
+  UserSchema,
+  UserWithFollowStatusSchema,
+  UserUpdateBodySchema,
+  UserUpdateParamsSchema,
+};
+export type { User, UserWithFollowStatus, UserUpdateBody, UserUpdateParams };
 
 // Follows
 const FollowSchema = z.object({

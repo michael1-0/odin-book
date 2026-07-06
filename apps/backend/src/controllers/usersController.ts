@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
+import type { UserUpdateBody, UserUpdateParams } from "@repo/zod-validations";
 
 async function getUsersWithoutCurrentUser(
   req: Request,
@@ -59,4 +60,35 @@ async function getUsersWithoutCurrentUser(
   }
 }
 
-export { getUsersWithoutCurrentUser };
+async function updateCurrentUser(
+  req: Request<UserUpdateParams, unknown, UserUpdateBody>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    if (!req.user) {
+      throw new AppError("Unauthenticated", 401);
+    }
+
+    const { userId } = req.params;
+
+    if (req.user.id !== userId) {
+      throw new AppError("Unauthorized", 403);
+    }
+
+    const { username, noteToAll } = req.body;
+
+    const updatedUser = await prisma.user.update({
+      where: {
+        id: req.user.id,
+      },
+      data: { username, noteToAll },
+    });
+
+    return res.status(200).json({ data: updatedUser });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export { getUsersWithoutCurrentUser, updateCurrentUser };

@@ -2,7 +2,13 @@ import type { LikeFeed, PostFeedItem } from "@repo/zod-validations";
 import { LucideHeart, MessageSquare } from "lucide-react";
 import { Link, useFetcher } from "react-router";
 
-function PostItem({ post, userId }: { post: PostFeedItem; userId: number }) {
+type PostItemProps = {
+  post: PostFeedItem;
+  userId: number;
+  includeHeader?: boolean;
+};
+
+function PostItem({ post, userId, includeHeader = true }: PostItemProps) {
   const likeFetcher = useFetcher();
 
   function checkIfLiked(likes: LikeFeed[]) {
@@ -16,14 +22,16 @@ function PostItem({ post, userId }: { post: PostFeedItem; userId: number }) {
       to={`/posts/${post.id}`}
       className="rounded-sm flex flex-col gap-5 py-6 items-start"
     >
-      <div className="flex gap-5 items-center">
-        <img
-          src={post.user.profileUrl}
-          className="max-w-10 max-h-20 rounded-full"
-          alt={`${post.user.username} profile`}
-        />
-        <div>{post.user.username}</div>
-      </div>
+      {includeHeader && (
+        <div className="flex gap-5 items-center">
+          <img
+            src={post.user.profileUrl}
+            className="max-w-10 max-h-20 rounded-full"
+            alt={`${post.user.username} profile`}
+          />
+          <div>{post.user.username}</div>
+        </div>
+      )}
       <div className="">{post.content}</div>
       <div className="flex items-center gap-4 w-full">
         <likeFetcher.Form className="flex gap-1" method="POST">
