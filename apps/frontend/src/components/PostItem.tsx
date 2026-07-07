@@ -1,6 +1,6 @@
 import type { LikeFeed, PostFeedItem } from "@repo/zod-validations";
 import { LucideHeart, MessageSquare } from "lucide-react";
-import { Link, useFetcher } from "react-router";
+import { Link, useFetcher, useNavigate } from "react-router";
 
 type PostItemProps = {
   post: PostFeedItem;
@@ -10,29 +10,38 @@ type PostItemProps = {
 
 function PostItem({ post, userId, includeHeader = true }: PostItemProps) {
   const likeFetcher = useFetcher();
+  const navigate = useNavigate();
+
+  const isLikedByMe = checkIfLiked(post.likes);
 
   function checkIfLiked(likes: LikeFeed[]) {
     return likes.some((like) => like.userId === userId);
   }
 
-  const isLikedByMe = checkIfLiked(post.likes);
+  function handleCardClick() {
+    navigate(`/posts/${post.id}`);
+  }
 
   return (
-    <Link
-      to={`/posts/${post.id}`}
-      className="rounded-sm flex flex-col gap-5 py-6 items-start"
+    <div
+      onClick={handleCardClick}
+      className="rounded-sm flex flex-col gap-5 py-6 items-start cursor-pointer"
     >
       {includeHeader && (
-        <div className="flex gap-5 items-center">
+        <Link
+          to={`/users/${post.user.id}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex gap-5 items-center"
+        >
           <img
             src={post.user.profileUrl}
             className="max-w-10 max-h-20 rounded-full"
             alt={`${post.user.username} profile`}
           />
           <div>{post.user.username}</div>
-        </div>
+        </Link>
       )}
-      <div className="">{post.content}</div>
+      <div>{post.content}</div>
       <div className="flex items-center gap-4 w-full">
         <likeFetcher.Form className="flex gap-1" method="POST">
           <input type="hidden" name="postId" value={post.id} />
@@ -60,7 +69,7 @@ function PostItem({ post, userId, includeHeader = true }: PostItemProps) {
           })}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 

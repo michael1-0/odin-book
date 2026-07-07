@@ -97,6 +97,7 @@ const PostFeedItemSchema = PostSchema.pick({
   id: true,
 }).extend({
   user: UserSchema.pick({
+    id: true,
     profileUrl: true,
     username: true,
   }),

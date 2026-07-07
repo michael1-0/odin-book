@@ -32,6 +32,7 @@ async function getPosts(req: Request, res: Response, next: NextFunction) {
         },
         user: {
           select: {
+            id: true,
             username: true,
             profileUrl: true,
           },
@@ -103,6 +104,7 @@ async function getPost(
         },
         user: {
           select: {
+            id: true,
             username: true,
             profileUrl: true,
           },
