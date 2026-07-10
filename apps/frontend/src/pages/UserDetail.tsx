@@ -3,6 +3,7 @@ import {
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
+  useRouteLoaderData,
 } from "react-router";
 import { getUserProfile } from "../services/users";
 import PostItem from "../components/PostItem";
@@ -39,7 +40,8 @@ async function action({ request }: ActionFunctionArgs) {
 }
 
 function UserDetail() {
-  const user: UserWithPosts = useLoaderData();
+  const { user } = useRouteLoaderData("user-data");
+  const userWithPosts: UserWithPosts = useLoaderData();
 
   return (
     <>
@@ -47,16 +49,16 @@ function UserDetail() {
       <div className="px-4 mt-15 flex flex-col gap-20">
         <div className="flex flex-col items-center gap-4">
           <img
-            src={user.profileUrl}
-            alt={`${user.username} profile image`}
+            src={userWithPosts.profileUrl}
+            alt={`${userWithPosts.username} profile image`}
             className="max-w-40 max-h-30 rounded-full"
           />
-          <div className="text-xl">{user.username}</div>
-          <div className="">{user.noteToAll}</div>
+          <div className="text-xl">{userWithPosts.username}</div>
+          <div className="">{userWithPosts.noteToAll}</div>
         </div>
         <div>
           <div className="font-semibold">Posts</div>
-          {user.posts.map((post) => (
+          {userWithPosts.posts.map((post) => (
             <PostItem
               key={post.id}
               post={post}
