@@ -1,5 +1,6 @@
 import { Toaster } from "react-hot-toast";
 import { Outlet } from "react-router";
+import { ScrollRestoration } from "react-router";
 
 async function checkAuth() {
   try {
@@ -46,6 +47,7 @@ async function guestLoader() {
 function App() {
   return (
     <div className="container min-h-dvh mx-auto font-ark">
+      <ScrollRestoration />
       <Toaster
         toastOptions={{
           position: "bottom-center",
