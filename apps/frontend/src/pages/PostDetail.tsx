@@ -10,6 +10,7 @@ import type { PostFeedItemWithComments } from "@repo/zod-validations";
 import PostItem from "../components/PostItem";
 import { createComment } from "../services/comments";
 import { likePost, unlikePost } from "../services/likes";
+import Back from "../components/Back";
 
 async function loader({ params }: LoaderFunctionArgs) {
   return await getPostWithComments(params.postId);
@@ -43,59 +44,62 @@ function PostDetail() {
       : "initial";
 
   return (
-    <div className="px-4 mt-20 flex flex-col gap-14">
-      <PostItem post={post} userId={user.id} />
-      <commentFetcher.Form
-        className=" flex flex-col items-stretch gap-4"
-        method="POST"
-        key={submissionId}
-      >
-        <input type="hidden" name="postId" value={post.id} />
-        <textarea
-          id="content"
-          name="content"
-          className="rounded-sm shadow-sm p-2"
-          placeholder="Share your thoughts..."
-        ></textarea>
-        <button
-          type="submit"
-          name="intent"
-          value="create-comment"
-          className="bg-black text-white rounded-sm p-2"
-          disabled={isPosting}
+    <>
+      <Back />
+      <div className="px-4 mt-15 flex flex-col gap-14">
+        <PostItem post={post} userId={user.id} />
+        <commentFetcher.Form
+          className=" flex flex-col items-stretch gap-4"
+          method="POST"
+          key={submissionId}
         >
-          {" "}
-          Post comment
-        </button>
-      </commentFetcher.Form>
-      <div className="flex flex-col gap-4">
-        {post.comments.map((comment) => {
-          return (
-            <div
-              key={comment.id}
-              className="flex flex-col gap-3 rounded-sm bg-neutral-50 p-3"
-            >
-              <div className="flex items-center gap-3">
-                <img
-                  src={comment.user.profileUrl}
-                  className="max-w-8 max-h-8 rounded-full"
-                  alt={`${comment.user.username} profile picture`}
-                />
-                <div>{comment.user.username}</div>
+          <input type="hidden" name="postId" value={post.id} />
+          <textarea
+            id="content"
+            name="content"
+            className="rounded-sm shadow-sm p-2"
+            placeholder="Share your thoughts..."
+          ></textarea>
+          <button
+            type="submit"
+            name="intent"
+            value="create-comment"
+            className="bg-black text-white rounded-sm p-2"
+            disabled={isPosting}
+          >
+            {" "}
+            Post comment
+          </button>
+        </commentFetcher.Form>
+        <div className="flex flex-col gap-4">
+          {post.comments.map((comment) => {
+            return (
+              <div
+                key={comment.id}
+                className="flex flex-col gap-3 rounded-sm bg-neutral-50 p-3"
+              >
+                <div className="flex items-center gap-3">
+                  <img
+                    src={comment.user.profileUrl}
+                    className="max-w-8 max-h-8 rounded-full"
+                    alt={`${comment.user.username} profile picture`}
+                  />
+                  <div>{comment.user.username}</div>
+                </div>
+                <div>{comment.content}</div>
+                <div className="text-sm ml-auto">
+                  {new Date(comment.createdAt).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </div>
               </div>
-              <div>{comment.content}</div>
-              <div className="text-sm ml-auto">
-                {new Date(comment.createdAt).toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

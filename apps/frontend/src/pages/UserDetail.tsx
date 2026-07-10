@@ -8,6 +8,7 @@ import { getUserProfile } from "../services/users";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
 import type { UserWithPosts } from "@repo/zod-validations";
+import Back from "../components/Back";
 
 async function loader({ params }: LoaderFunctionArgs) {
   const response = await fetch("/api/auth/me");
@@ -41,28 +42,31 @@ function UserDetail() {
   const user: UserWithPosts = useLoaderData();
 
   return (
-    <div className="px-4 mt-20 flex flex-col gap-20">
-      <div className="flex flex-col items-center gap-4">
-        <img
-          src={user.profileUrl}
-          alt={`${user.username} profile image`}
-          className="max-w-40 max-h-30 rounded-full"
-        />
-        <div className="text-xl">{user.username}</div>
-        <div className="">{user.noteToAll}</div>
-      </div>
-      <div>
-        <div className="font-semibold">Posts</div>
-        {user.posts.map((post) => (
-          <PostItem
-            key={post.id}
-            post={post}
-            userId={user.id}
-            includeHeader={false}
+    <>
+      <Back />
+      <div className="px-4 mt-15 flex flex-col gap-20">
+        <div className="flex flex-col items-center gap-4">
+          <img
+            src={user.profileUrl}
+            alt={`${user.username} profile image`}
+            className="max-w-40 max-h-30 rounded-full"
           />
-        ))}
+          <div className="text-xl">{user.username}</div>
+          <div className="">{user.noteToAll}</div>
+        </div>
+        <div>
+          <div className="font-semibold">Posts</div>
+          {user.posts.map((post) => (
+            <PostItem
+              key={post.id}
+              post={post}
+              userId={user.id}
+              includeHeader={false}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
