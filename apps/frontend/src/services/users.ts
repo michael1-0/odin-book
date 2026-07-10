@@ -15,4 +15,11 @@ async function updateUser(formData: FormData) {
   return user.data;
 }
 
-export { updateUser };
+async function getUserProfile(userId: string | undefined) {
+  const response = await fetch(`/api/users/${userId}?include=posts`);
+  const user = await response.json();
+
+  return user.data;
+}
+
+export { updateUser, getUserProfile };

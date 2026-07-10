@@ -1,7 +1,12 @@
 import type { NextFunction, Request, Response } from "express";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
-import type { UserUpdateBody, UserUpdateParams } from "@repo/zod-validations";
+import type {
+  UserGetParams,
+  UserGetQuery,
+  UserUpdateBody,
+  UserUpdateParams,
+} from "@repo/zod-validations";
 
 async function getUsersWithoutCurrentUser(
   req: Request,
@@ -91,4 +96,57 @@ async function updateCurrentUser(
   }
 }
 
-export { getUsersWithoutCurrentUser, updateCurrentUser };
+async function getUser(
+  req: Request<UserGetParams, unknown, UserGetQuery>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const { userId } = req.params;
+    const { include } = req.query;
+
+    const user = await prisma.user.findUnique({
+      select: {
+        id: true,
+        username: true,
+        profileUrl: true,
+        noteToAll: true,
+        posts:
+          include === "posts"
+            ? {
+                select: {
+                  id: true,
+                  content: true,
+                  createdAt: true,
+                  _count: {
+                    select: {
+                      comments: true,
+                      likes: true,
+                    },
+                  },
+                  user: {
+                    select: {
+                      id: true,
+                      username: true,
+                      profileUrl: true,
+                    },
+                  },
+                  likes: {
+                    select: {
+                      userId: true,
+                    },
+                  },
+                },
+              }
+            : false,
+      },
+      where: { id: userId },
+    });
+
+    return res.status(200).json({ data: user });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export { getUsersWithoutCurrentUser, updateCurrentUser, getUser };

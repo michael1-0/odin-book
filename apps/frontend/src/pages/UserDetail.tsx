@@ -1,19 +1,67 @@
-import { useParams } from "react-router";
+import {
+  useLoaderData,
+  redirect,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+} from "react-router";
+import { getUserProfile } from "../services/users";
+import PostItem from "../components/PostItem";
+import { likePost, unlikePost } from "../services/likes";
+import type { UserWithPosts } from "@repo/zod-validations";
 
-function loader() {
-  return null;
+async function loader({ params }: LoaderFunctionArgs) {
+  const response = await fetch("/api/auth/me");
+
+  if (response.ok) {
+    const currentUser = await response.json();
+
+    if (currentUser.id === Number(params.userId)) {
+      throw redirect("/profile");
+    }
+  }
+
+  return await getUserProfile(params.userId);
 }
 
-function action() {
-  return null;
+async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const intent = formData.get("intent");
+
+  switch (intent) {
+    case "like-post":
+      return await likePost(formData);
+    case "unlike-post":
+      return await unlikePost(formData);
+    default:
+      throw new Response("Unknown intent", { status: 400 });
+  }
 }
 
 function UserDetail() {
-  const params = useParams();
+  const user: UserWithPosts = useLoaderData();
 
   return (
-    <div>
-      <div>User: {params.userId}</div>
+    <div className="px-4 mt-20 flex flex-col gap-20">
+      <div className="flex flex-col items-center gap-4">
+        <img
+          src={user.profileUrl}
+          alt={`${user.username} profile image`}
+          className="max-w-40 max-h-30 rounded-full"
+        />
+        <div className="text-xl">{user.username}</div>
+        <div className="">{user.noteToAll}</div>
+      </div>
+      <div>
+        <div className="font-semibold">Posts</div>
+        {user.posts.map((post) => (
+          <PostItem
+            key={post.id}
+            post={post}
+            userId={user.id}
+            includeHeader={false}
+          />
+        ))}
+      </div>
     </div>
   );
 }
