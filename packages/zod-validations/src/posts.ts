@@ -30,6 +30,7 @@ const PostFeedItemWithCommentsSchema = PostFeedItemSchema.extend({
       createdAt: true,
     }).extend({
       user: UserSchema.pick({
+        id: true,
         username: true,
         profileUrl: true,
       }),

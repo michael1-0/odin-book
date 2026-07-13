@@ -121,6 +121,7 @@ async function getPost(
                   id: true,
                   user: {
                     select: {
+                      id: true,
                       profileUrl: true,
                       username: true,
                     },

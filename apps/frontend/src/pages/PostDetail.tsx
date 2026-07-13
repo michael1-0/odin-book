@@ -1,4 +1,5 @@
 import {
+  Link,
   useFetcher,
   useLoaderData,
   useRouteLoaderData,
@@ -78,14 +79,17 @@ function PostDetail() {
                 key={comment.id}
                 className="flex flex-col gap-3 rounded-sm bg-neutral-50 p-3"
               >
-                <div className="flex items-center gap-3">
+                <Link
+                  to={`/users/${comment.user.id}`}
+                  className="flex items-center gap-3"
+                >
                   <img
                     src={comment.user.profileUrl}
                     className="max-w-8 max-h-8 rounded-full"
                     alt={`${comment.user.username} profile picture`}
                   />
                   <div>{comment.user.username}</div>
-                </div>
+                </Link>
                 <div>{comment.content}</div>
                 <div className="text-sm ml-auto">
                   {new Date(comment.createdAt).toLocaleDateString(undefined, {
