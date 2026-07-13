@@ -81,7 +81,7 @@ function Home() {
           </div>
         </postFetcher.Form>
       </section>
-      <section className="flex flex-col gap-4 w-full mb-24">
+      <section className="flex flex-col gap-4 w-full">
         {posts.map((post) => (
           <PostItem key={post.id} post={post} userId={user.id} />
         ))}

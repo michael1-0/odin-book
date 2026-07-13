@@ -35,7 +35,7 @@ function Updates() {
         title="Updates"
         content="Posts from people you follow, over the last 30 days."
       />
-      <section className="flex flex-col gap-4 w-full mb-24">
+      <section className="flex flex-col gap-4 w-full">
         {posts.map((post) => (
           <PostItem key={post.id} post={post} userId={user.id} />
         ))}
