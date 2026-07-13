@@ -34,4 +34,17 @@ async function getCurrentUserPosts() {
   return posts.data;
 }
 
-export { loadPosts, createPost, getPostWithComments, getCurrentUserPosts };
+async function getFollowingPostsFromLastMonth() {
+  const response = await fetch("/api/posts?scope=following&period=month");
+  const posts = await response.json();
+
+  return posts.data;
+}
+
+export {
+  loadPosts,
+  createPost,
+  getPostWithComments,
+  getCurrentUserPosts,
+  getFollowingPostsFromLastMonth,
+};

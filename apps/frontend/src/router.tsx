@@ -8,6 +8,7 @@ import Users from "./pages/Users.tsx";
 import PostDetail from "./pages/PostDetail.tsx";
 import Profile from "./pages/Profile.tsx";
 import UserDetail from "./pages/UserDetail.tsx";
+import Updates from "./pages/Updates.tsx";
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,12 @@ const router = createBrowserRouter([
                 Component: Home,
                 loader: Home.loader,
                 action: Home.action,
+              },
+              {
+                path: "/updates",
+                Component: Updates,
+                loader: Updates.loader,
+                action: Updates.action,
               },
               {
                 path: "/users",

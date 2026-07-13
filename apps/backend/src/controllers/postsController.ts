@@ -3,20 +3,43 @@ import type {
   PostCreate,
   PostGetParams,
   PostGetQuery,
+  PostsGetQuery,
 } from "@repo/zod-validations";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
 import type { PostWhereInput } from "../db/generated/prisma/models.ts";
 
-async function getPosts(req: Request, res: Response, next: NextFunction) {
+async function getPosts(
+  req: Request<unknown, unknown, unknown, PostsGetQuery>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
+    if (!req.user) {
+      throw new AppError("Unauthenticated", 401);
+    }
+
+    const scope = req.query.scope ?? "all";
     const where: PostWhereInput = {};
 
-    if (req.query.scope === "me") {
-      if (!req.user) {
-        throw new AppError("Unauthenticated", 401);
-      }
+    if (req.query.period === "month") {
+      where.createdAt = {
+        gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      };
+    }
+
+    if (scope === "me") {
       where.user = { id: req.user.id };
+    }
+
+    if (scope === "following") {
+      where.user = {
+        following: {
+          some: {
+            followedById: req.user.id,
+          },
+        },
+      };
     }
 
     const posts = await prisma.post.findMany({

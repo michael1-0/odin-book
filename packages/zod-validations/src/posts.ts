@@ -48,6 +48,10 @@ const PostLikeParamsSchema = z.object({
 const PostGetParamsSchema = z.object({
   postId: z.coerce.number().int().positive(),
 });
+const PostsGetQuerySchema = z.object({
+  scope: z.enum(["all", "me", "following"]).optional(),
+  period: z.enum(["month"]).optional(),
+});
 const PostGetQuerySchema = z.object({
   include: z.literal("comments"),
 });
@@ -57,6 +61,7 @@ type PostFeedItemWithComments = z.infer<typeof PostFeedItemWithCommentsSchema>;
 type PostCreate = z.infer<typeof PostCreateSchema>;
 type PostLikeParams = z.infer<typeof PostLikeParamsSchema>;
 type PostGetParams = z.infer<typeof PostGetParamsSchema>;
+type PostsGetQuery = z.infer<typeof PostsGetQuerySchema>;
 type PostGetQuery = z.infer<typeof PostGetQuerySchema>;
 
 export {
@@ -65,6 +70,7 @@ export {
   PostCreateSchema,
   PostLikeParamsSchema,
   PostGetParamsSchema,
+  PostsGetQuerySchema,
   PostGetQuerySchema,
 };
 export type {
@@ -73,5 +79,6 @@ export type {
   PostCreate,
   PostLikeParams,
   PostGetParams,
+  PostsGetQuery,
   PostGetQuery,
 };

@@ -11,13 +11,14 @@ import {
   PostCreateSchema,
   PostGetParamsSchema,
   PostGetQuerySchema,
+  PostsGetQuerySchema,
 } from "@repo/zod-validations";
 
 const postsRouter: RouterType = Router();
 
 postsRouter.use(requireAuth);
 
-postsRouter.get("/", getPosts);
+postsRouter.get("/", validate({ query: PostsGetQuerySchema }), getPosts);
 postsRouter.get(
   "/:postId",
   validate({ params: PostGetParamsSchema, query: PostGetQuerySchema }),

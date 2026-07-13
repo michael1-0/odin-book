@@ -15,6 +15,7 @@ import {
   PostFeedItemSchema,
   PostFeedItemWithCommentsSchema,
   PostGetParamsSchema,
+  PostsGetQuerySchema,
   PostGetQuerySchema,
   PostLikeParamsSchema,
 } from "./posts.js";
@@ -64,6 +65,7 @@ type PostFeedItemWithComments = z.infer<typeof PostFeedItemWithCommentsSchema>;
 type PostCreate = z.infer<typeof PostCreateSchema>;
 type PostLikeParams = z.infer<typeof PostLikeParamsSchema>;
 type PostGetParams = z.infer<typeof PostGetParamsSchema>;
+type PostsGetQuery = z.infer<typeof PostsGetQuerySchema>;
 type PostGetQuery = z.infer<typeof PostGetQuerySchema>;
 export {
   PostFeedItemSchema,
@@ -71,6 +73,7 @@ export {
   PostCreateSchema,
   PostLikeParamsSchema,
   PostGetParamsSchema,
+  PostsGetQuerySchema,
   PostGetQuerySchema,
 };
 export type {
@@ -79,6 +82,7 @@ export type {
   PostCreate,
   PostLikeParams,
   PostGetParams,
+  PostsGetQuery,
   PostGetQuery,
 };
 
