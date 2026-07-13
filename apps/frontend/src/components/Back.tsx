@@ -7,7 +7,7 @@ function Back() {
   return (
     <button
       onClick={() => navigate(-1)}
-      className="px-4 mt-5 flex gap-2 font-bold items-center text-sm"
+      className="flex gap-2 font-bold items-center text-sm"
     >
       <Undo2 size={20} /> Back
     </button>

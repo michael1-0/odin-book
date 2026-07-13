@@ -12,6 +12,7 @@ import PostItem from "../components/PostItem";
 import { createComment } from "../services/comments";
 import { likePost, unlikePost } from "../services/likes";
 import Back from "../components/Back";
+import PageContainer from "../components/PageContainer";
 
 async function loader({ params }: LoaderFunctionArgs) {
   return await getPostWithComments(params.postId);
@@ -45,10 +46,10 @@ function PostDetail() {
       : "initial";
 
   return (
-    <>
+    <PageContainer>
       <Back />
-      <div className="px-4 mt-15 flex flex-col gap-14">
-        <PostItem post={post} userId={user.id} />
+      <PostItem post={post} userId={user.id} />
+      <section>
         <commentFetcher.Form
           className=" flex flex-col items-stretch gap-4"
           method="POST"
@@ -72,38 +73,38 @@ function PostDetail() {
             Post comment
           </button>
         </commentFetcher.Form>
-        <div className="flex flex-col gap-4">
-          {post.comments.map((comment) => {
-            return (
-              <div
-                key={comment.id}
-                className="flex flex-col gap-3 rounded-sm bg-neutral-100 p-4"
+      </section>
+      <section className="flex flex-col gap-4">
+        {post.comments.map((comment) => {
+          return (
+            <div
+              key={comment.id}
+              className="flex flex-col gap-3 rounded-sm bg-neutral-100 p-4"
+            >
+              <Link
+                to={`/users/${comment.user.id}`}
+                className="flex items-center gap-3"
               >
-                <Link
-                  to={`/users/${comment.user.id}`}
-                  className="flex items-center gap-3"
-                >
-                  <img
-                    src={comment.user.profileUrl}
-                    className="max-w-8 max-h-8 rounded-full"
-                    alt={`${comment.user.username} profile picture`}
-                  />
-                  <div>{comment.user.username}</div>
-                </Link>
-                <div>{comment.content}</div>
-                <div className="text-sm ml-auto">
-                  {new Date(comment.createdAt).toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </div>
+                <img
+                  src={comment.user.profileUrl}
+                  className="max-w-8 max-h-8 rounded-full"
+                  alt={`${comment.user.username} profile picture`}
+                />
+                <div>{comment.user.username}</div>
+              </Link>
+              <div>{comment.content}</div>
+              <div className="text-sm ml-auto">
+                {new Date(comment.createdAt).toLocaleDateString(undefined, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
               </div>
-            );
-          })}
-        </div>
-      </div>
-    </>
+            </div>
+          );
+        })}
+      </section>
+    </PageContainer>
   );
 }
 
