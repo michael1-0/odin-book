@@ -25,7 +25,7 @@ function PostItem({ post, userId, includeHeader = true }: PostItemProps) {
   return (
     <div
       onClick={handleCardClick}
-      className="rounded-sm flex flex-col gap-5 py-6 items-start cursor-pointer"
+      className="rounded-sm flex flex-col gap-5 py-4 items-start cursor-pointer"
     >
       {includeHeader && (
         <Link

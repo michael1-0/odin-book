@@ -4,6 +4,8 @@ import type { ActionFunctionArgs } from "react-router";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
 import { getFollowingPostsFromLastMonth } from "../services/posts";
+import PageHead from "../components/PageHead";
+import PageContainer from "../components/PageContainer";
 
 async function loader() {
   return await getFollowingPostsFromLastMonth();
@@ -28,19 +30,17 @@ function Updates() {
   const posts: PostFeedItem[] = useLoaderData();
 
   return (
-    <div className="px-4 mt-20 flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-3xl font-semibold ">Updates</h2>
-        <p className="text-sm opacity-70">
-          Posts from people you follow, over the last 30 days.
-        </p>
-      </div>
-      <div className="flex flex-col gap-4 w-full mb-24">
+    <PageContainer>
+      <PageHead
+        title="Updates"
+        content="Posts from people you follow, over the last 30 days."
+      />
+      <section className="flex flex-col gap-4 w-full mb-24">
         {posts.map((post) => (
           <PostItem key={post.id} post={post} userId={user.id} />
         ))}
-      </div>
-    </div>
+      </section>
+    </PageContainer>
   );
 }
 

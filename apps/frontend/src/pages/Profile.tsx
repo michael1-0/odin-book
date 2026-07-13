@@ -11,6 +11,8 @@ import { likePost, unlikePost } from "../services/likes";
 import { updateUser } from "../services/users";
 import toast from "react-hot-toast";
 import { useEffect } from "react";
+import PageHead from "../components/PageHead";
+import PageContainer from "../components/PageContainer";
 
 async function loader() {
   return await getCurrentUserPosts();
@@ -50,8 +52,12 @@ function Profile() {
   }, [fetcher.data]);
 
   return (
-    <div className="px-4 mt-20 flex flex-col gap-20">
-      <div className="flex flex-col items-center gap-4">
+    <PageContainer>
+      <PageHead
+        title="Profile"
+        content="Update your profile, and look at your posts."
+      />
+      <section className="flex flex-col items-center gap-4 bg-neutral-100 rounded-sm p-4">
         <img
           src={user.profileUrl}
           alt={`${user.username} profile image`}
@@ -68,7 +74,7 @@ function Profile() {
               name="username"
               id="username"
               defaultValue={user.username}
-              className="shadow-sm rounded-sm p-3"
+              className="shadow-sm rounded-sm p-3 bg-white"
             />
           </div>
           <div className="flex flex-col">
@@ -80,7 +86,7 @@ function Profile() {
               name="noteToAll"
               rows={4}
               required
-              className="w-full p-3 shadow-sm rounded-sm resize-none focus:outline-none focus:ring-2"
+              className="w-full p-3 shadow-sm rounded-sm resize-none focus:outline-none focus:ring-2 bg-white"
               defaultValue={user.noteToAll}
             />
           </div>
@@ -94,9 +100,9 @@ function Profile() {
             {isUpdating ? "Updating..." : "Update"}
           </button>
         </fetcher.Form>
-      </div>
-      <div>
-        <div className="font-semibold">Your Posts</div>
+      </section>
+      <section>
+        <div className="font-semibold text-xl">Your Posts</div>
         {posts.map((post) => (
           <PostItem
             key={post.id}
@@ -105,8 +111,8 @@ function Profile() {
             includeHeader={false}
           />
         ))}
-      </div>
-    </div>
+      </section>
+    </PageContainer>
   );
 }
 

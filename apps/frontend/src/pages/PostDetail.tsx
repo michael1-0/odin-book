@@ -77,7 +77,7 @@ function PostDetail() {
             return (
               <div
                 key={comment.id}
-                className="flex flex-col gap-3 rounded-sm bg-neutral-50 p-3"
+                className="flex flex-col gap-3 rounded-sm bg-neutral-100 p-4"
               >
                 <Link
                   to={`/users/${comment.user.id}`}
