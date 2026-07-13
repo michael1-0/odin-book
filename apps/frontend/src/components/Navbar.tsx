@@ -1,7 +1,7 @@
 import { useState, useEffect, type ReactEventHandler } from "react";
 import { Menu, X } from "lucide-react";
 import Logo from "./Logo";
-import { Link, useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 
 type NavProps = {
   isOpen: boolean;
@@ -11,35 +11,35 @@ type NavProps = {
 
 function DesktopMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
   return (
-    <nav className="sticky top-0 z-50 flex justify-between items-center p-4 bg-white/75 backdrop-blur-lg">
-      <Link to={"/"}>
+    <nav className="sticky top-0 z-50 flex justify-between items-center p-4 bg-white">
+      <NavLink to={"/"}>
         <Logo />
-      </Link>
-      <div className="hidden md:flex gap-6 items-center">
-        <Link
+      </NavLink>
+      <div className="hidden md:flex gap-6 items-center font-semibold">
+        <NavLink
           to="/"
-          className="text-gray-600 hover:text-black transition-colors font-medium"
+          className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Home
-        </Link>
-        <Link
+        </NavLink>
+        <NavLink
           to="/updates"
-          className="text-gray-600 hover:text-black transition-colors font-medium"
+          className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Updates
-        </Link>
-        <Link
+        </NavLink>
+        <NavLink
           to="/users"
-          className="text-gray-600 hover:text-black transition-colors font-medium"
+          className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Users
-        </Link>
-        <Link
+        </NavLink>
+        <NavLink
           to="/profile"
-          className="text-gray-600 hover:text-black transition-colors font-medium"
+          className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Profile
-        </Link>
+        </NavLink>
         <button
           className="bg-black text-white text-sm border p-2 rounded-sm"
           onClick={handleLogout}
@@ -61,7 +61,7 @@ function DesktopMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
 function MobileMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
   return (
     <div
-      className={`fixed inset-0 z-50 h-screen w-screen backdrop-blur-xl p-4 transform-gpu transition-all duration-300 ease-out md:hidden flex flex-col ${
+      className={`fixed inset-0 z-50 h-screen w-screen backdrop-blur-xl p-4 transform-gpu transition-all duration-150 ease-out md:hidden flex flex-col ${
         isOpen
           ? "opacity-100 scale-100 pointer-events-auto"
           : "opacity-0 scale-100 pointer-events-none"
@@ -76,34 +76,34 @@ function MobileMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
         </button>
       </div>
       <div className="flex flex-col gap-6 text-2xl font-semibold items-center justify-center flex-1 tracking-wide">
-        <Link
+        <NavLink
           to="/"
           onClick={toggleSidebar}
-          className="text-gray-800 hover:text-black transition-colors py-2 w-full text-center"
+          className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Home
-        </Link>
-        <Link
+        </NavLink>
+        <NavLink
           to="/updates"
           onClick={toggleSidebar}
-          className="text-gray-800 hover:text-black transition-colors py-2 w-full text-center"
+          className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Updates
-        </Link>
-        <Link
+        </NavLink>
+        <NavLink
           to="/users"
           onClick={toggleSidebar}
-          className="text-gray-800 hover:text-black transition-colors py-2 w-full text-center"
+          className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Users
-        </Link>
-        <Link
+        </NavLink>
+        <NavLink
           to="/profile"
           onClick={toggleSidebar}
-          className="text-gray-800 hover:text-black transition-colors py-2 w-full text-center"
+          className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Profile
-        </Link>
+        </NavLink>
         <button
           className="text-sm bg-black text-white p-2 rounded-sm"
           onClick={handleLogout}

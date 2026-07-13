@@ -46,7 +46,7 @@ async function guestLoader() {
 
 function App() {
   return (
-    <div className="container min-h-dvh mx-auto font-ark">
+    <div className="container min-h-dvh max-w-165 mx-auto font-ark">
       <ScrollRestoration />
       <Toaster
         toastOptions={{
