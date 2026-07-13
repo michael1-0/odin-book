@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router";
-import AppLayout from "./layouts/AppLayout.tsx";
+import AppLayout from "./components/AppLayout.tsx";
 import App from "./App.tsx";
 import Home from "./pages/Home.tsx";
 import NotFound from "./pages/NotFound.tsx";
