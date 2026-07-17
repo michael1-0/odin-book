@@ -5,9 +5,7 @@ async function loadPosts() {
   return posts.data;
 }
 
-async function createPost(formData: FormData) {
-  const content = formData.get("content");
-
+async function createPost(content: string) {
   const response = await fetch("/api/posts", {
     method: "POST",
     headers: {
@@ -15,9 +13,14 @@ async function createPost(formData: FormData) {
     },
     body: JSON.stringify({ content }),
   });
-  const post = await response.json();
 
-  return post.data;
+  const result = await response.json();
+
+  if (!response.ok) {
+    return { error: true, errors: result };
+  }
+
+  return result.data;
 }
 
 async function getPostWithComments(postId: string | undefined) {

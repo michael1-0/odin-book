@@ -26,7 +26,10 @@ const CommentSchema = z.object({
 });
 const PostSchema = z.object({
   id: z.number().int().positive(),
-  content: z.string().min(1, "Content cannot be empty"),
+  content: z
+    .string()
+    .min(1, "Content cannot be empty")
+    .max(200, "Content too long, 200 chars max"),
   posterId: z.number().int().positive(),
   createdAt: z.date().default(() => new Date()),
 });

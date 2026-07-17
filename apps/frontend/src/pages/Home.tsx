@@ -4,12 +4,14 @@ import {
   useLoaderData,
   type ActionFunctionArgs,
 } from "react-router";
-import type { PostFeedItem } from "@repo/zod-validations";
+import { useEffect } from "react";
+import { PostCreateSchema, z, type PostFeedItem } from "@repo/zod-validations";
 import { createPost, loadPosts } from "../services/posts";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
+import toast from "react-hot-toast";
 
 async function loader() {
   return await loadPosts();
@@ -20,8 +22,20 @@ async function action({ request }: ActionFunctionArgs) {
   const intent = formData.get("intent");
 
   switch (intent) {
-    case "create-post":
-      return await createPost(formData);
+    case "create-post": {
+      const parsedPost = PostCreateSchema.safeParse({
+        content: formData.get("content"),
+      });
+
+      if (!parsedPost.success) {
+        return {
+          error: true,
+          errors: z.flattenError(parsedPost.error).fieldErrors,
+        };
+      }
+
+      return await createPost(parsedPost.data.content);
+    }
     case "like-post":
       return await likePost(formData);
     case "unlike-post":
@@ -36,11 +50,26 @@ function Home() {
   const posts: PostFeedItem[] = useLoaderData();
   const postFetcher = useFetcher();
 
-  const submissionId =
-    postFetcher.data && !postFetcher.data.error
-      ? postFetcher.data.id
-      : "initial";
   const isPosting = postFetcher.state === "submitting";
+  const hasError = postFetcher.data?.error;
+
+  // Form resets
+  const submissionId =
+    postFetcher.data && !hasError ? postFetcher.data.id : "initial";
+
+  // Toasts
+  useEffect(() => {
+    if (postFetcher.state === "idle" && postFetcher.data) {
+      if (hasError) {
+        toast.error("Failed to create post");
+      } else {
+        toast.success("Post posted");
+      }
+    }
+  }, [postFetcher.state, postFetcher.data, hasError]);
+
+  const errors = postFetcher.data?.errors;
+  const contentErrors = errors?.content;
 
   return (
     <PageContainer>
@@ -54,31 +83,30 @@ function Home() {
           className="space-y-4"
           key={submissionId}
         >
-          <div>
-            <label htmlFor="content" className="sr-only">
-              Post Content
-            </label>
-            <textarea
-              id="content"
-              name="content"
-              rows={4}
-              required
-              placeholder="Share something interesting..."
-              className="w-full p-3 shadow-sm rounded-sm resize-none focus:outline-none focus:ring-2"
-              disabled={isPosting}
-            />
+          <div className="mb-2 text-sm text-red-600 min-h-8">
+            {contentErrors && contentErrors[0]}
           </div>
-          <div className="flex justify-stretch">
-            <button
-              type="submit"
-              disabled={isPosting}
-              className="px-4 py-2 w-full bg-black text-white font-medium rounded-sm focus:outline-none focus:ring-2 disabled:opacity-50 transition-colors"
-              name="intent"
-              value="create-post"
-            >
-              {isPosting ? "Posting..." : "Post"}
-            </button>
-          </div>
+          <label htmlFor="content" className="sr-only">
+            Post Content
+          </label>
+          <textarea
+            id="content"
+            name="content"
+            rows={4}
+            required
+            placeholder="Share something interesting..."
+            className="w-full p-3 shadow-sm rounded-sm resize-none focus:outline-none focus:ring-2"
+            disabled={isPosting}
+          />
+          <button
+            type="submit"
+            disabled={isPosting}
+            className="px-4 py-2 w-full bg-black text-white font-medium rounded-sm focus:outline-none focus:ring-2 disabled:opacity-50 transition-colors"
+            name="intent"
+            value="create-post"
+          >
+            {isPosting ? "Posting..." : "Post"}
+          </button>
         </postFetcher.Form>
       </section>
       <section className="flex flex-col gap-4 w-full">
