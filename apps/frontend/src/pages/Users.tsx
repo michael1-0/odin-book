@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from "react-router";
 import type { UserWithFollowStatus } from "@repo/zod-validations";
-import { useFetcher, useLoaderData } from "react-router";
+import { Link, useFetcher, useLoaderData } from "react-router";
 import { followUser, unfollowUser } from "../services/follows";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
@@ -40,8 +40,9 @@ function Users() {
             fetcher.formData?.get("targetUserId") === String(user.id);
 
           return (
-            <div
-              className="rounded-sm flex flex-col items-center justify-center gap-3 min-w-0 bg-neutral-100 p-4"
+            <Link
+              to={`/users/${user.id}`}
+              className="rounded-sm flex flex-col items-center justify-center gap-3 min-w-0 bg-neutral-100 p-4 hover:bg-neutral-200 cursor-pointer"
               key={user.id}
             >
               <img
@@ -71,7 +72,7 @@ function Users() {
                   {user.isFollowing ? "Unfollow" : "Follow"}
                 </button>
               </fetcher.Form>
-            </div>
+            </Link>
           );
         })}
       </section>
