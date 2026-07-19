@@ -1,7 +1,4 @@
-async function createComment(formdata: FormData) {
-  const content = formdata.get("content");
-  const postId = formdata.get("postId");
-
+async function createComment(content: string, postId: number) {
   const response = await fetch("/api/comments", {
     method: "POST",
     headers: {
@@ -9,9 +6,13 @@ async function createComment(formdata: FormData) {
     },
     body: JSON.stringify({ content, postId }),
   });
-  const comment = await response.json();
+  const result = await response.json();
 
-  return comment.data;
+  if (!response.ok) {
+    return { error: true, errors: result };
+  }
+
+  return result.data;
 }
 
 export { createComment };

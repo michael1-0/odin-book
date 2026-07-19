@@ -1,7 +1,9 @@
 import z from "zod";
+import { CommentSchema } from "./base.js";
 
-const CommentCreateBodySchema = z.object({
-  content: z.string().min(1, "Comment content cannot be empty"),
+const CommentCreateBodySchema = CommentSchema.pick({
+  content: true,
+}).extend({
   postId: z.coerce.number().int().positive(),
 });
 

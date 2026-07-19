@@ -7,12 +7,18 @@ import {
   type LoaderFunctionArgs,
 } from "react-router";
 import { getPostWithComments } from "../services/posts";
-import type { PostFeedItemWithComments } from "@repo/zod-validations";
+import {
+  CommentCreateBodySchema,
+  z,
+  type PostFeedItemWithComments,
+} from "@repo/zod-validations";
 import PostItem from "../components/PostItem";
 import { createComment } from "../services/comments";
 import { likePost, unlikePost } from "../services/likes";
 import Back from "../components/Back";
 import PageContainer from "../components/PageContainer";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
 
 async function loader({ params }: LoaderFunctionArgs) {
   return await getPostWithComments(params.postId);
@@ -23,8 +29,24 @@ async function action({ request }: ActionFunctionArgs) {
   const intent = formData.get("intent");
 
   switch (intent) {
-    case "create-comment":
-      return await createComment(formData);
+    case "create-comment": {
+      const parsedComment = CommentCreateBodySchema.safeParse({
+        content: formData.get("content"),
+        postId: formData.get("postId"),
+      });
+
+      if (!parsedComment.success) {
+        return {
+          error: true,
+          errors: z.flattenError(parsedComment.error).fieldErrors,
+        };
+      }
+
+      return await createComment(
+        parsedComment.data.content,
+        parsedComment.data.postId,
+      );
+    }
     case "like-post":
       return await likePost(formData);
     case "unlike-post":
@@ -40,10 +62,23 @@ function PostDetail() {
   const commentFetcher = useFetcher();
 
   const isPosting = commentFetcher.state === "submitting";
+  const hasError = commentFetcher.data?.error;
+
   const submissionId =
-    commentFetcher.data && !commentFetcher.data.error
-      ? commentFetcher.data.id
-      : "initial";
+    commentFetcher.data && !hasError ? commentFetcher.data.id : "initial";
+
+  useEffect(() => {
+    if (commentFetcher.state === "idle" && commentFetcher.data) {
+      if (hasError) {
+        toast.error("Failed to create comment");
+      } else {
+        toast.success("Comment posted");
+      }
+    }
+  }, [commentFetcher.data, commentFetcher.state, hasError]);
+
+  const errors = commentFetcher.data?.errors;
+  const contentErrors = errors?.content;
 
   return (
     <PageContainer>
@@ -55,6 +90,9 @@ function PostDetail() {
           method="POST"
           key={submissionId}
         >
+          <div className="mb-2 text-sm text-red-600 min-h-8">
+            {contentErrors && contentErrors[0]}
+          </div>
           <input type="hidden" name="postId" value={post.id} />
           <textarea
             id="content"
