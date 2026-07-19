@@ -3,8 +3,14 @@ import z from "zod";
 const UserSchema = z.object({
   id: z.number().int(),
   githubId: z.string(),
-  username: z.string().max(30),
-  noteToAll: z.string().max(280).default(""),
+  username: z
+    .string()
+    .min(1, "Username cannot be empty")
+    .max(30, "Username cannot exceed 20 chars"),
+  noteToAll: z
+    .string()
+    .max(200, "Note to all cannot exceed 200 chars")
+    .default(""),
   createdAt: z.date().default(() => new Date()),
   profileUrl: z.string(),
 });

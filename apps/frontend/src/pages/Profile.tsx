@@ -5,7 +5,11 @@ import {
   type ActionFunctionArgs,
 } from "react-router";
 import { getCurrentUserPosts } from "../services/posts";
-import type { PostFeedItem } from "@repo/zod-validations";
+import {
+  UserUpdateBodySchema,
+  z,
+  type PostFeedItem,
+} from "@repo/zod-validations";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
 import { updateUser } from "../services/users";
@@ -23,8 +27,25 @@ async function action({ request }: ActionFunctionArgs) {
   const intent = formData.get("intent");
 
   switch (intent) {
-    case "update-user":
-      return await updateUser(formData);
+    case "update-user": {
+      const parsedUser = UserUpdateBodySchema.safeParse({
+        username: formData.get("username"),
+        noteToAll: formData.get("noteToAll"),
+      });
+
+      if (!parsedUser.success) {
+        return {
+          error: true,
+          errors: z.flattenError(parsedUser.error).fieldErrors,
+        };
+      }
+
+      return await updateUser(
+        formData.get("userId"),
+        parsedUser.data.username,
+        parsedUser.data.noteToAll,
+      );
+    }
     case "like-post":
       return await likePost(formData);
     case "unlike-post":
@@ -40,16 +61,21 @@ function Profile() {
   const posts: PostFeedItem[] = useLoaderData();
 
   const isUpdating = fetcher.state === "submitting";
+  const hasError = fetcher.data?.error;
 
   useEffect(() => {
-    if (fetcher.data) {
-      if ("error" in fetcher.data) {
-        toast.error("Error");
+    if (fetcher.state === "idle" && fetcher.data) {
+      if (hasError) {
+        toast.error("Failed to update profile");
       } else {
-        toast.success("Profile updated successfully!");
+        toast.success("Profile updated");
       }
     }
-  }, [fetcher.data]);
+  }, [fetcher.data, fetcher.state, hasError]);
+
+  const errors = fetcher.data?.errors;
+  const usernameErrors = errors?.username;
+  const noteToAllErrors = errors?.noteToAll;
 
   return (
     <PageContainer>
@@ -76,6 +102,9 @@ function Profile() {
               defaultValue={user.username}
               className="shadow-sm rounded-sm p-3 bg-white"
             />
+            <div className="mt-2 text-xs text-red-600 min-h-4">
+              {usernameErrors && usernameErrors[0]}
+            </div>
           </div>
           <div className="flex flex-col">
             <label htmlFor="noteToAll" className="text-xs mb-1">
@@ -89,6 +118,9 @@ function Profile() {
               className="w-full p-3 shadow-sm rounded-sm resize-none focus:outline-none focus:ring-2 bg-white"
               defaultValue={user.noteToAll}
             />
+            <div className="mt-2 text-xs text-red-600 min-h-8">
+              {noteToAllErrors && noteToAllErrors[0]}
+            </div>
           </div>
           <button
             type="submit"

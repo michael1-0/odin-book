@@ -1,8 +1,8 @@
-async function updateUser(formData: FormData) {
-  const userId = formData.get("userId");
-  const username = formData.get("username");
-  const noteToAll = formData.get("noteToAll");
-
+async function updateUser(
+  userId: FormDataEntryValue | null,
+  username: string,
+  noteToAll: string,
+) {
   const response = await fetch(`/api/users/${userId}`, {
     method: "PUT",
     headers: {
