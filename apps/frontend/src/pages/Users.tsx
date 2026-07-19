@@ -68,6 +68,7 @@ function Users() {
                   className={`bg-black text-white rounded-sm p-2 text-xs w-20 ${
                     isSubmittingThisUser ? "opacity-50" : ""
                   }`}
+                  onClick={(e) => e.stopPropagation()}
                 >
                   {user.isFollowing ? "Unfollow" : "Follow"}
                 </button>
