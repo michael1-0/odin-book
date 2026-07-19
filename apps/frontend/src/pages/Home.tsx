@@ -12,6 +12,7 @@ import { likePost, unlikePost } from "../services/likes";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 import toast from "react-hot-toast";
+import { CircleX } from "lucide-react";
 
 async function loader() {
   return await loadPosts();
@@ -84,7 +85,12 @@ function Home() {
           key={submissionId}
         >
           <div className="mb-2 text-sm text-red-600 min-h-8">
-            {contentErrors && contentErrors[0]}
+            {contentErrors && (
+              <div className="flex gap-2 items-center">
+                <CircleX size={20} />
+                {contentErrors[0]}
+              </div>
+            )}
           </div>
           <label htmlFor="content" className="sr-only">
             Post Content

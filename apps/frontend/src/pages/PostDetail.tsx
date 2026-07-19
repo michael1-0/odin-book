@@ -19,6 +19,7 @@ import Back from "../components/Back";
 import PageContainer from "../components/PageContainer";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
+import { CircleX } from "lucide-react";
 
 async function loader({ params }: LoaderFunctionArgs) {
   return await getPostWithComments(params.postId);
@@ -91,7 +92,12 @@ function PostDetail() {
           key={submissionId}
         >
           <div className="mb-2 text-sm text-red-600 min-h-8">
-            {contentErrors && contentErrors[0]}
+            {contentErrors && (
+              <div className="flex gap-2 items-center">
+                <CircleX size={20} />
+                {contentErrors[0]}
+              </div>
+            )}
           </div>
           <input type="hidden" name="postId" value={post.id} />
           <textarea
