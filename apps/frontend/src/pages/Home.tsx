@@ -4,8 +4,13 @@ import {
   useLoaderData,
   type ActionFunctionArgs,
 } from "react-router";
-import { useEffect } from "react";
-import { PostCreateSchema, z, type PostFeedItem } from "@repo/zod-validations";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  PostCreateSchema,
+  z,
+  type PostFeedItem,
+  type PostsGetResponse,
+} from "@repo/zod-validations";
 import { createPost, loadPosts } from "../services/posts";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
@@ -13,6 +18,8 @@ import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 import toast from "react-hot-toast";
 import { CircleX } from "lucide-react";
+
+const PAGE_SIZE = 10;
 
 async function loader() {
   return await loadPosts();
@@ -48,28 +55,115 @@ async function action({ request }: ActionFunctionArgs) {
 
 function Home() {
   const { user } = useRouteLoaderData("user-data");
-  const posts: PostFeedItem[] = useLoaderData();
   const postFetcher = useFetcher();
+  const { data: postFetcherData, state: postFetcherState } = postFetcher;
 
-  const isPosting = postFetcher.state === "submitting";
-  const hasError = postFetcher.data?.error;
+  const initialPage = useLoaderData() as PostsGetResponse;
+  const [pages, setPages] = useState<PostsGetResponse[]>(() => [initialPage]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  const isPosting = postFetcherState === "submitting";
+  const hasError = postFetcherData?.error;
+  const posts = pages.flatMap((page) => page.data);
+  const nextCursor = pages[pages.length - 1]?.nextCursor ?? null;
 
   // Form resets
   const submissionId =
-    postFetcher.data && !hasError ? postFetcher.data.id : "initial";
+    postFetcherData && !hasError ? postFetcherData.id : "initial";
 
   // Toasts
   useEffect(() => {
-    if (postFetcher.state === "idle" && postFetcher.data) {
+    if (postFetcherState === "idle" && postFetcherData) {
       if (hasError) {
         toast.error("Failed to create post");
       } else {
         toast.success("Post posted");
       }
     }
-  }, [postFetcher.state, postFetcher.data, hasError]);
+  }, [postFetcherState, postFetcherData, hasError]);
 
-  const errors = postFetcher.data?.errors;
+  // Cursor pagination
+  const loadNextPage = useCallback(
+    async (force = false) => {
+      if (nextCursor === null || isLoadingMore || (loadError && !force)) {
+        return;
+      }
+
+      setIsLoadingMore(true);
+
+      try {
+        const page = await loadPosts({ cursor: nextCursor });
+        setPages((currentPages) => [...currentPages, page]);
+        setLoadError(null);
+      } catch {
+        setLoadError("Couldn't load more posts.");
+        toast.error("Failed to load more posts");
+      } finally {
+        setIsLoadingMore(false);
+      }
+    },
+    [nextCursor, isLoadingMore, loadError],
+  );
+  useEffect(() => {
+    if (postFetcherState !== "idle" || !postFetcherData || hasError) {
+      return;
+    }
+
+    const createdPost = postFetcherData as PostFeedItem;
+
+    setPages((currentPages) => {
+      const firstPage = currentPages[0];
+
+      if (!firstPage) {
+        return [{ data: [createdPost], nextCursor: null }];
+      }
+
+      const mergedPosts = [
+        createdPost,
+        ...firstPage.data.filter((post) => post.id !== createdPost.id),
+      ].slice(0, PAGE_SIZE);
+
+      return [
+        {
+          data: mergedPosts,
+          nextCursor:
+            mergedPosts.length === PAGE_SIZE
+              ? (mergedPosts[mergedPosts.length - 1]?.id ?? null)
+              : null,
+        },
+      ];
+    });
+    setLoadError(null);
+    setIsLoadingMore(false);
+  }, [hasError, postFetcherData, postFetcherState]);
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+
+    if (!sentinel || nextCursor === null || isLoadingMore || loadError) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) {
+          return;
+        }
+
+        void loadNextPage();
+      },
+      {
+        rootMargin: "200px",
+      },
+    );
+
+    observer.observe(sentinel);
+
+    return () => observer.disconnect();
+  }, [loadNextPage, nextCursor, isLoadingMore, loadError]);
+
+  const errors = postFetcherData?.errors;
   const contentErrors = errors?.content;
 
   return (
@@ -119,6 +213,24 @@ function Home() {
         {posts.map((post) => (
           <PostItem key={post.id} post={post} userId={user.id} />
         ))}
+      </section>
+      <section
+        ref={loadMoreRef}
+        className="flex w-full items-center justify-center text-sm text-neutral-500"
+      >
+        {loadError ? (
+          <button
+            type="button"
+            onClick={() => void loadNextPage(true)}
+            className="rounded-sm bg-neutral-100 px-4 py-2 text-black transition-colors hover:bg-neutral-200"
+          >
+            Retry loading more
+          </button>
+        ) : isLoadingMore ? (
+          "Loading more posts..."
+        ) : (
+          nextCursor && "Scroll to load more"
+        )}
       </section>
     </PageContainer>
   );

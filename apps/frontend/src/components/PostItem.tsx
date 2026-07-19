@@ -11,8 +11,12 @@ type PostItemProps = {
 function PostItem({ post, userId, includeHeader = true }: PostItemProps) {
   const likeFetcher = useFetcher();
   const navigate = useNavigate();
-
-  const isLikedByMe = checkIfLiked(post.likes);
+  const currentPost =
+    likeFetcher.state === "idle" && likeFetcher.data
+      ? (likeFetcher.data as PostFeedItem)
+      : post;
+  const likesCount = currentPost._count.likes;
+  const isLikedByMe = checkIfLiked(currentPost.likes);
 
   function checkIfLiked(likes: LikeFeed[]) {
     return likes.some((like) => like.userId === userId);
@@ -50,12 +54,13 @@ function PostItem({ post, userId, includeHeader = true }: PostItemProps) {
             name="intent"
             value={isLikedByMe ? "unlike-post" : "like-post"}
             onClick={(e) => e.stopPropagation()}
+            disabled={likeFetcher.state !== "idle"}
           >
             <LucideHeart
               className={`transition-colors ${isLikedByMe && "fill-black"}`}
             />
           </button>
-          <div>{post._count.likes}</div>
+          <div>{likesCount}</div>
         </likeFetcher.Form>
         <div className="flex gap-1">
           <MessageSquare />

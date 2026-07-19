@@ -4,17 +4,17 @@ import {
   useRouteLoaderData,
   type ActionFunctionArgs,
 } from "react-router";
-import { getCurrentUserPosts } from "../services/posts";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { getCurrentUserPosts, loadPosts } from "../services/posts";
 import {
   UserUpdateBodySchema,
   z,
-  type PostFeedItem,
+  type PostsGetResponse,
 } from "@repo/zod-validations";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
 import { updateUser } from "../services/users";
 import toast from "react-hot-toast";
-import { useEffect } from "react";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 
@@ -58,11 +58,18 @@ async function action({ request }: ActionFunctionArgs) {
 function Profile() {
   const { user } = useRouteLoaderData("user-data");
   const fetcher = useFetcher();
-  const posts: PostFeedItem[] = useLoaderData();
+  const initialPage = useLoaderData() as PostsGetResponse;
+  const [pages, setPages] = useState<PostsGetResponse[]>(() => [initialPage]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const posts = pages.flatMap((page) => page.data);
+  const nextCursor = pages[pages.length - 1]?.nextCursor ?? null;
 
   const isUpdating = fetcher.state === "submitting";
   const hasError = fetcher.data?.error;
 
+  // Toasts
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data) {
       if (hasError) {
@@ -72,6 +79,53 @@ function Profile() {
       }
     }
   }, [fetcher.data, fetcher.state, hasError]);
+
+  // Cursor pagination
+  const loadNextPage = useCallback(
+    async (force = false) => {
+      if (nextCursor === null || isLoadingMore || (loadError && !force)) {
+        return;
+      }
+
+      setIsLoadingMore(true);
+
+      try {
+        const page = await loadPosts({ cursor: nextCursor, scope: "me" });
+        setPages((currentPages) => [...currentPages, page]);
+        setLoadError(null);
+      } catch {
+        setLoadError("Couldn't load more posts.");
+        toast.error("Failed to load more posts");
+      } finally {
+        setIsLoadingMore(false);
+      }
+    },
+    [loadError, nextCursor, isLoadingMore],
+  );
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+
+    if (!sentinel || nextCursor === null || isLoadingMore || loadError) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) {
+          return;
+        }
+
+        void loadNextPage();
+      },
+      {
+        rootMargin: "200px",
+      },
+    );
+
+    observer.observe(sentinel);
+
+    return () => observer.disconnect();
+  }, [loadNextPage, nextCursor, isLoadingMore, loadError]);
 
   const errors = fetcher.data?.errors;
   const usernameErrors = errors?.username;
@@ -143,6 +197,24 @@ function Profile() {
             includeHeader={false}
           />
         ))}
+      </section>
+      <section
+        ref={loadMoreRef}
+        className="flex w-full items-center justify-center text-sm text-neutral-500"
+      >
+        {loadError ? (
+          <button
+            type="button"
+            onClick={() => void loadNextPage(true)}
+            className="rounded-sm bg-neutral-100 px-4 py-2 text-black transition-colors hover:bg-neutral-200"
+          >
+            Retry loading more
+          </button>
+        ) : isLoadingMore ? (
+          "Loading more posts..."
+        ) : (
+          nextCursor && "Scroll to load more"
+        )}
       </section>
     </PageContainer>
   );

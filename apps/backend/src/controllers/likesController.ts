@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import type { PostLikeParams } from "@repo/zod-validations";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
+import { getPostFeedItem } from "../utils/postFeed.ts";
 
 async function likePost(
   req: Request<PostLikeParams>,
@@ -16,11 +17,13 @@ async function likePost(
     const userId = req.user.id;
     const { postId } = req.params;
 
-    const likedPost = await prisma.like.create({
+    await prisma.like.create({
       data: { userId, postId },
     });
 
-    return res.status(200).json({ data: likedPost });
+    const feedPost = await getPostFeedItem(postId);
+
+    return res.status(200).json({ data: feedPost });
   } catch (error) {
     next(error);
   }
@@ -39,7 +42,7 @@ async function unlikePost(
     const userId = req.user.id;
     const { postId } = req.params;
 
-    const unlikedPost = await prisma.like.delete({
+    await prisma.like.delete({
       where: {
         userId_postId: {
           userId,
@@ -48,7 +51,9 @@ async function unlikePost(
       },
     });
 
-    return res.status(200).json({ data: unlikedPost });
+    const feedPost = await getPostFeedItem(postId);
+
+    return res.status(200).json({ data: feedPost });
   } catch (error) {
     next(error);
   }

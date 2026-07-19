@@ -1,8 +1,31 @@
-async function loadPosts() {
-  const response = await fetch("/api/posts");
+type LoadPostsOptions = {
+  cursor?: number;
+  scope?: "all" | "me" | "following";
+  period?: "month";
+};
+
+async function loadPosts({ cursor, scope, period }: LoadPostsOptions = {}) {
+  const searchParams = new URLSearchParams();
+
+  if (cursor !== undefined) {
+    searchParams.set("cursor", String(cursor));
+  }
+
+  if (scope) {
+    searchParams.set("scope", scope);
+  }
+
+  if (period) {
+    searchParams.set("period", period);
+  }
+
+  const queryString = searchParams.toString();
+  const response = await fetch(
+    queryString ? `/api/posts?${queryString}` : "/api/posts",
+  );
   const posts = await response.json();
 
-  return posts.data;
+  return posts;
 }
 
 async function createPost(content: string) {
@@ -31,17 +54,11 @@ async function getPostWithComments(postId: string | undefined) {
 }
 
 async function getCurrentUserPosts() {
-  const response = await fetch("/api/posts?scope=me");
-  const posts = await response.json();
-
-  return posts.data;
+  return await loadPosts({ scope: "me" });
 }
 
 async function getFollowingPostsFromLastMonth() {
-  const response = await fetch("/api/posts?scope=following&period=month");
-  const posts = await response.json();
-
-  return posts.data;
+  return await loadPosts({ scope: "following", period: "month" });
 }
 
 export {
