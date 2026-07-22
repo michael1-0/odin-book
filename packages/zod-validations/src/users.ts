@@ -21,6 +21,7 @@ const UserGetQuerySchema = z.object({
 });
 const UserWithPostsSchema = UserSchema.extend({
   posts: z.array(PostFeedItemSchema),
+  isFollowing: z.boolean()
 });
 
 type UserWithFollowStatus = z.infer<typeof UserWithFollowStatusSchema>;

@@ -102,8 +102,14 @@ async function getUser(
   next: NextFunction,
 ) {
   try {
+    if (!req.user) {
+      return new AppError("Unauthenticated", 401);
+    }
+
     const { userId } = req.params;
     const { include } = req.query;
+
+    const currentUserId = req.user.id;
 
     const user = await prisma.user.findUnique({
       select: {
@@ -111,6 +117,17 @@ async function getUser(
         username: true,
         profileUrl: true,
         noteToAll: true,
+        following: currentUserId
+          ? {
+              select: {
+                followedById: true,
+              },
+              where: {
+                followedById: currentUserId,
+              },
+              take: 1,
+            }
+          : false,
         posts:
           include === "posts"
             ? {
@@ -143,7 +160,14 @@ async function getUser(
       where: { id: userId },
     });
 
-    return res.status(200).json({ data: user });
+    const { following, ...userData } = user!;
+
+    const formattedUser = {
+      ...userData,
+      isFollowing: Array.isArray(following) && following.length > 0,
+    };
+
+    return res.status(200).json({ data: formattedUser });
   } catch (error) {
     next(error);
   }
