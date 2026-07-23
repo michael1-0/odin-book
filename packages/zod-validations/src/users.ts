@@ -21,7 +21,10 @@ const UserGetQuerySchema = z.object({
 });
 const UserWithPostsSchema = UserSchema.extend({
   posts: z.array(PostFeedItemSchema),
-  isFollowing: z.boolean()
+  isFollowing: z.boolean(),
+});
+const UsersGetQuerySchema = z.object({
+  cursor: z.coerce.number().int().optional(),
 });
 
 type UserWithFollowStatus = z.infer<typeof UserWithFollowStatusSchema>;
@@ -30,6 +33,7 @@ type UserUpdateParams = z.infer<typeof UserUpdateParamsSchema>;
 type UserGetParams = z.infer<typeof UserGetParamsSchema>;
 type UserGetQuery = z.infer<typeof UserGetQuerySchema>;
 type UserWithPosts = z.infer<typeof UserWithPostsSchema>;
+type UsersGetQuery = z.infer<typeof UsersGetQuerySchema>;
 
 export {
   UserWithFollowStatusSchema,
@@ -38,6 +42,7 @@ export {
   UserGetParamsSchema,
   UserGetQuerySchema,
   UserWithPostsSchema,
+  UsersGetQuerySchema,
 };
 export type {
   UserWithFollowStatus,
@@ -46,4 +51,5 @@ export type {
   UserGetParams,
   UserGetQuery,
   UserWithPosts,
+  UsersGetQuery,
 };

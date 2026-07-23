@@ -51,8 +51,6 @@ function UserDetail() {
   const userWithPosts: UserWithPosts = useLoaderData();
   const fetcher = useFetcher();
 
-  console.log(userWithPosts);
-
   return (
     <PageContainer>
       <Back />

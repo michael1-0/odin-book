@@ -77,6 +77,11 @@ function Users() {
           );
         })}
       </section>
+      {/* <section className="flex justify-center">
+        <button className="bg-black text-white p-2  rounded-sm">
+          Load more
+        </button>
+      </section> */}
     </PageContainer>
   );
 }

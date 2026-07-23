@@ -10,6 +10,7 @@ import validate from "express-zod-safe";
 import {
   UserGetParamsSchema,
   UserGetQuerySchema,
+  UsersGetQuerySchema,
   UserUpdateBodySchema,
   UserUpdateParamsSchema,
 } from "@repo/zod-validations";
@@ -18,7 +19,11 @@ const usersRouter: RouterType = Router();
 
 usersRouter.use(requireAuth);
 
-usersRouter.get("/", getUsersWithoutCurrentUser);
+usersRouter.get(
+  "/",
+  validate({ query: UsersGetQuerySchema }),
+  getUsersWithoutCurrentUser,
+);
 usersRouter.put(
   "/:userId",
   validate({ body: UserUpdateBodySchema, params: UserUpdateParamsSchema }),

@@ -4,12 +4,13 @@ import { AppError } from "../errors/AppError.ts";
 import type {
   UserGetParams,
   UserGetQuery,
+  UsersGetQuery,
   UserUpdateBody,
   UserUpdateParams,
 } from "@repo/zod-validations";
 
 async function getUsersWithoutCurrentUser(
-  req: Request,
+  req: Request<unknown, unknown, unknown, UsersGetQuery>,
   res: Response,
   next: NextFunction,
 ) {
@@ -18,17 +19,18 @@ async function getUsersWithoutCurrentUser(
       throw new AppError("Unauthenticated", 401);
     }
 
+    const cursorId = req.query.cursor;
     const currentUserId = req.user.id;
+    const limit = 10;
 
     const users = await prisma.user.findMany({
-      take: 10,
-      ...(currentUserId && {
-        where: {
-          id: {
-            not: currentUserId,
-          },
+      take: limit + 1,
+      where: {
+        id: {
+          not: currentUserId,
+          ...(cursorId ? { gt: cursorId } : {}),
         },
-      }),
+      },
       select: {
         id: true,
         username: true,
@@ -48,6 +50,14 @@ async function getUsersWithoutCurrentUser(
       },
     });
 
+    const hasNextPage = users.length > limit;
+    if (hasNextPage) {
+      users.pop();
+    }
+
+    const lastUser = users.at(-1);
+    const nextCursor = hasNextPage && lastUser ? lastUser.id : null;
+
     const formattedUsers = users.map((user) => {
       const { following, ...userData } = user;
 
@@ -59,6 +69,10 @@ async function getUsersWithoutCurrentUser(
 
     return res.status(200).json({
       data: formattedUsers,
+      meta: {
+        nextCursor,
+        hasNextPage,
+      },
     });
   } catch (error) {
     next(error);
@@ -103,7 +117,7 @@ async function getUser(
 ) {
   try {
     if (!req.user) {
-      return new AppError("Unauthenticated", 401);
+      throw new AppError("Unauthenticated", 401);
     }
 
     const { userId } = req.params;

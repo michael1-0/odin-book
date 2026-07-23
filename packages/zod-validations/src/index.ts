@@ -8,12 +8,14 @@ export {
   UserGetQuerySchema,
   UserWithFollowStatusSchema,
   UserWithPostsSchema,
+  UsersGetQuerySchema,
   type UserUpdateBody,
   type UserUpdateParams,
   type UserGetParams,
   type UserGetQuery,
   type UserWithFollowStatus,
   type UserWithPosts,
+  type UsersGetQuery,
 } from "./users.js";
 
 // Posts
