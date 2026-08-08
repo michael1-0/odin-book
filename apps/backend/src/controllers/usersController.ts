@@ -19,16 +19,15 @@ async function getUsersWithoutCurrentUser(
       throw new AppError("Unauthenticated", 401);
     }
 
-    const cursorId = req.query.cursor;
+    const offset = req.query.offset ?? 0;
     const currentUserId = req.user.id;
-    const limit = 10;
+    const limit = 12;
 
     const users = await prisma.user.findMany({
-      take: limit + 1,
+      take: offset + limit + 1,
       where: {
         id: {
           not: currentUserId,
-          ...(cursorId ? { gt: cursorId } : {}),
         },
       },
       select: {
@@ -50,13 +49,12 @@ async function getUsersWithoutCurrentUser(
       },
     });
 
-    const hasNextPage = users.length > limit;
+    const hasNextPage = users.length > offset + limit;
     if (hasNextPage) {
       users.pop();
     }
 
-    const lastUser = users.at(-1);
-    const nextCursor = hasNextPage && lastUser ? lastUser.id : null;
+    const nextCursor = hasNextPage ? offset + limit : null;
 
     const formattedUsers = users.map((user) => {
       const { following, ...userData } = user;

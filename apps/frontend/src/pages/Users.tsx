@@ -1,15 +1,30 @@
-import type { ActionFunctionArgs } from "react-router";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import type { UserWithFollowStatus } from "@repo/zod-validations";
-import { Link, useFetcher, useLoaderData } from "react-router";
+import {
+  Link,
+  useFetcher,
+  useLoaderData,
+  useNavigation,
+  useSearchParams,
+} from "react-router";
 import { followUser, unfollowUser } from "../services/follows";
+import { getUsers } from "../services/users";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 
-async function loader() {
-  const response = await fetch("/api/users");
-  const users = await response.json();
+type UsersLoaderData = {
+  users: UserWithFollowStatus[];
+  nextCursor: number | null;
+};
 
-  return users.data;
+async function loader({ request }: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const offsetParam = url.searchParams.get("offset");
+  const offset = offsetParam ? Number(offsetParam) : undefined;
+
+  const page = await getUsers(offset);
+
+  return { users: page.data, nextCursor: page.meta.nextCursor } satisfies UsersLoaderData;
 }
 
 async function action({ request }: ActionFunctionArgs) {
@@ -27,8 +42,20 @@ async function action({ request }: ActionFunctionArgs) {
 }
 
 function Users() {
-  const users: UserWithFollowStatus[] = useLoaderData();
+  const { users, nextCursor } = useLoaderData() as UsersLoaderData;
   const fetcher = useFetcher();
+  const [searchParams] = useSearchParams();
+  const navigation = useNavigation();
+
+  const loadMoreSearchParams = new URLSearchParams(searchParams);
+
+  if (nextCursor !== null) {
+    loadMoreSearchParams.set("offset", String(nextCursor));
+  }
+
+  const isLoadMorePending =
+    navigation.state === "loading" &&
+    navigation.location?.search.includes("offset");
 
   return (
     <PageContainer>
@@ -77,11 +104,17 @@ function Users() {
           );
         })}
       </section>
-      {/* <section className="flex justify-center">
-        <button className="bg-black text-white p-2  rounded-sm">
-          Load more
-        </button>
-      </section> */}
+      {nextCursor !== null && (
+        <section className="flex justify-center">
+          <Link
+            to={`?${loadMoreSearchParams.toString()}`}
+            preventScrollReset
+            className="bg-black text-white p-2 rounded-sm"
+          >
+            {isLoadMorePending ? "Loading more..." : "Load more"}
+          </Link>
+        </section>
+      )}
     </PageContainer>
   );
 }

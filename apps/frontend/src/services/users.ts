@@ -1,3 +1,19 @@
+async function getUsers(offset?: number) {
+  const searchParams = new URLSearchParams();
+
+  if (offset !== undefined) {
+    searchParams.set("offset", String(offset));
+  }
+
+  const queryString = searchParams.toString();
+  const response = await fetch(
+    queryString ? `/api/users?${queryString}` : "/api/users",
+  );
+  const users = await response.json();
+
+  return users;
+}
+
 async function updateUser(
   userId: FormDataEntryValue | null,
   username: string,
@@ -22,4 +38,4 @@ async function getUserProfile(userId: string | undefined) {
   return user.data;
 }
 
-export { updateUser, getUserProfile };
+export { getUsers, updateUser, getUserProfile };
