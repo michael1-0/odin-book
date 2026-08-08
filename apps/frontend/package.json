@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "check": "pnpm lint && pnpm format:check && pnpm build",
+    "check": "pnpm format:check && pnpm lint && pnpm build",
     "preview": "vite preview"
   },
   "dependencies": {
