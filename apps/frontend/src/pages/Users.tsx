@@ -24,7 +24,10 @@ async function loader({ request }: LoaderFunctionArgs) {
 
   const page = await getUsers(offset);
 
-  return { users: page.data, nextCursor: page.meta.nextCursor } satisfies UsersLoaderData;
+  return {
+    users: page.data,
+    nextCursor: page.meta.nextCursor,
+  } satisfies UsersLoaderData;
 }
 
 async function action({ request }: ActionFunctionArgs) {
