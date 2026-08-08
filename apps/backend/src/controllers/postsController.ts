@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import type {
   PostFeedItem,
-  PostCreate,
-  PostGetParams,
+  PostCreateBody,
+  PostIdParams,
   PostGetQuery,
   PostsGetResponse,
   PostsGetQuery,
@@ -87,7 +87,7 @@ async function getPosts(
 }
 
 async function createPost(
-  req: Request<unknown, unknown, PostCreate>,
+  req: Request<unknown, unknown, PostCreateBody>,
   res: Response,
   next: NextFunction,
 ) {
@@ -115,7 +115,7 @@ async function createPost(
 }
 
 async function getPost(
-  req: Request<PostGetParams, unknown, unknown, PostGetQuery>,
+  req: Request<PostIdParams, unknown, unknown, PostGetQuery>,
   res: Response,
   next: NextFunction,
 ) {

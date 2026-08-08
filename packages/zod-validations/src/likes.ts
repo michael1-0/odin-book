@@ -1,11 +1,7 @@
-import z from "zod";
-import { LikeSchema } from "./base.js";
+import { z } from "zod";
+import { LikeSchema } from "./entities.js";
 
-const LikeFeedSchema = LikeSchema.pick({
+export const PostLikeSchema = LikeSchema.pick({
   userId: true,
 });
-
-type LikeFeed = z.infer<typeof LikeFeedSchema>;
-
-export { LikeFeedSchema };
-export type { LikeFeed };
+export type PostLike = z.infer<typeof PostLikeSchema>;

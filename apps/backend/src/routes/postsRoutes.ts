@@ -8,8 +8,8 @@ import {
 } from "../controllers/postsController.ts";
 import validate from "express-zod-safe";
 import {
-  PostCreateSchema,
-  PostGetParamsSchema,
+  PostCreateBodySchema,
+  PostIdParamsSchema,
   PostGetQuerySchema,
   PostsGetQuerySchema,
 } from "@repo/zod-validations";
@@ -21,9 +21,9 @@ postsRouter.use(requireAuth);
 postsRouter.get("/", validate({ query: PostsGetQuerySchema }), getPosts);
 postsRouter.get(
   "/:postId",
-  validate({ params: PostGetParamsSchema, query: PostGetQuerySchema }),
+  validate({ params: PostIdParamsSchema, query: PostGetQuerySchema }),
   getPost,
 );
-postsRouter.post("/", validate({ body: PostCreateSchema }), createPost);
+postsRouter.post("/", validate({ body: PostCreateBodySchema }), createPost);
 
 export default postsRouter;

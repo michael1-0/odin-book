@@ -8,11 +8,10 @@ import {
 } from "../controllers/usersController.ts";
 import validate from "express-zod-safe";
 import {
-  UserGetParamsSchema,
+  UserIdParamsSchema,
   UserGetQuerySchema,
   UsersGetQuerySchema,
   UserUpdateBodySchema,
-  UserUpdateParamsSchema,
 } from "@repo/zod-validations";
 
 const usersRouter: RouterType = Router();
@@ -26,12 +25,12 @@ usersRouter.get(
 );
 usersRouter.put(
   "/:userId",
-  validate({ body: UserUpdateBodySchema, params: UserUpdateParamsSchema }),
+  validate({ body: UserUpdateBodySchema, params: UserIdParamsSchema }),
   updateCurrentUser,
 );
 usersRouter.get(
   "/:userId",
-  validate({ params: UserGetParamsSchema, query: UserGetQuerySchema }),
+  validate({ params: UserIdParamsSchema, query: UserGetQuerySchema }),
   getUser,
 );
 

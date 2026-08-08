@@ -1,11 +1,11 @@
 import type { NextFunction, Request, Response } from "express";
-import type { PostLikeParams } from "@repo/zod-validations";
+import type { PostIdParams } from "@repo/zod-validations";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
 import { getPostFeedItem } from "../utils/postFeed.ts";
 
 async function likePost(
-  req: Request<PostLikeParams>,
+  req: Request<PostIdParams>,
   res: Response,
   next: NextFunction,
 ) {
@@ -30,7 +30,7 @@ async function likePost(
 }
 
 async function unlikePost(
-  req: Request<PostLikeParams>,
+  req: Request<PostIdParams>,
   res: Response,
   next: NextFunction,
 ) {

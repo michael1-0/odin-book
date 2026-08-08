@@ -6,7 +6,7 @@ import {
 } from "react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  PostCreateSchema,
+  PostCreateBodySchema,
   z,
   type PostFeedItem,
   type PostsGetResponse,
@@ -31,7 +31,7 @@ async function action({ request }: ActionFunctionArgs) {
 
   switch (intent) {
     case "create-post": {
-      const parsedPost = PostCreateSchema.safeParse({
+      const parsedPost = PostCreateBodySchema.safeParse({
         content: formData.get("content"),
       });
 

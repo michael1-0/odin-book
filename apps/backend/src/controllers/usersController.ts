@@ -2,11 +2,10 @@ import type { NextFunction, Request, Response } from "express";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
 import type {
-  UserGetParams,
+  UserIdParams,
   UserGetQuery,
   UsersGetQuery,
   UserUpdateBody,
-  UserUpdateParams,
 } from "@repo/zod-validations";
 
 async function getUsersWithoutCurrentUser(
@@ -78,7 +77,7 @@ async function getUsersWithoutCurrentUser(
 }
 
 async function updateCurrentUser(
-  req: Request<UserUpdateParams, unknown, UserUpdateBody>,
+  req: Request<UserIdParams, unknown, UserUpdateBody>,
   res: Response,
   next: NextFunction,
 ) {
@@ -109,7 +108,7 @@ async function updateCurrentUser(
 }
 
 async function getUser(
-  req: Request<UserGetParams, unknown, UserGetQuery>,
+  req: Request<UserIdParams, unknown, UserGetQuery>,
   res: Response,
   next: NextFunction,
 ) {

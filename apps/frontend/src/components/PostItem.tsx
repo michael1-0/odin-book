@@ -1,4 +1,4 @@
-import type { LikeFeed, PostFeedItem } from "@repo/zod-validations";
+import type { PostFeedItem, PostLike } from "@repo/zod-validations";
 import { LucideHeart, MessageSquare } from "lucide-react";
 import { Link, useFetcher, useNavigate } from "react-router";
 
@@ -18,7 +18,7 @@ function PostItem({ post, userId, includeHeader = true }: PostItemProps) {
   const likesCount = currentPost._count.likes;
   const isLikedByMe = checkIfLiked(currentPost.likes);
 
-  function checkIfLiked(likes: LikeFeed[]) {
+  function checkIfLiked(likes: PostLike[]) {
     return likes.some((like) => like.userId === userId);
   }
 

@@ -1,55 +1,36 @@
-import z from "zod";
-import { UserSchema } from "./base.js";
+import { z } from "zod";
+import { coercedId } from "./common.js";
+import { UserSchema } from "./entities.js";
 import { PostFeedItemSchema } from "./posts.js";
 
-const UserWithFollowStatusSchema = UserSchema.extend({
+export const UserIdParamsSchema = z.object({
+  userId: coercedId,
+});
+export type UserIdParams = z.infer<typeof UserIdParamsSchema>;
+
+export const UserWithFollowStatusSchema = UserSchema.extend({
   isFollowing: z.boolean(),
 });
-const UserUpdateBodySchema = UserSchema.pick({
+export type UserWithFollowStatus = z.infer<typeof UserWithFollowStatusSchema>;
+
+export const UserUpdateBodySchema = UserSchema.pick({
   username: true,
-  // profileUrl: true,
   noteToAll: true,
 });
-const UserUpdateParamsSchema = z.object({
-  userId: z.coerce.number().int(),
-});
-const UserGetParamsSchema = z.object({
-  userId: z.coerce.number().int(),
-});
-const UserGetQuerySchema = z.object({
+export type UserUpdateBody = z.infer<typeof UserUpdateBodySchema>;
+
+export const UserGetQuerySchema = z.object({
   include: z.literal("posts").optional(),
 });
-const UserWithPostsSchema = UserSchema.extend({
+export type UserGetQuery = z.infer<typeof UserGetQuerySchema>;
+
+export const UserWithPostsSchema = UserSchema.extend({
   posts: z.array(PostFeedItemSchema),
   isFollowing: z.boolean(),
 });
-const UsersGetQuerySchema = z.object({
+export type UserWithPosts = z.infer<typeof UserWithPostsSchema>;
+
+export const UsersGetQuerySchema = z.object({
   offset: z.coerce.number().int().nonnegative().optional(),
 });
-
-type UserWithFollowStatus = z.infer<typeof UserWithFollowStatusSchema>;
-type UserUpdateBody = z.infer<typeof UserUpdateBodySchema>;
-type UserUpdateParams = z.infer<typeof UserUpdateParamsSchema>;
-type UserGetParams = z.infer<typeof UserGetParamsSchema>;
-type UserGetQuery = z.infer<typeof UserGetQuerySchema>;
-type UserWithPosts = z.infer<typeof UserWithPostsSchema>;
-type UsersGetQuery = z.infer<typeof UsersGetQuerySchema>;
-
-export {
-  UserWithFollowStatusSchema,
-  UserUpdateBodySchema,
-  UserUpdateParamsSchema,
-  UserGetParamsSchema,
-  UserGetQuerySchema,
-  UserWithPostsSchema,
-  UsersGetQuerySchema,
-};
-export type {
-  UserWithFollowStatus,
-  UserUpdateBody,
-  UserUpdateParams,
-  UserGetParams,
-  UserGetQuery,
-  UserWithPosts,
-  UsersGetQuery,
-};
+export type UsersGetQuery = z.infer<typeof UsersGetQuerySchema>;

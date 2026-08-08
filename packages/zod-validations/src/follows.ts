@@ -1,10 +1,7 @@
-import z from "zod";
+import { z } from "zod";
+import { coercedId } from "./common.js";
 
-const FollowParamsSchema = z.object({
-  followingId: z.coerce.number().int(),
+export const FollowParamsSchema = z.object({
+  followingId: coercedId,
 });
-
-type FollowParams = z.infer<typeof FollowParamsSchema>;
-
-export { FollowParamsSchema };
-export type { FollowParams };
+export type FollowParams = z.infer<typeof FollowParamsSchema>;

@@ -1,92 +1,69 @@
-import z from "zod";
-import { CommentSchema, PostSchema, UserSchema } from "./base.js";
-import { LikeFeedSchema } from "./likes.js";
+import { z } from "zod";
+import { coercedId } from "./common.js";
+import { CommentSchema, PostSchema, UserSchema } from "./entities.js";
+import { PostLikeSchema } from "./likes.js";
 
-const PostFeedItemSchema = PostSchema.pick({
+const PostAuthorSchema = UserSchema.pick({
+  id: true,
+  profileUrl: true,
+  username: true,
+});
+
+const PostCommentSchema = CommentSchema.pick({
+  id: true,
+  content: true,
+  createdAt: true,
+}).extend({
+  user: PostAuthorSchema,
+});
+
+export const PostFeedItemSchema = PostSchema.pick({
   content: true,
   createdAt: true,
   id: true,
 }).extend({
-  user: UserSchema.pick({
-    id: true,
-    profileUrl: true,
-    username: true,
-  }),
+  user: PostAuthorSchema,
   _count: z.object({
     comments: z.number().int(),
     likes: z.number().int(),
   }),
-  likes: z.array(
-    LikeFeedSchema.pick({
-      userId: true,
-    }),
-  ),
+  likes: z.array(PostLikeSchema),
 });
-const PostFeedItemWithCommentsSchema = PostFeedItemSchema.extend({
-  comments: z.array(
-    CommentSchema.pick({
-      id: true,
-      content: true,
-      createdAt: true,
-    }).extend({
-      user: UserSchema.pick({
-        id: true,
-        username: true,
-        profileUrl: true,
-      }),
-    }),
-  ),
+export type PostFeedItem = z.infer<typeof PostFeedItemSchema>;
+
+export const PostFeedItemWithCommentsSchema = PostFeedItemSchema.extend({
+  comments: z.array(PostCommentSchema),
 });
-const PostCreateSchema = PostSchema.omit({
+export type PostFeedItemWithComments = z.infer<
+  typeof PostFeedItemWithCommentsSchema
+>;
+
+export const PostCreateBodySchema = PostSchema.omit({
   id: true,
   createdAt: true,
   posterId: true,
 });
-const PostLikeParamsSchema = z.object({
-  postId: z.coerce.number().int().positive(),
+export type PostCreateBody = z.infer<typeof PostCreateBodySchema>;
+
+export const PostIdParamsSchema = z.object({
+  postId: coercedId,
 });
-const PostGetParamsSchema = z.object({
-  postId: z.coerce.number().int().positive(),
-});
-const PostsGetQuerySchema = z.object({
+export type PostIdParams = z.infer<typeof PostIdParamsSchema>;
+
+export const PostsGetQuerySchema = z.object({
   scope: z.enum(["all", "me", "following"]).optional(),
   period: z.enum(["month"]).optional(),
-  cursor: z.coerce.number().int().positive().optional(),
+  cursor: coercedId.optional(),
 });
-const PostsGetResponseSchema = z.object({
+export type PostsGetQuery = z.infer<typeof PostsGetQuerySchema>;
+
+export const PostsGetResponseSchema = z.object({
   data: z.array(PostFeedItemSchema),
   nextCursor: z.number().int().positive().nullable(),
 });
-const PostGetQuerySchema = z.object({
-  include: z.literal("comments"),
+export type PostsGetResponse = z.infer<typeof PostsGetResponseSchema>;
+
+export const PostGetQuerySchema = z.object({
+  include: z.literal("comments").optional(),
 });
-
-type PostFeedItem = z.infer<typeof PostFeedItemSchema>;
-type PostFeedItemWithComments = z.infer<typeof PostFeedItemWithCommentsSchema>;
-type PostCreate = z.infer<typeof PostCreateSchema>;
-type PostLikeParams = z.infer<typeof PostLikeParamsSchema>;
-type PostGetParams = z.infer<typeof PostGetParamsSchema>;
-type PostsGetQuery = z.infer<typeof PostsGetQuerySchema>;
-type PostsGetResponse = z.infer<typeof PostsGetResponseSchema>;
-type PostGetQuery = z.infer<typeof PostGetQuerySchema>;
-
-export {
-  PostFeedItemSchema,
-  PostFeedItemWithCommentsSchema,
-  PostCreateSchema,
-  PostLikeParamsSchema,
-  PostGetParamsSchema,
-  PostsGetQuerySchema,
-  PostsGetResponseSchema,
-  PostGetQuerySchema,
-};
-export type {
-  PostFeedItem,
-  PostFeedItemWithComments,
-  PostCreate,
-  PostLikeParams,
-  PostGetParams,
-  PostsGetQuery,
-  PostsGetResponse,
-  PostGetQuery,
-};
+export type PostGetQuery = z.infer<typeof PostGetQuerySchema>;

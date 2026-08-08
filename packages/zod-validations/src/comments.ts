@@ -1,13 +1,10 @@
-import z from "zod";
-import { CommentSchema } from "./base.js";
+import { z } from "zod";
+import { coercedId } from "./common.js";
+import { CommentSchema } from "./entities.js";
 
-const CommentCreateBodySchema = CommentSchema.pick({
+export const CommentCreateBodySchema = CommentSchema.pick({
   content: true,
 }).extend({
-  postId: z.coerce.number().int().positive(),
+  postId: coercedId,
 });
-
-type CommentCreateBody = z.infer<typeof CommentCreateBodySchema>;
-
-export { CommentCreateBodySchema };
-export type { CommentCreateBody };
+export type CommentCreateBody = z.infer<typeof CommentCreateBodySchema>;
