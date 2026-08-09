@@ -6,20 +6,21 @@
     "dev": "pnpm -r --stream dev",
     "dev:backend": "pnpm --filter backend dev",
     "dev:frontend": "pnpm --filter frontend dev",
-
     "db:seed": "pnpm --filter backend exec prisma db seed",
     "db:sync": "pnpm --filter backend exec prisma db push && pnpm --filter backend exec prisma generate",
     "db:studio": "pnpm --filter backend exec prisma studio",
-
     "build": "pnpm -r --if-present build",
     "lint": "pnpm -r --if-present lint",
     "format": "pnpm -r --if-present format",
     "format:check": "pnpm -r --if-present format:check",
     "check": "pnpm format:check && pnpm lint && pnpm build",
     "test": "pnpm -r --if-present test",
-
     "start": "pnpm --filter backend start",
-    "preview": "pnpm --filter frontend preview"
+    "preview": "pnpm --filter frontend preview",
+    "prepare": "husky"
   },
-  "packageManager": "pnpm@10.28.2"
+  "packageManager": "pnpm@10.28.2",
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
 }
