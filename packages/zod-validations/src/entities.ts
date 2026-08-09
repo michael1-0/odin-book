@@ -12,7 +12,10 @@ export const UserSchema = z.object({
   username: z
     .string()
     .min(1, "Username cannot be empty")
-    .max(MAX_USERNAME_LENGTH, `Username cannot exceed ${MAX_USERNAME_LENGTH} chars`),
+    .max(
+      MAX_USERNAME_LENGTH,
+      `Username cannot exceed ${MAX_USERNAME_LENGTH} chars`,
+    ),
   noteToAll: z
     .string()
     .max(MAX_NOTE_LENGTH, `Note to all cannot exceed ${MAX_NOTE_LENGTH} chars`)
@@ -39,7 +42,10 @@ export const CommentSchema = z.object({
   content: z
     .string()
     .min(1, "Comment content cannot be empty")
-    .max(MAX_CONTENT_LENGTH, `Comment too long, ${MAX_CONTENT_LENGTH} chars max`),
+    .max(
+      MAX_CONTENT_LENGTH,
+      `Comment too long, ${MAX_CONTENT_LENGTH} chars max`,
+    ),
   createdAt,
 });
 
@@ -48,7 +54,10 @@ export const PostSchema = z.object({
   content: z
     .string()
     .min(1, "Content cannot be empty")
-    .max(MAX_CONTENT_LENGTH, `Content too long, ${MAX_CONTENT_LENGTH} chars max`),
+    .max(
+      MAX_CONTENT_LENGTH,
+      `Content too long, ${MAX_CONTENT_LENGTH} chars max`,
+    ),
   posterId: z.number().int().positive(),
   createdAt,
 });
