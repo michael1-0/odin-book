@@ -9,6 +9,7 @@
 
     "db:seed": "pnpm --filter backend exec prisma db seed",
     "db:sync": "pnpm --filter backend exec prisma db push && pnpm --filter backend exec prisma generate",
+    "db:studio": "pnpm --filter backend exec prisma studio",
 
     "build": "pnpm -r --if-present build",
     "lint": "pnpm -r --if-present lint",
