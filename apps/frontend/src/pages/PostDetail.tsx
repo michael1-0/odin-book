@@ -2,7 +2,9 @@ import {
   Link,
   useFetcher,
   useLoaderData,
+  useNavigation,
   useRouteLoaderData,
+  useSearchParams,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "react-router";
@@ -21,8 +23,22 @@ import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { CircleX } from "lucide-react";
 
-async function loader({ params }: LoaderFunctionArgs) {
-  return await getPostWithComments(params.postId);
+type PostDetailLoaderData = {
+  post: PostFeedItemWithComments;
+  nextCursor: number | null;
+};
+
+async function loader({ request, params }: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const offsetParam = url.searchParams.get("offset");
+  const offset = offsetParam ? Number(offsetParam) : undefined;
+
+  const page = await getPostWithComments(params.postId, offset);
+
+  return {
+    post: page.data,
+    nextCursor: page.meta.nextCursor,
+  } satisfies PostDetailLoaderData;
 }
 
 async function action({ request }: ActionFunctionArgs) {
@@ -59,14 +75,26 @@ async function action({ request }: ActionFunctionArgs) {
 
 function PostDetail() {
   const { user } = useRouteLoaderData("user-data");
-  const post: PostFeedItemWithComments = useLoaderData();
+  const { post, nextCursor } = useLoaderData() as PostDetailLoaderData;
   const commentFetcher = useFetcher();
+  const [searchParams] = useSearchParams();
+  const navigation = useNavigation();
 
   const isPosting = commentFetcher.state === "submitting";
   const hasError = commentFetcher.data?.error;
 
   const submissionId =
     commentFetcher.data && !hasError ? commentFetcher.data.id : "initial";
+
+  const loadMoreSearchParams = new URLSearchParams(searchParams);
+
+  if (nextCursor !== null) {
+    loadMoreSearchParams.set("offset", String(nextCursor));
+  }
+
+  const isLoadMorePending =
+    navigation.state === "loading" &&
+    navigation.location?.search.includes("offset");
 
   useEffect(() => {
     if (commentFetcher.state === "idle" && commentFetcher.data) {
@@ -148,6 +176,17 @@ function PostDetail() {
           );
         })}
       </section>
+      {nextCursor !== null && (
+        <section className="flex justify-center">
+          <Link
+            to={`?${loadMoreSearchParams.toString()}`}
+            preventScrollReset
+            className="bg-black text-white p-2 rounded-sm"
+          >
+            {isLoadMorePending ? "Loading more..." : "Load more"}
+          </Link>
+        </section>
+      )}
     </PageContainer>
   );
 }

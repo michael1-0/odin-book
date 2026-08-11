@@ -65,5 +65,6 @@ export type PostsGetResponse = z.infer<typeof PostsGetResponseSchema>;
 
 export const PostGetQuerySchema = z.object({
   include: z.literal("comments").optional(),
+  offset: z.coerce.number().int().nonnegative().optional(),
 });
 export type PostGetQuery = z.infer<typeof PostGetQuerySchema>;

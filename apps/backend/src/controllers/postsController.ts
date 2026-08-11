@@ -109,7 +109,10 @@ async function getPost(
   res: Response,
 ) {
   const { postId } = req.params;
-  const { include } = req.query;
+  const { include, offset: offsetParam } = req.query;
+
+  const offset = offsetParam ?? 0;
+  const commentsLimit = 10;
 
   const post = await prisma.post.findUnique({
     select: {
@@ -152,6 +155,7 @@ async function getPost(
               orderBy: {
                 createdAt: "desc",
               },
+              take: offset + commentsLimit + 1,
             }
           : false,
     },
@@ -160,7 +164,20 @@ async function getPost(
     },
   });
 
-  return res.status(200).json({ data: post });
+  const comments = post?.comments;
+
+  const hasNextPage =
+    Array.isArray(comments) && comments.length > offset + commentsLimit;
+  if (hasNextPage) {
+    comments.pop();
+  }
+
+  const nextCursor = hasNextPage ? offset + commentsLimit : null;
+
+  return res.status(200).json({
+    data: post,
+    meta: { nextCursor, hasNextPage },
+  });
 }
 
 export { getPosts, createPost, getPost };

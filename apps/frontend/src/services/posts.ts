@@ -46,11 +46,22 @@ async function createPost(content: string) {
   return result.data;
 }
 
-async function getPostWithComments(postId: string | undefined) {
-  const response = await fetch(`/api/posts/${postId}?include=comments`);
+async function getPostWithComments(
+  postId: string | undefined,
+  offset?: number,
+) {
+  const searchParams = new URLSearchParams();
+
+  searchParams.set("include", "comments");
+
+  if (offset !== undefined) {
+    searchParams.set("offset", String(offset));
+  }
+
+  const response = await fetch(`/api/posts/${postId}?${searchParams}`);
   const post = await response.json();
 
-  return post.data;
+  return post;
 }
 
 async function getCurrentUserPosts() {
