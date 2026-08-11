@@ -5,7 +5,7 @@ services:
     container_name: odin-book-postgres
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "15432:5432"
     environment:
       POSTGRES_USER: mikul
       POSTGRES_PASSWORD: idkbro
