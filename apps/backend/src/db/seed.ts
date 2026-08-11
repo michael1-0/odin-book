@@ -5,7 +5,7 @@ const USER_COUNT = 100;
 const POSTS_PER_USER = 3;
 const FOLLOWS_PER_USER = 4;
 const LIKES_PER_USER = 5;
-const COMMENTS_PER_POST = 1;
+const COMMENTS_PER_POST = 20;
 
 async function main() {
   faker.seed(42);
