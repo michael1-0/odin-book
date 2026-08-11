@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from "express";
+import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { AppError } from "../errors/AppError.ts";
 
@@ -35,17 +35,13 @@ async function getMe(req: Request, res: Response) {
   return res.json(req.user);
 }
 
-function postLogout(req: Request, res: Response, next: NextFunction) {
-  try {
-    res.clearCookie("token", {
-      httpOnly: true,
-      sameSite: "lax",
-    });
+function postLogout(req: Request, res: Response) {
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "lax",
+  });
 
-    res.status(200).json({ success: true });
-  } catch (error) {
-    next(error);
-  }
+  res.status(200).json({ success: true });
 }
 
 export { githubCallback, postLogout, getMe };

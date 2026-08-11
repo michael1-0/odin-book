@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from "express";
+import type { Request, Response } from "express";
 import type {
   PostFeedItem,
   PostCreateBody,
@@ -21,161 +21,146 @@ const PAGE_SIZE = 10;
 async function getPosts(
   req: Request<unknown, unknown, unknown, PostsGetQuery>,
   res: Response,
-  next: NextFunction,
 ) {
-  try {
-    if (!req.user) {
-      throw new AppError("Unauthenticated", 401);
-    }
-
-    const scope = req.query.scope ?? "all";
-    const where: PostWhereInput = {};
-
-    if (req.query.period === "month") {
-      where.createdAt = {
-        gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      };
-    }
-
-    if (scope === "me") {
-      where.user = { id: req.user.id };
-    }
-
-    if (scope === "following") {
-      where.user = {
-        following: {
-          some: {
-            followedById: req.user.id,
-          },
-        },
-      };
-    }
-
-    const posts = await prisma.post.findMany({
-      select: postFeedSelect,
-      where,
-      orderBy: {
-        id: "desc",
-      },
-      ...(req.query.cursor
-        ? {
-            cursor: {
-              id: req.query.cursor,
-            },
-            skip: 1,
-          }
-        : {}),
-      take: PAGE_SIZE + 1,
-    });
-
-    const hasMore = posts.length > PAGE_SIZE;
-    const pagedPosts: PostFeedItem[] = (
-      hasMore ? posts.slice(0, PAGE_SIZE) : posts
-    ).map(normalizePostFeedItem);
-
-    const response: PostsGetResponse = {
-      data: pagedPosts,
-      nextCursor: hasMore
-        ? (pagedPosts[pagedPosts.length - 1]?.id ?? null)
-        : null,
-    };
-
-    return res.status(200).json(response);
-  } catch (error) {
-    next(error);
+  if (!req.user) {
+    throw new AppError("Unauthenticated", 401);
   }
+
+  const scope = req.query.scope ?? "all";
+  const where: PostWhereInput = {};
+
+  if (req.query.period === "month") {
+    where.createdAt = {
+      gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+    };
+  }
+
+  if (scope === "me") {
+    where.user = { id: req.user.id };
+  }
+
+  if (scope === "following") {
+    where.user = {
+      following: {
+        some: {
+          followedById: req.user.id,
+        },
+      },
+    };
+  }
+
+  const posts = await prisma.post.findMany({
+    select: postFeedSelect,
+    where,
+    orderBy: {
+      id: "desc",
+    },
+    ...(req.query.cursor
+      ? {
+          cursor: {
+            id: req.query.cursor,
+          },
+          skip: 1,
+        }
+      : {}),
+    take: PAGE_SIZE + 1,
+  });
+
+  const hasMore = posts.length > PAGE_SIZE;
+  const pagedPosts: PostFeedItem[] = (
+    hasMore ? posts.slice(0, PAGE_SIZE) : posts
+  ).map(normalizePostFeedItem);
+
+  const response: PostsGetResponse = {
+    data: pagedPosts,
+    nextCursor: hasMore
+      ? (pagedPosts[pagedPosts.length - 1]?.id ?? null)
+      : null,
+  };
+
+  return res.status(200).json(response);
 }
 
 async function createPost(
   req: Request<unknown, unknown, PostCreateBody>,
   res: Response,
-  next: NextFunction,
 ) {
-  try {
-    if (!req.user) {
-      throw new AppError("Unauthenticated", 401);
-    }
-
-    const userId = req.user.id;
-    const { content } = req.body;
-
-    const newPost = await prisma.post.create({
-      data: {
-        content,
-        posterId: userId,
-      },
-    });
-
-    const feedPost = await getPostFeedItem(newPost.id);
-
-    res.status(200).json({ data: feedPost });
-  } catch (error) {
-    next(error);
+  if (!req.user) {
+    throw new AppError("Unauthenticated", 401);
   }
+
+  const userId = req.user.id;
+  const { content } = req.body;
+
+  const newPost = await prisma.post.create({
+    data: {
+      content,
+      posterId: userId,
+    },
+  });
+
+  const feedPost = await getPostFeedItem(newPost.id);
+
+  res.status(200).json({ data: feedPost });
 }
 
 async function getPost(
   req: Request<PostIdParams, unknown, unknown, PostGetQuery>,
   res: Response,
-  next: NextFunction,
 ) {
-  try {
-    const { postId } = req.params;
-    const { include } = req.query;
+  const { postId } = req.params;
+  const { include } = req.query;
 
-    const post = await prisma.post.findUnique({
-      select: {
-        id: true,
-        content: true,
-        createdAt: true,
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-          },
+  const post = await prisma.post.findUnique({
+    select: {
+      id: true,
+      content: true,
+      createdAt: true,
+      _count: {
+        select: {
+          comments: true,
+          likes: true,
         },
-        user: {
-          select: {
-            id: true,
-            username: true,
-            profileUrl: true,
-          },
+      },
+      user: {
+        select: {
+          id: true,
+          username: true,
+          profileUrl: true,
         },
-        likes: {
-          select: {
-            userId: true,
-          },
+      },
+      likes: {
+        select: {
+          userId: true,
         },
-        comments:
-          include === "comments"
-            ? {
-                select: {
-                  id: true,
-                  user: {
-                    select: {
-                      id: true,
-                      profileUrl: true,
-                      username: true,
-                    },
+      },
+      comments:
+        include === "comments"
+          ? {
+              select: {
+                id: true,
+                user: {
+                  select: {
+                    id: true,
+                    profileUrl: true,
+                    username: true,
                   },
-                  content: true,
-                  createdAt: true,
                 },
-                orderBy: {
-                  createdAt: "desc",
-                },
-              }
-            : false,
-      },
-      where: {
-        id: postId,
-      },
-    });
+                content: true,
+                createdAt: true,
+              },
+              orderBy: {
+                createdAt: "desc",
+              },
+            }
+          : false,
+    },
+    where: {
+      id: postId,
+    },
+  });
 
-    return res.status(200).json({ data: post });
-  } catch (error) {
-    next(error);
-  }
+  return res.status(200).json({ data: post });
 }
 
 export { getPosts, createPost, getPost };
