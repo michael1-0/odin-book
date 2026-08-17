@@ -7,6 +7,7 @@ import type {
   UsersGetQuery,
   UserUpdateBody,
 } from "@repo/zod-validations";
+import uploadProfilePicture from "../utils/cloudinary.ts";
 
 async function getUsersWithoutCurrentUser(
   req: Request<unknown, unknown, unknown, UsersGetQuery>,
@@ -86,12 +87,26 @@ async function updateCurrentUser(
   }
 
   const { username, noteToAll } = req.body;
+  let profileUrl: string | undefined;
+
+  if (req.file) {
+    try {
+      profileUrl = await uploadProfilePicture(req.file.buffer, req.user.id);
+    } catch (error) {
+      console.error("[profilePictureUpload] Cloudinary upload failed", error);
+      throw new AppError("Unable to upload profile picture", 502, false);
+    }
+  }
 
   const updatedUser = await prisma.user.update({
     where: {
       id: req.user.id,
     },
-    data: { username, noteToAll },
+    data: {
+      username,
+      noteToAll,
+      ...(profileUrl ? { profileUrl } : {}),
+    },
   });
 
   return res.status(200).json({ data: updatedUser });

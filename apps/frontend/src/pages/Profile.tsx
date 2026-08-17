@@ -4,7 +4,13 @@ import {
   useRouteLoaderData,
   type ActionFunctionArgs,
 } from "react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from "react";
 import { getCurrentUserPosts, loadPosts } from "../services/posts";
 import {
   UserUpdateBodySchema,
@@ -40,11 +46,7 @@ async function action({ request }: ActionFunctionArgs) {
         };
       }
 
-      return await updateUser(
-        formData.get("userId"),
-        parsedUser.data.username,
-        parsedUser.data.noteToAll,
-      );
+      return await updateUser(formData);
     }
     case "like-post":
       return await likePost(formData);
@@ -59,9 +61,13 @@ function Profile() {
   const { user } = useRouteLoaderData("user-data");
   const fetcher = useFetcher();
   const initialPage = useLoaderData() as PostsGetResponse;
+  const profileUrlRef = useRef<string | null>(user.profileUrl);
+  const [profilePreviewUrl, setProfilePreviewUrl] = useState(user.profileUrl);
   const [pages, setPages] = useState<PostsGetResponse[]>(() => [initialPage]);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const profilePictureInputRef = useRef<HTMLInputElement | null>(null);
+  const profileObjectUrlRef = useRef<string | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const posts = pages.flatMap((page) => page.data);
   const nextCursor = pages[pages.length - 1]?.nextCursor ?? null;
@@ -69,16 +75,59 @@ function Profile() {
   const isUpdating = fetcher.state === "submitting";
   const hasError = fetcher.data?.error;
 
+  function handleProfilePictureChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (profileObjectUrlRef.current) {
+      URL.revokeObjectURL(profileObjectUrlRef.current);
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    profileObjectUrlRef.current = objectUrl;
+    setProfilePreviewUrl(objectUrl);
+  }
+
   // Toasts
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data) {
       if (hasError) {
-        toast.error("Failed to update profile");
+        if (!fetcher.data.errors && profileObjectUrlRef.current) {
+          URL.revokeObjectURL(profileObjectUrlRef.current);
+          profileObjectUrlRef.current = null;
+          setProfilePreviewUrl(profileUrlRef.current);
+          if (profilePictureInputRef.current) {
+            profilePictureInputRef.current.value = "";
+          }
+        }
+        toast.error(fetcher.data.message ?? "Failed to update profile");
       } else {
+        if (fetcher.data.profileUrl) {
+          profileUrlRef.current = fetcher.data.profileUrl;
+          setProfilePreviewUrl(fetcher.data.profileUrl);
+          if (profileObjectUrlRef.current) {
+            URL.revokeObjectURL(profileObjectUrlRef.current);
+            profileObjectUrlRef.current = null;
+          }
+          if (profilePictureInputRef.current) {
+            profilePictureInputRef.current.value = "";
+          }
+        }
         toast.success("Profile updated");
       }
     }
   }, [fetcher.data, fetcher.state, hasError]);
+
+  useEffect(() => {
+    return () => {
+      if (profileObjectUrlRef.current) {
+        URL.revokeObjectURL(profileObjectUrlRef.current);
+      }
+    };
+  }, []);
 
   // Cursor pagination
   const loadNextPage = useCallback(
@@ -138,13 +187,34 @@ function Profile() {
         content="Update your profile, and look at your posts."
       />
       <section className="flex flex-col items-center gap-4 bg-neutral-100 rounded-sm p-4">
-        <img
-          src={user.profileUrl}
-          alt={`${user.username} profile image`}
-          className="max-w-20 max-h-20 rounded-full"
-        />
-        <fetcher.Form className="flex flex-col w-full gap-4" method="POST">
+        <fetcher.Form
+          className="flex flex-col w-full gap-4"
+          method="POST"
+          encType="multipart/form-data"
+        >
           <input type="hidden" name="userId" value={user.id} />
+          <div className="flex flex-col items-center gap-2">
+            <img
+              src={profilePreviewUrl}
+              alt={`${user.username} profile image`}
+              className="h-24 w-24 rounded-full object-cover"
+            />
+            <label
+              htmlFor="profilePicture"
+              className="cursor-pointer text-sm font-semibold underline underline-offset-4 transition-colors hover:text-neutral-500"
+            >
+              Change picture
+            </label>
+            <input
+              type="file"
+              name="profilePicture"
+              id="profilePicture"
+              ref={profilePictureInputRef}
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleProfilePictureChange}
+              className="sr-only"
+            />
+          </div>
           <div className="flex flex-col">
             <label htmlFor="username" className="text-xs mb-1">
               Username

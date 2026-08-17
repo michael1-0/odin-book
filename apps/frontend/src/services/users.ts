@@ -14,21 +14,23 @@ async function getUsers(offset?: number) {
   return users;
 }
 
-async function updateUser(
-  userId: FormDataEntryValue | null,
-  username: string,
-  noteToAll: string,
-) {
+async function updateUser(formData: FormData) {
+  const userId = formData.get("userId");
   const response = await fetch(`/api/users/${userId}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ username, noteToAll }),
+    credentials: "include",
+    body: formData,
   });
-  const user = await response.json();
+  const result = await response.json();
 
-  return user.data;
+  if (!response.ok) {
+    return {
+      error: true,
+      message: result.error?.message ?? "Failed to update profile",
+    };
+  }
+
+  return result.data;
 }
 
 async function getUserProfile(userId: string | undefined) {

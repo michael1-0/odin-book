@@ -7,6 +7,7 @@ import {
   updateCurrentUser,
 } from "../controllers/usersController.ts";
 import validate from "express-zod-safe";
+import profilePictureUpload from "../middlewares/profilePictureMiddleware.ts";
 import {
   UserIdParamsSchema,
   UserGetQuerySchema,
@@ -25,7 +26,8 @@ usersRouter.get(
 );
 usersRouter.put(
   "/:userId",
-  validate({ body: UserUpdateBodySchema, params: UserIdParamsSchema }),
+  profilePictureUpload,
+  validate({ params: UserIdParamsSchema, body: UserUpdateBodySchema }),
   updateCurrentUser,
 );
 usersRouter.get(
