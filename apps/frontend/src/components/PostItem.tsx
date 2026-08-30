@@ -39,7 +39,7 @@ function PostItem({ post, userId, includeHeader = true }: PostItemProps) {
         >
           <img
             src={post.user.profileUrl}
-            className="max-w-10 max-h-20 rounded-full"
+            className="object-cover w-10 h-10 rounded-full"
             alt={`${post.user.username} profile`}
           />
           <div>{post.user.username}</div>
