@@ -1,6 +1,7 @@
 import type { Router as RouterType } from "express";
 import { Router } from "express";
 import requireAuth from "../middlewares/authMiddleware.ts";
+import postImagesUploadMiddleware from "../middlewares/postImagesMiddleware.ts";
 import {
   createPost,
   getPost,
@@ -24,6 +25,11 @@ postsRouter.get(
   validate({ params: PostIdParamsSchema, query: PostGetQuerySchema }),
   getPost,
 );
-postsRouter.post("/", validate({ body: PostCreateBodySchema }), createPost);
+postsRouter.post(
+  "/",
+  postImagesUploadMiddleware,
+  validate({ body: PostCreateBodySchema }),
+  createPost,
+);
 
 export default postsRouter;

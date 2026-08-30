@@ -1,7 +1,15 @@
 import { z } from "zod";
 import { coercedId } from "./common.js";
-import { CommentSchema, PostSchema, UserSchema } from "./entities.js";
+import {
+  CommentSchema,
+  PostImageSchema,
+  PostSchema,
+  UserSchema,
+} from "./entities.js";
 import { PostLikeSchema } from "./likes.js";
+
+export const MAX_POST_IMAGES = 3;
+export const MAX_POST_IMAGE_SIZE = 5 * 1024 * 1024;
 
 const PostAuthorSchema = UserSchema.pick({
   id: true,
@@ -28,8 +36,12 @@ export const PostFeedItemSchema = PostSchema.pick({
     likes: z.number().int(),
   }),
   likes: z.array(PostLikeSchema),
+  images: z.array(PostImageSchema),
 });
 export type PostFeedItem = z.infer<typeof PostFeedItemSchema>;
+
+export { PostImageSchema } from "./entities.js";
+export type PostImage = z.infer<typeof PostImageSchema>;
 
 export const PostFeedItemWithCommentsSchema = PostFeedItemSchema.extend({
   comments: z.array(PostCommentSchema),

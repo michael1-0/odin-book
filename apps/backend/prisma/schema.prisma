@@ -41,11 +41,23 @@ model Post {
   posterId  Int
   createdAt DateTime @default(now())
 
-  user     User      @relation(fields: [posterId], references: [id])
+  user     User        @relation(fields: [posterId], references: [id])
   comments Comment[]
   likes    Like[] // Relation to see who liked this post
+  images   PostImage[]
 
   @@map("posts")
+}
+
+model PostImage {
+  id       Int    @id @default(autoincrement())
+  url      String
+  position Int
+  postId   Int
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("post_images")
 }
 
 model Like {

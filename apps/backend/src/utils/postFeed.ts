@@ -17,6 +17,10 @@ type PostFeedItemFromDb = {
   likes: {
     userId: number;
   }[];
+  images: {
+    id: number;
+    url: string;
+  }[];
 };
 
 const postFeedSelect = {
@@ -39,6 +43,15 @@ const postFeedSelect = {
   likes: {
     select: {
       userId: true,
+    },
+  },
+  images: {
+    select: {
+      id: true,
+      url: true,
+    },
+    orderBy: {
+      position: "asc",
     },
   },
 } as const;

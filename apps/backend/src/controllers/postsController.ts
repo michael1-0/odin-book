@@ -11,6 +11,10 @@ import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
 import type { PostWhereInput } from "../db/generated/prisma/models.ts";
 import {
+  deleteUploadedPostImages,
+  uploadPostImage,
+} from "../utils/cloudinary.ts";
+import {
   getPostFeedItem,
   normalizePostFeedItem,
   postFeedSelect,
@@ -91,13 +95,59 @@ async function createPost(
 
   const userId = req.user.id;
   const { content } = req.body;
+  const files = req.files as Express.Multer.File[] | undefined;
 
-  const newPost = await prisma.post.create({
-    data: {
-      content,
-      posterId: userId,
-    },
-  });
+  const imageUrls: string[] = [];
+  const uploadedPublicIds: string[] = [];
+
+  if (files && files.length > 0) {
+    const publicIdBase = `post-${userId}-${Date.now()}`;
+
+    const results = await Promise.allSettled(
+      files.map((file, index) =>
+        uploadPostImage(file.buffer, `${publicIdBase}-${index}`),
+      ),
+    );
+
+    results.forEach((result, index) => {
+      if (result.status === "fulfilled") {
+        imageUrls.push(result.value);
+        uploadedPublicIds.push(`${publicIdBase}-${index}`);
+      }
+    });
+
+    if (uploadedPublicIds.length !== results.length) {
+      await deleteUploadedPostImages(uploadedPublicIds);
+      console.error("[postImagesUpload] Some Cloudinary uploads failed");
+      throw new AppError("Unable to upload post images", 502, false);
+    }
+  }
+
+  let newPost;
+
+  try {
+    newPost = await prisma.post.create({
+      data: {
+        content,
+        posterId: userId,
+        ...(imageUrls.length > 0
+          ? {
+              images: {
+                create: imageUrls.map((url, index) => ({
+                  url,
+                  position: index,
+                })),
+              },
+            }
+          : {}),
+      },
+    });
+  } catch (error) {
+    if (uploadedPublicIds.length > 0) {
+      await deleteUploadedPostImages(uploadedPublicIds);
+    }
+    throw error;
+  }
 
   const feedPost = await getPostFeedItem(newPost.id);
 
@@ -135,6 +185,15 @@ async function getPost(
       likes: {
         select: {
           userId: true,
+        },
+      },
+      images: {
+        select: {
+          id: true,
+          url: true,
+        },
+        orderBy: {
+          position: "asc",
         },
       },
       comments:

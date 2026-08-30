@@ -2,6 +2,7 @@ import "dotenv/config";
 import { v2 as cloudinary } from "cloudinary";
 
 const PROFILE_PICTURE_FOLDER = "odin-book/profile-pictures";
+const POST_IMAGES_FOLDER = "odin-book/post-images";
 
 function uploadProfilePicture(buffer: Buffer, userId: number) {
   cloudinary.config();
@@ -30,4 +31,39 @@ function uploadProfilePicture(buffer: Buffer, userId: number) {
   });
 }
 
-export default uploadProfilePicture;
+function uploadPostImage(buffer: Buffer, publicId: string) {
+  cloudinary.config();
+
+  return new Promise<string>((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: POST_IMAGES_FOLDER,
+        public_id: publicId,
+        resource_type: "image",
+        allowed_formats: ["jpg", "jpeg", "png", "webp"],
+      },
+      (error, result) => {
+        if (error || !result) {
+          reject(error ?? new Error("Cloudinary returned no upload result"));
+          return;
+        }
+
+        resolve(result.secure_url);
+      },
+    );
+
+    uploadStream.end(buffer);
+  });
+}
+
+async function deleteUploadedPostImages(publicIds: string[]) {
+  cloudinary.config();
+
+  await Promise.allSettled(
+    publicIds.map((publicId) =>
+      cloudinary.uploader.destroy(`${POST_IMAGES_FOLDER}/${publicId}`),
+    ),
+  );
+}
+
+export { deleteUploadedPostImages, uploadPostImage, uploadProfilePicture };

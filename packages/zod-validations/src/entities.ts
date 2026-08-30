@@ -61,3 +61,8 @@ export const PostSchema = z.object({
   posterId: z.number().int().positive(),
   createdAt,
 });
+
+export const PostImageSchema = z.object({
+  id: z.number().int().positive(),
+  url: z.string(),
+});

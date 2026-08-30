@@ -7,7 +7,7 @@ import type {
   UsersGetQuery,
   UserUpdateBody,
 } from "@repo/zod-validations";
-import uploadProfilePicture from "../utils/cloudinary.ts";
+import { uploadProfilePicture } from "../utils/cloudinary.ts";
 
 async function getUsersWithoutCurrentUser(
   req: Request<unknown, unknown, unknown, UsersGetQuery>,
@@ -165,6 +165,15 @@ async function getUser(
                 likes: {
                   select: {
                     userId: true,
+                  },
+                },
+                images: {
+                  select: {
+                    id: true,
+                    url: true,
+                  },
+                  orderBy: {
+                    position: "asc",
                   },
                 },
               },

@@ -28,19 +28,21 @@ async function loadPosts({ cursor, scope, period }: LoadPostsOptions = {}) {
   return posts;
 }
 
-async function createPost(content: string) {
+async function createPost(formData: FormData) {
   const response = await fetch("/api/posts", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ content }),
+    credentials: "include",
+    body: formData,
   });
 
   const result = await response.json();
 
   if (!response.ok) {
-    return { error: true, errors: result };
+    return {
+      error: true,
+      errors: result,
+      message: result.error?.message,
+    };
   }
 
   return result.data;
