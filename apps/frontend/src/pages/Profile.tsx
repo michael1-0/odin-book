@@ -344,6 +344,11 @@ function Profile() {
       </section>
       <section>
         <div className="font-semibold text-xl">Your Posts</div>
+        {posts.length === 0 && (
+          <div className="mt-2 text-sm text-neutral-500">
+            You haven't posted anything yet.
+          </div>
+        )}
         {posts.map((post) => (
           <PostItem
             key={post.id}
