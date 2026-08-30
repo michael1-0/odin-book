@@ -1,6 +1,7 @@
 import {
   useFetcher,
   useLoaderData,
+  useRevalidator,
   useRouteLoaderData,
   type ActionFunctionArgs,
 } from "react-router";
@@ -25,6 +26,9 @@ import { LucideTrash2 } from "lucide-react";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
+import ProfilePictureCropModal from "../components/ProfilePictureCropModal";
+
+const MAX_PROFILE_PICTURE_SIZE = 5 * 1024 * 1024;
 
 async function loader() {
   return await getCurrentUserPosts();
@@ -63,6 +67,7 @@ async function action({ request }: ActionFunctionArgs) {
 
 function Profile() {
   const { user } = useRouteLoaderData("user-data");
+  const { revalidate } = useRevalidator();
   const fetcher = useFetcher();
   const deleteFetcher = useFetcher();
   const initialPage = useLoaderData() as PostsGetResponse;
@@ -72,8 +77,10 @@ function Profile() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [postToDeleteId, setPostToDeleteId] = useState<number | null>(null);
+  const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
   const profilePictureInputRef = useRef<HTMLInputElement | null>(null);
   const profileObjectUrlRef = useRef<string | null>(null);
+  const cropObjectUrlRef = useRef<string | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const posts = pages.flatMap((page) => page.data);
   const nextCursor = pages[pages.length - 1]?.nextCursor ?? null;
@@ -88,11 +95,61 @@ function Profile() {
       return;
     }
 
+    const isAllowedType = ["image/jpeg", "image/png", "image/webp"].includes(
+      file.type,
+    );
+
+    if (!isAllowedType || file.size > MAX_PROFILE_PICTURE_SIZE) {
+      toast.error("Choose a JPEG, PNG, or WebP image up to 5 MB");
+      event.currentTarget.value = "";
+      return;
+    }
+
+    if (cropObjectUrlRef.current) {
+      URL.revokeObjectURL(cropObjectUrlRef.current);
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    cropObjectUrlRef.current = objectUrl;
+    setCropImageUrl(objectUrl);
+  }
+
+  function handleCropCancel() {
+    setCropImageUrl(null);
+
+    if (cropObjectUrlRef.current) {
+      URL.revokeObjectURL(cropObjectUrlRef.current);
+      cropObjectUrlRef.current = null;
+    }
+
+    if (profilePictureInputRef.current) {
+      profilePictureInputRef.current.value = "";
+    }
+  }
+
+  function handleCropConfirm(blob: Blob) {
+    setCropImageUrl(null);
+
+    if (cropObjectUrlRef.current) {
+      URL.revokeObjectURL(cropObjectUrlRef.current);
+      cropObjectUrlRef.current = null;
+    }
+
+    const croppedFile = new File([blob], "profile.png", {
+      type: "image/png",
+    });
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(croppedFile);
+
+    if (profilePictureInputRef.current) {
+      profilePictureInputRef.current.files = dataTransfer.files;
+    }
+
     if (profileObjectUrlRef.current) {
       URL.revokeObjectURL(profileObjectUrlRef.current);
     }
 
-    const objectUrl = URL.createObjectURL(file);
+    const objectUrl = URL.createObjectURL(croppedFile);
     profileObjectUrlRef.current = objectUrl;
     setProfilePreviewUrl(objectUrl);
   }
@@ -123,14 +180,18 @@ function Profile() {
           }
         }
         toast.success("Profile updated");
+        void revalidate();
       }
     }
-  }, [fetcher.data, fetcher.state, hasError]);
+  }, [fetcher.data, fetcher.state, hasError, revalidate]);
 
   useEffect(() => {
     return () => {
       if (profileObjectUrlRef.current) {
         URL.revokeObjectURL(profileObjectUrlRef.current);
+      }
+      if (cropObjectUrlRef.current) {
+        URL.revokeObjectURL(cropObjectUrlRef.current);
       }
     };
   }, []);
@@ -317,6 +378,13 @@ function Profile() {
               { method: "POST" },
             );
           }}
+        />
+      )}
+      {cropImageUrl !== null && (
+        <ProfilePictureCropModal
+          imageUrl={cropImageUrl}
+          onCancel={handleCropCancel}
+          onConfirm={handleCropConfirm}
         />
       )}
       <section
