@@ -11,7 +11,7 @@ import {
   useState,
   type ChangeEvent,
 } from "react";
-import { getCurrentUserPosts, loadPosts } from "../services/posts";
+import { deletePost, getCurrentUserPosts, loadPosts } from "../services/posts";
 import {
   UserUpdateBodySchema,
   z,
@@ -21,6 +21,8 @@ import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
 import { updateUser } from "../services/users";
 import toast from "react-hot-toast";
+import { LucideTrash2 } from "lucide-react";
+import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 
@@ -52,6 +54,8 @@ async function action({ request }: ActionFunctionArgs) {
       return await likePost(formData);
     case "unlike-post":
       return await unlikePost(formData);
+    case "delete-post":
+      return await deletePost(formData);
     default:
       throw new Response("Unknown intent", { status: 400 });
   }
@@ -60,12 +64,14 @@ async function action({ request }: ActionFunctionArgs) {
 function Profile() {
   const { user } = useRouteLoaderData("user-data");
   const fetcher = useFetcher();
+  const deleteFetcher = useFetcher();
   const initialPage = useLoaderData() as PostsGetResponse;
   const profileUrlRef = useRef<string | null>(user.profileUrl);
   const [profilePreviewUrl, setProfilePreviewUrl] = useState(user.profileUrl);
   const [pages, setPages] = useState<PostsGetResponse[]>(() => [initialPage]);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [postToDeleteId, setPostToDeleteId] = useState<number | null>(null);
   const profilePictureInputRef = useRef<HTMLInputElement | null>(null);
   const profileObjectUrlRef = useRef<string | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -128,6 +134,24 @@ function Profile() {
       }
     };
   }, []);
+
+  // Post deletion
+  useEffect(() => {
+    if (deleteFetcher.state === "idle" && deleteFetcher.data) {
+      if (deleteFetcher.data.error) {
+        toast.error(deleteFetcher.data.message ?? "Failed to delete post");
+      } else if (deleteFetcher.data.id) {
+        const deletedPostId = deleteFetcher.data.id;
+        setPages((currentPages) =>
+          currentPages.map((page) => ({
+            ...page,
+            data: page.data.filter((post) => post.id !== deletedPostId),
+          })),
+        );
+        toast.success("Post deleted");
+      }
+    }
+  }, [deleteFetcher.data, deleteFetcher.state]);
 
   // Cursor pagination
   const loadNextPage = useCallback(
@@ -265,9 +289,36 @@ function Profile() {
             post={post}
             userId={user.id}
             includeHeader={false}
+            deleteButton={
+              <button
+                type="button"
+                disabled={deleteFetcher.state !== "idle"}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setPostToDeleteId(post.id);
+                }}
+                aria-label="Delete post"
+                className=" disabled:opacity-50"
+              >
+                <LucideTrash2 size={16} />
+              </button>
+            }
           />
         ))}
       </section>
+      {postToDeleteId !== null && (
+        <ConfirmDeleteModal
+          onCancel={() => setPostToDeleteId(null)}
+          onConfirm={() => {
+            const postId = postToDeleteId;
+            setPostToDeleteId(null);
+            void deleteFetcher.submit(
+              { intent: "delete-post", postId: String(postId) },
+              { method: "POST" },
+            );
+          }}
+        />
+      )}
       <section
         ref={loadMoreRef}
         className="flex w-full items-center justify-center text-sm text-neutral-500"

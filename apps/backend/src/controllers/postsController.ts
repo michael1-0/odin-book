@@ -11,6 +11,7 @@ import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
 import type { PostWhereInput } from "../db/generated/prisma/models.ts";
 import {
+  deletePostImageUrls,
   deleteUploadedPostImages,
   uploadPostImage,
 } from "../utils/cloudinary.ts";
@@ -239,4 +240,53 @@ async function getPost(
   });
 }
 
-export { getPosts, createPost, getPost };
+async function deletePost(req: Request<PostIdParams>, res: Response) {
+  if (!req.user) {
+    throw new AppError("Unauthenticated", 401);
+  }
+
+  const { postId } = req.params;
+
+  const post = await prisma.post.findUnique({
+    select: {
+      posterId: true,
+      images: {
+        select: {
+          url: true,
+        },
+      },
+    },
+    where: {
+      id: postId,
+    },
+  });
+
+  if (!post) {
+    throw new AppError("Post not found", 404);
+  }
+
+  if (post.posterId !== req.user.id) {
+    throw new AppError("Unauthorized", 403);
+  }
+
+  await prisma.$transaction([
+    prisma.comment.deleteMany({
+      where: {
+        postId,
+      },
+    }),
+    prisma.post.delete({
+      where: {
+        id: postId,
+      },
+    }),
+  ]);
+
+  if (post.images.length > 0) {
+    await deletePostImageUrls(post.images.map((image) => image.url));
+  }
+
+  return res.status(200).json({ data: { id: postId } });
+}
+
+export { getPosts, createPost, getPost, deletePost };

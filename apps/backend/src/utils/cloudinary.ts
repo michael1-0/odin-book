@@ -61,9 +61,35 @@ async function deleteUploadedPostImages(publicIds: string[]) {
 
   await Promise.allSettled(
     publicIds.map((publicId) =>
-      cloudinary.uploader.destroy(`${POST_IMAGES_FOLDER}/${publicId}`),
+      cloudinary.uploader.destroy(`${POST_IMAGES_FOLDER}/${publicId}`, {
+        invalidate: true,
+      }),
     ),
   );
 }
 
-export { deleteUploadedPostImages, uploadPostImage, uploadProfilePicture };
+async function deletePostImageUrls(urls: string[]) {
+  cloudinary.config();
+
+  await Promise.allSettled(
+    urls.map((url) => {
+      const publicId = url.split(`${POST_IMAGES_FOLDER}/`)[1];
+
+      if (!publicId) {
+        return Promise.resolve();
+      }
+
+      return cloudinary.uploader.destroy(
+        `${POST_IMAGES_FOLDER}/${publicId.replace(/\.[^.]+$/, "")}`,
+        { invalidate: true },
+      );
+    }),
+  );
+}
+
+export {
+  deletePostImageUrls,
+  deleteUploadedPostImages,
+  uploadPostImage,
+  uploadProfilePicture,
+};

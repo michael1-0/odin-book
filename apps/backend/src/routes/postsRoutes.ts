@@ -4,6 +4,7 @@ import requireAuth from "../middlewares/authMiddleware.ts";
 import postImagesUploadMiddleware from "../middlewares/postImagesMiddleware.ts";
 import {
   createPost,
+  deletePost,
   getPost,
   getPosts,
 } from "../controllers/postsController.ts";
@@ -30,6 +31,11 @@ postsRouter.post(
   postImagesUploadMiddleware,
   validate({ body: PostCreateBodySchema }),
   createPost,
+);
+postsRouter.delete(
+  "/:postId",
+  validate({ params: PostIdParamsSchema }),
+  deletePost,
 );
 
 export default postsRouter;

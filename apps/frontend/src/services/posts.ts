@@ -48,6 +48,25 @@ async function createPost(formData: FormData) {
   return result.data;
 }
 
+async function deletePost(formData: FormData) {
+  const postId = formData.get("postId");
+
+  const response = await fetch(`/api/posts/${postId}`, {
+    method: "DELETE",
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    return {
+      error: true,
+      message: result.error?.message,
+    };
+  }
+
+  return result.data;
+}
+
 async function getPostWithComments(
   postId: string | undefined,
   offset?: number,
@@ -77,6 +96,7 @@ async function getFollowingPostsFromLastMonth() {
 export {
   loadPosts,
   createPost,
+  deletePost,
   getPostWithComments,
   getCurrentUserPosts,
   getFollowingPostsFromLastMonth,

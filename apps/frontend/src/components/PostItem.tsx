@@ -1,7 +1,7 @@
 import type { PostFeedItem, PostLike } from "@repo/zod-validations";
 import { LucideHeart, MessageSquare } from "lucide-react";
 import { Link, useFetcher, useNavigate } from "react-router";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import PostImageModal from "./PostImageModal";
 import getOptimizedImageUrl from "../utils/cloudinaryUrl";
 
@@ -9,9 +9,15 @@ type PostItemProps = {
   post: PostFeedItem;
   userId: number;
   includeHeader?: boolean;
+  deleteButton?: ReactNode;
 };
 
-function PostItem({ post, userId, includeHeader = true }: PostItemProps) {
+function PostItem({
+  post,
+  userId,
+  includeHeader = true,
+  deleteButton,
+}: PostItemProps) {
   const likeFetcher = useFetcher();
   const navigate = useNavigate();
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
@@ -124,6 +130,7 @@ function PostItem({ post, userId, includeHeader = true }: PostItemProps) {
             day: "numeric",
           })}
         </div>
+        {deleteButton}
       </div>
       {selectedImageUrl && (
         <PostImageModal
