@@ -22,7 +22,7 @@ async function getUsersWithoutCurrentUser(
   const limit = 12;
 
   const users = await prisma.user.findMany({
-    take: offset + limit + 1,
+    take: limit + 1,
     where: {
       id: {
         not: currentUserId,
@@ -45,9 +45,13 @@ async function getUsersWithoutCurrentUser(
           }
         : false,
     },
+    orderBy: {
+      id: "asc",
+    },
+    skip: offset,
   });
 
-  const hasNextPage = users.length > offset + limit;
+  const hasNextPage = users.length > limit;
   if (hasNextPage) {
     users.pop();
   }

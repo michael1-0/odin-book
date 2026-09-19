@@ -1,12 +1,8 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import type { UserWithFollowStatus } from "@repo/zod-validations";
-import {
-  Link,
-  useFetcher,
-  useLoaderData,
-  useNavigation,
-  useSearchParams,
-} from "react-router";
+import { Link, useFetcher, useLoaderData } from "react-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import { followUser, unfollowUser } from "../services/follows";
 import { getUsers } from "../services/users";
 import PageHead from "../components/PageHead";
@@ -45,20 +41,88 @@ async function action({ request }: ActionFunctionArgs) {
 }
 
 function Users() {
-  const { users, nextCursor } = useLoaderData() as UsersLoaderData;
+  const initialData = useLoaderData() as UsersLoaderData;
+  const [pages, setPages] = useState<UsersLoaderData[]>([initialData]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const fetcher = useFetcher();
-  const [searchParams] = useSearchParams();
-  const navigation = useNavigation();
+  const { data: fetcherData, state: fetcherState } = fetcher;
+  const followIntentRef = useRef<{ userId: number; follow: boolean } | null>(
+    null,
+  );
 
-  const loadMoreSearchParams = new URLSearchParams(searchParams);
+  const users = pages.flatMap((page) => page.users);
+  const nextCursor = pages[pages.length - 1]?.nextCursor ?? null;
 
-  if (nextCursor !== null) {
-    loadMoreSearchParams.set("offset", String(nextCursor));
-  }
+  const updateFollowStatus = useCallback(
+    (userId: number, isFollowing: boolean) => {
+      setPages((current) =>
+        current.map((page) => ({
+          ...page,
+          users: page.users.map((user) =>
+            user.id === userId ? { ...user, isFollowing } : user,
+          ),
+        })),
+      );
+    },
+    [],
+  );
 
-  const isLoadMorePending =
-    navigation.state === "loading" &&
-    navigation.location?.search.includes("offset");
+  useEffect(() => {
+    if (fetcherState !== "idle" || !fetcherData) {
+      return;
+    }
+
+    const submission = followIntentRef.current;
+    followIntentRef.current = null;
+
+    if (!submission) {
+      return;
+    }
+
+    if (fetcherData.error) {
+      toast.error(fetcherData.message ?? "Failed to update follow status");
+      return;
+    }
+
+    updateFollowStatus(submission.userId, submission.follow);
+  }, [fetcherState, fetcherData, updateFollowStatus]);
+
+  const loadNextPage = useCallback(
+    async (force = false) => {
+      if (nextCursor === null || isLoadingMore || (loadError && !force)) {
+        return;
+      }
+
+      setIsLoadingMore(true);
+
+      try {
+        const page = await getUsers(nextCursor);
+        const nextPage = {
+          users: page.data as UserWithFollowStatus[],
+          nextCursor: page.meta.nextCursor as number | null,
+        };
+
+        setPages((current) => {
+          const seenIds = new Set(
+            current.flatMap((page) => page.users.map((user) => user.id)),
+          );
+          const freshUsers = nextPage.users.filter(
+            (user) => !seenIds.has(user.id),
+          );
+
+          return [...current, { ...nextPage, users: freshUsers }];
+        });
+
+        setLoadError(null);
+      } catch {
+        setLoadError("Couldn't load more users.");
+      } finally {
+        setIsLoadingMore(false);
+      }
+    },
+    [nextCursor, isLoadingMore, loadError],
+  );
 
   return (
     <PageContainer>
@@ -66,7 +130,7 @@ function Users() {
       <section className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 min-w-0 ">
         {users.map((user) => {
           const isSubmittingThisUser =
-            fetcher.state !== "idle" &&
+            fetcherState !== "idle" &&
             fetcher.formData?.get("targetUserId") === String(user.id);
 
           return (
@@ -86,7 +150,17 @@ function Users() {
               >
                 {user.username}
               </div>
-              <fetcher.Form method="POST" action="/users">
+              <fetcher.Form
+                method="POST"
+                action="/users"
+                onSubmit={(event) => {
+                  const formData = new FormData(event.currentTarget);
+                  followIntentRef.current = {
+                    userId: user.id,
+                    follow: formData.get("intent") === "follow-user",
+                  };
+                }}
+              >
                 <input type="hidden" name="targetUserId" value={user.id} />
                 <input
                   type="hidden"
@@ -109,13 +183,24 @@ function Users() {
       </section>
       {nextCursor !== null && (
         <section className="flex justify-center">
-          <Link
-            to={`?${loadMoreSearchParams.toString()}`}
-            preventScrollReset
-            className="bg-black text-white p-2 rounded-sm"
-          >
-            {isLoadMorePending ? "Loading more..." : "Load more"}
-          </Link>
+          {loadError ? (
+            <button
+              type="button"
+              onClick={() => void loadNextPage(true)}
+              className="bg-black text-white p-2 rounded-sm"
+            >
+              Retry loading more
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => void loadNextPage()}
+              disabled={isLoadingMore}
+              className="bg-black text-white p-2 rounded-sm disabled:opacity-50"
+            >
+              {isLoadingMore ? "Loading more..." : "Load more"}
+            </button>
+          )}
         </section>
       )}
     </PageContainer>
