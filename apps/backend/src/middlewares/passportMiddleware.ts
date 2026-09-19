@@ -7,13 +7,14 @@ import { prisma } from "../db/prisma.ts";
 import { Strategy as JwtStrategy } from "passport-jwt";
 import cookieExtractor from "../utils/cookieExtractor.ts";
 import createGravatarUrl from "../utils/createGravatarUrl.ts";
+import env from "../config/env.ts";
 
 passport.use(
   new GitHubStrategy(
     {
-      clientID: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-      callbackURL: process.env.GITHUB_CALLBACK_URL!,
+      clientID: env.githubClientId,
+      clientSecret: env.githubClientSecret,
+      callbackURL: env.githubCallbackUrl,
       scope: ["user:email"],
     },
     async function (
@@ -55,7 +56,7 @@ passport.use(
   new JwtStrategy(
     {
       jwtFromRequest: cookieExtractor,
-      secretOrKey: process.env.JWT_SECRET || "default_secret",
+      secretOrKey: env.jwtSecret,
     },
     async (jwtPayload: JwtPayload, done: DoneCallback) => {
       try {

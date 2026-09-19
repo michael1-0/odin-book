@@ -3,6 +3,7 @@ import { Server as SocketServer } from "socket.io";
 import { parseCookie } from "cookie";
 import jwt from "jsonwebtoken";
 import { prisma } from "../db/prisma.ts";
+import env from "../config/env.ts";
 
 let io: SocketServer | null = null;
 
@@ -28,10 +29,7 @@ function initSocketServer(httpServer: HttpServer) {
         return next(new Error("Unauthorized"));
       }
 
-      const payload = jwt.verify(
-        token,
-        process.env.JWT_SECRET || "default_secret",
-      ) as jwt.JwtPayload;
+      const payload = jwt.verify(token, env.jwtSecret) as jwt.JwtPayload;
       const userId = Number(payload.sub);
 
       if (!Number.isInteger(userId)) {

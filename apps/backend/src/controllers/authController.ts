@@ -1,10 +1,11 @@
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { AppError } from "../errors/AppError.ts";
+import env from "../config/env.ts";
 
 function githubCallback(req: Request, res: Response) {
   if (!req.user) {
-    return res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
+    return res.redirect(`${env.frontendUrl}/login?error=auth_failed`);
   }
 
   const user = req.user;
@@ -15,7 +16,7 @@ function githubCallback(req: Request, res: Response) {
     username: user.username,
   };
 
-  const token = jwt.sign(payload, process.env.JWT_SECRET || "default_secret", {
+  const token = jwt.sign(payload, env.jwtSecret, {
     expiresIn: "1d",
   });
 
@@ -24,7 +25,7 @@ function githubCallback(req: Request, res: Response) {
     sameSite: "lax",
     maxAge: 24 * 60 * 60 * 1000, // 1 day
   });
-  res.redirect(process.env.FRONTEND_URL || "http://localhost:5173");
+  res.redirect(env.frontendUrl);
 }
 
 async function getMe(req: Request, res: Response) {

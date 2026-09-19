@@ -1,8 +1,9 @@
 import http from "node:http";
 import app from "./app.ts";
 import { initSocketServer } from "./socket/io.ts";
+import env from "./config/env.ts";
 
-const PORT = process.env.PORT || 5000;
+const PORT = env.port;
 
 const httpServer = http.createServer(app);
 initSocketServer(httpServer);

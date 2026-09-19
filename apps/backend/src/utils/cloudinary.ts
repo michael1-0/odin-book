@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "../config/env.ts";
 import { v2 as cloudinary } from "cloudinary";
 
 const PROFILE_PICTURE_FOLDER = "odin-book/profile-pictures";
