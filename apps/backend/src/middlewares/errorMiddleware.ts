@@ -5,6 +5,7 @@ import type {
   NextFunction,
 } from "express";
 
+import { Prisma } from "../db/generated/prisma/client.ts";
 import { AppError } from "../errors/AppError.ts";
 
 function notFound(req: Request, res: Response, next: NextFunction) {
@@ -14,9 +15,28 @@ function notFound(req: Request, res: Response, next: NextFunction) {
 const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
   void next;
 
-  const statusCode = error instanceof AppError ? error.statusCode : 500;
-  const message =
-    error instanceof AppError ? error.message : "Internal server error";
+  let statusCode = 500;
+  let message = "Internal server error";
+
+  if (error instanceof AppError) {
+    statusCode = error.statusCode;
+    message = error.message;
+  } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    switch (error.code) {
+      case "P2025":
+        statusCode = 404;
+        message = "Resource not found";
+        break;
+      case "P2003":
+        statusCode = 404;
+        message = "Referenced record not found";
+        break;
+      case "P2002":
+        statusCode = 409;
+        message = "Record already exists";
+        break;
+    }
+  }
 
   if (statusCode >= 500) {
     console.error("[errorHandler]", {

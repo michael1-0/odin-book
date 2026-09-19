@@ -15,6 +15,15 @@ async function followUser(req: Request<FollowParams>, res: Response) {
     throw new AppError("Can't follow yourself", 400);
   }
 
+  const targetUser = await prisma.user.findUnique({
+    where: { id: followingId },
+    select: { id: true },
+  });
+
+  if (!targetUser) {
+    throw new AppError("User not found", 404);
+  }
+
   const newFollow = await prisma.follow.upsert({
     where: {
       followedById_followingId: {
@@ -41,16 +50,16 @@ async function unfollowUser(req: Request<FollowParams>, res: Response) {
   const followedById = req.user.id;
   const followingId = req.params.followingId;
 
-  const deletedFollow = await prisma.follow.delete({
+  await prisma.follow.deleteMany({
     where: {
-      followedById_followingId: {
-        followedById,
-        followingId,
-      },
+      followedById,
+      followingId,
     },
   });
 
-  return res.status(200).json({ data: deletedFollow });
+  return res.status(200).json({
+    data: { followedById, followingId },
+  });
 }
 
 export { followUser, unfollowUser };

@@ -187,7 +187,11 @@ async function getUser(
     where: { id: userId },
   });
 
-  const { following, ...userData } = user!;
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  const { following, ...userData } = user;
 
   const formattedUser = {
     ...userData,

@@ -10,6 +10,15 @@ async function createComment(req: Request, res: Response) {
   const userId = req.user.id;
   const { postId, content } = req.body;
 
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { id: true },
+  });
+
+  if (!post) {
+    throw new AppError("Post not found", 404);
+  }
+
   const comment = await prisma.comment.create({
     data: {
       content,

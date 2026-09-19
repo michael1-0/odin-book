@@ -224,7 +224,11 @@ async function getPost(
     },
   });
 
-  const comments = post?.comments;
+  if (!post) {
+    throw new AppError("Post not found", 404);
+  }
+
+  const comments = post.comments;
 
   const hasNextPage =
     Array.isArray(comments) && comments.length > offset + commentsLimit;

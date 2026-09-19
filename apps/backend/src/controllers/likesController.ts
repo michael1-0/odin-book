@@ -12,6 +12,15 @@ async function likePost(req: Request<PostIdParams>, res: Response) {
   const userId = req.user.id;
   const { postId } = req.params;
 
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { id: true },
+  });
+
+  if (!post) {
+    throw new AppError("Post not found", 404);
+  }
+
   await prisma.like.create({
     data: { userId, postId },
   });
@@ -29,12 +38,10 @@ async function unlikePost(req: Request<PostIdParams>, res: Response) {
   const userId = req.user.id;
   const { postId } = req.params;
 
-  await prisma.like.delete({
+  await prisma.like.deleteMany({
     where: {
-      userId_postId: {
-        userId,
-        postId,
-      },
+      userId,
+      postId,
     },
   });
 
