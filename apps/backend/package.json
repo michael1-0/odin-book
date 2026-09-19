@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch ./src/server.ts",
+    "dev": "node --import tsx --watch --watch-path=.env --watch-path=src src/server.ts",
     "build": "tsc --build",
     "start": "node ./dist/server.js",
     "lint": "eslint .",
