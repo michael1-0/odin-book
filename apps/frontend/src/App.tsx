@@ -1,4 +1,4 @@
-import { Toaster } from "react-hot-toast";
+import { Toaster, ToastBar } from "react-hot-toast";
 import { Outlet } from "react-router";
 import { ScrollRestoration } from "react-router";
 
@@ -46,17 +46,34 @@ async function guestLoader() {
 
 function App() {
   return (
-    <div className="container min-h-dvh max-w-165 mx-auto font-ark">
+    <div className="container min-h-dvh max-w-app mx-auto font-ark">
       <ScrollRestoration />
       <Toaster
+        position="top-right"
+        containerStyle={{
+          top: 84,
+          right: "max(calc((100% - var(--container-app)) / 2), 1rem)",
+        }}
         toastOptions={{
-          position: "bottom-center",
+          removeDelay: 250,
+          className: "app-toast",
           iconTheme: {
             primary: "black",
             secondary: "white",
           },
         }}
-      />
+      >
+        {(toast) => (
+          <ToastBar
+            toast={toast}
+            style={{
+              animation: toast.visible
+                ? "toast-in 0.32s cubic-bezier(.21,1.02,.73,1) forwards"
+                : "toast-out 0.25s cubic-bezier(.06,.71,.55,1) forwards",
+            }}
+          />
+        )}
+      </Toaster>
       <Outlet />
     </div>
   );

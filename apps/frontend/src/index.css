@@ -3,4 +3,29 @@
 @theme {
   --font-ark: "Source Code Pro";
   --tracking-tightest: -0.1em;
+  --container-app: 41.25rem;
+}
+
+.app-toast {
+  --toast-shift: calc(100% + 1rem);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--toast-shift));
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateX(var(--toast-shift));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-toast {
+    --toast-shift: 0px;
+  }
 }
