@@ -6,6 +6,8 @@ const POSTS_PER_USER = 3;
 const FOLLOWS_PER_USER = 4;
 const LIKES_PER_USER = 5;
 const COMMENTS_PER_POST = 20;
+const FRIEND_REQUESTS_PER_USER = 3;
+const MESSAGES_PER_FRIENDSHIP = 5;
 
 async function main() {
   faker.seed(42);
@@ -18,9 +20,13 @@ async function main() {
   await generateFollows(users);
   await generateLikes(users, posts);
   await generateComments(users, posts);
+  await generateFriendRequests(users);
+  await generateMessages();
 }
 
 async function resetDatabase() {
+  await prisma.message.deleteMany();
+  await prisma.friendRequest.deleteMany();
   await prisma.comment.deleteMany();
   await prisma.like.deleteMany();
   await prisma.follow.deleteMany();
@@ -118,6 +124,50 @@ async function generateComments(
 
   await prisma.comment.createMany({
     data: commentsData,
+  });
+}
+
+async function generateFriendRequests(users: { id: number }[]) {
+  const requestsData = users.flatMap((user, userIndex) =>
+    Array.from({ length: FRIEND_REQUESTS_PER_USER }, (_, offset) => {
+      const targetIndex = (userIndex + offset + 1) % users.length;
+
+      return {
+        senderId: user.id,
+        receiverId: users[targetIndex]!.id,
+        status:
+          offset === FRIEND_REQUESTS_PER_USER - 1
+            ? ("PENDING" as const)
+            : ("ACCEPTED" as const),
+      };
+    }),
+  );
+
+  await prisma.friendRequest.createMany({
+    data: requestsData,
+  });
+}
+
+async function generateMessages() {
+  const acceptedRequests = await prisma.friendRequest.findMany({
+    where: { status: "ACCEPTED" },
+    select: { senderId: true, receiverId: true },
+  });
+
+  const messagesData = acceptedRequests.flatMap(({ senderId, receiverId }) =>
+    Array.from({ length: MESSAGES_PER_FRIENDSHIP }, (_, index) => {
+      const isSenderFirst = index % 2 === 0;
+
+      return {
+        senderId: isSenderFirst ? senderId : receiverId,
+        recipientId: isSenderFirst ? receiverId : senderId,
+        content: faker.lorem.sentence(),
+      };
+    }),
+  );
+
+  await prisma.message.createMany({
+    data: messagesData,
   });
 }
 

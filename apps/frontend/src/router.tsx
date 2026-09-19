@@ -9,6 +9,7 @@ import PostDetail from "./pages/PostDetail.tsx";
 import Profile from "./pages/Profile.tsx";
 import UserDetail from "./pages/UserDetail.tsx";
 import Updates from "./pages/Updates.tsx";
+import Friends from "./pages/Friends.tsx";
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,12 @@ const router = createBrowserRouter([
                 Component: Users,
                 loader: Users.loader,
                 action: Users.action,
+              },
+              {
+                path: "/friends",
+                Component: Friends,
+                loader: Friends.loader,
+                action: Friends.action,
               },
               {
                 path: "/users/:userId",

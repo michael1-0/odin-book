@@ -7,6 +7,8 @@ import postsRouter from "./postsRoutes.ts";
 import commentsRouter from "./commentsRoutes.ts";
 import followsRouter from "./followsRoutes.ts";
 import likesRouter from "./likesRoutes.ts";
+import friendsRouter from "./friendsRoutes.ts";
+import messagesRouter from "./messagesRoutes.ts";
 
 const indexRouter: RouterType = Router();
 
@@ -16,6 +18,8 @@ indexRouter.use("/posts", postsRouter);
 indexRouter.use("/comments", commentsRouter);
 indexRouter.use("/follows", followsRouter);
 indexRouter.use("/likes", likesRouter);
+indexRouter.use("/friends", friendsRouter);
+indexRouter.use("/messages", messagesRouter);
 
 indexRouter.get("/health", getHealth);
 

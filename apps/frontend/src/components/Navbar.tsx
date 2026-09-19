@@ -35,6 +35,12 @@ function DesktopMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
           Users
         </NavLink>
         <NavLink
+          to="/friends"
+          className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
+        >
+          Friends
+        </NavLink>
+        <NavLink
           to="/profile"
           className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
@@ -96,6 +102,13 @@ function MobileMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
           className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Users
+        </NavLink>
+        <NavLink
+          to="/friends"
+          onClick={toggleSidebar}
+          className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
+        >
+          Friends
         </NavLink>
         <NavLink
           to="/profile"
