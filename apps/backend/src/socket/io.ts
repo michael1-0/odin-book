@@ -14,10 +14,6 @@ function userRoom(userId: number) {
 function initSocketServer(httpServer: HttpServer) {
   io = new SocketServer(httpServer, {
     path: "/socket.io",
-    cors: {
-      origin: true,
-      credentials: true,
-    },
   });
 
   io.use(async (socket, next) => {
