@@ -3,6 +3,12 @@ import jwt from "jsonwebtoken";
 import { AppError } from "../errors/AppError.ts";
 import env from "../config/env.ts";
 
+const authCookieOptions = {
+  httpOnly: true,
+  sameSite: "lax" as const,
+  secure: env.isProd,
+};
+
 function githubCallback(req: Request, res: Response) {
   if (!req.user) {
     return res.redirect(`${env.frontendUrl}/login?error=auth_failed`);
@@ -21,8 +27,7 @@ function githubCallback(req: Request, res: Response) {
   });
 
   res.cookie("token", token, {
-    httpOnly: true,
-    sameSite: "lax",
+    ...authCookieOptions,
     maxAge: 24 * 60 * 60 * 1000, // 1 day
   });
   res.redirect(env.frontendUrl);
@@ -37,10 +42,7 @@ async function getMe(req: Request, res: Response) {
 }
 
 function postLogout(req: Request, res: Response) {
-  res.clearCookie("token", {
-    httpOnly: true,
-    sameSite: "lax",
-  });
+  res.clearCookie("token", authCookieOptions);
 
   res.status(200).json({ success: true });
 }
