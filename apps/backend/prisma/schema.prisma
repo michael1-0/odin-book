@@ -51,6 +51,7 @@ model Post {
   likes    Like[] // Relation to see who liked this post
   images   PostImage[]
 
+  @@index([posterId, id])
   @@map("posts")
 }
 
@@ -62,6 +63,7 @@ model PostImage {
 
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
+  @@index([postId, position])
   @@map("post_images")
 }
 
@@ -74,6 +76,7 @@ model Like {
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@id([userId, postId])
+  @@index([postId])
   @@map("likes")
 }
 
@@ -87,6 +90,7 @@ model Comment {
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([postId, createdAt])
   @@map("comments")
 }
 
@@ -107,6 +111,7 @@ model FriendRequest {
   receiver User @relation("receivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@unique([senderId, receiverId])
+  @@index([receiverId, senderId])
   @@map("friend_requests")
 }
 
@@ -120,6 +125,6 @@ model Message {
   sender    User @relation("sentMessages", fields: [senderId], references: [id], onDelete: Cascade)
   recipient User @relation("receivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
 
-  @@index([senderId, recipientId, createdAt])
+  @@index([senderId, recipientId, id])
   @@map("messages")
 }
