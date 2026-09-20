@@ -6,6 +6,8 @@ import {
   useRouteLoaderData,
   useFetcher,
 } from "react-router";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
 import { getUserProfile } from "../services/users";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
@@ -50,6 +52,18 @@ function UserDetail() {
   const { user } = useRouteLoaderData("user-data");
   const userWithPosts: UserWithPosts = useLoaderData();
   const fetcher = useFetcher();
+
+  useEffect(() => {
+    if (fetcher.state !== "idle" || !fetcher.data) {
+      return;
+    }
+
+    const data = fetcher.data as { error?: unknown; message?: string };
+
+    if (data.error) {
+      toast.error(data.message ?? "Failed to update follow status");
+    }
+  }, [fetcher.state, fetcher.data]);
 
   return (
     <PageContainer>

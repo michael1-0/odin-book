@@ -1,7 +1,8 @@
 import type { PostFeedItem, PostLike } from "@repo/zod-validations";
 import { LucideHeart, MessageSquare } from "lucide-react";
 import { Link, useFetcher, useNavigate } from "react-router";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import toast from "react-hot-toast";
 import PostImageModal from "./PostImageModal";
 import getOptimizedImageUrl from "../utils/cloudinaryUrl";
 
@@ -32,6 +33,12 @@ function PostItem({
   const likesCount = currentPost._count.likes;
   const isLikedByMe = checkIfLiked(currentPost.likes);
   const images = currentPost.images;
+
+  useEffect(() => {
+    if (likeFetcher.state === "idle" && likeFetcherData?.error) {
+      toast.error(likeFetcherData.message ?? "Failed to update like");
+    }
+  }, [likeFetcher.state, likeFetcherData]);
 
   function checkIfLiked(likes: PostLike[]) {
     return likes.some((like) => like.userId === userId);
