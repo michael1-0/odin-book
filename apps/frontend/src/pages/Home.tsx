@@ -25,7 +25,7 @@ import { likePost, unlikePost } from "../services/likes";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 import toast from "react-hot-toast";
-import { CircleX, ImagePlus, X } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 
 const PAGE_SIZE = 10;
 
@@ -267,12 +267,7 @@ function Home() {
           key={submissionId}
         >
           <div className="mb-2 text-sm text-red-600 min-h-8">
-            {contentErrors && (
-              <div className="flex gap-2 items-center">
-                <CircleX size={20} />
-                {contentErrors[0]}
-              </div>
-            )}
+            {contentErrors && contentErrors[0]}
           </div>
           <label htmlFor="content" className="sr-only">
             Post Content
@@ -325,14 +320,7 @@ function Home() {
               ))}
             </div>
           )}
-          <div className="mb-2 text-sm text-red-600 min-h-8">
-            {imageError && (
-              <div className="flex gap-2 items-center">
-                <CircleX size={20} />
-                {imageError}
-              </div>
-            )}
-          </div>
+          <div className="mb-2 text-sm text-red-600 min-h-8">{imageError}</div>
           <label
             htmlFor="post-images"
             className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold underline underline-offset-4 transition-colors hover:text-neutral-500"
