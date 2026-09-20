@@ -56,7 +56,7 @@ function UserDetail() {
       <Back />
       <section className="flex flex-col items-center gap-4">
         <img
-          src={userWithPosts.profileUrl}
+          src={userWithPosts.profileUrl ?? undefined}
           alt={`${userWithPosts.username} profile image`}
           className="max-w-40 max-h-30 rounded-full"
         />

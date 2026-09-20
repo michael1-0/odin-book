@@ -8,8 +8,6 @@ export const FriendUserSchema = UserSchema.pick({
   username: true,
   profileUrl: true,
   createdAt: true,
-}).extend({
-  profileUrl: z.string().nullable(),
 });
 export type FriendUser = z.infer<typeof FriendUserSchema>;
 

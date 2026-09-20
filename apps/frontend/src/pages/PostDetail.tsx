@@ -158,7 +158,7 @@ function PostDetail() {
                 className="flex items-center gap-3"
               >
                 <img
-                  src={comment.user.profileUrl}
+                  src={comment.user.profileUrl ?? undefined}
                   className="max-w-8 max-h-8 rounded-full"
                   alt={`${comment.user.username} profile picture`}
                 />

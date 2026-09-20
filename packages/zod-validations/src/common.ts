@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const MAX_USERNAME_LENGTH = 30;
-export const MAX_NOTE_LENGTH = 200;
+export const MAX_NOTE_LENGTH = 280;
 export const MAX_CONTENT_LENGTH = 200;
 export const MAX_MESSAGE_LENGTH = 1000;
 

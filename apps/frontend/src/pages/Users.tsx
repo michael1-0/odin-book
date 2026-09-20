@@ -140,7 +140,7 @@ function Users() {
               key={user.id}
             >
               <img
-                src={user.profileUrl}
+                src={user.profileUrl ?? undefined}
                 alt={`${user.username} profile image`}
                 className="rounded-full max-w-24 max-h-24"
               />

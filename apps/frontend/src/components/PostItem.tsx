@@ -49,7 +49,7 @@ function PostItem({
           className="flex gap-5 items-center"
         >
           <img
-            src={post.user.profileUrl}
+            src={post.user.profileUrl ?? undefined}
             className="object-cover w-10 h-10 rounded-full"
             alt={`${post.user.username} profile`}
           />

@@ -15,11 +15,7 @@ import {
   deleteUploadedPostImages,
   uploadPostImage,
 } from "../utils/cloudinary.ts";
-import {
-  getPostFeedItem,
-  normalizePostFeedItem,
-  postFeedSelect,
-} from "../utils/postFeed.ts";
+import { getPostFeedItem, postFeedSelect } from "../utils/postFeed.ts";
 
 const PAGE_SIZE = 10;
 
@@ -72,9 +68,9 @@ async function getPosts(
   });
 
   const hasMore = posts.length > PAGE_SIZE;
-  const pagedPosts: PostFeedItem[] = (
-    hasMore ? posts.slice(0, PAGE_SIZE) : posts
-  ).map(normalizePostFeedItem);
+  const pagedPosts: PostFeedItem[] = hasMore
+    ? posts.slice(0, PAGE_SIZE)
+    : posts;
 
   const response: PostsGetResponse = {
     data: pagedPosts,

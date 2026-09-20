@@ -14,6 +14,7 @@ import {
 } from "react";
 import { deletePost, getCurrentUserPosts, loadPosts } from "../services/posts";
 import {
+  MAX_NOTE_LENGTH,
   UserUpdateBodySchema,
   z,
   type PostsGetResponse,
@@ -324,6 +325,7 @@ function Profile() {
               name="noteToAll"
               rows={4}
               required
+              maxLength={MAX_NOTE_LENGTH}
               className="w-full p-3 shadow-sm rounded-sm resize-none focus:outline-none focus:ring-2 bg-white"
               defaultValue={user.noteToAll}
             />

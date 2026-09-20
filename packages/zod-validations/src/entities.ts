@@ -21,7 +21,7 @@ export const UserSchema = z.object({
     .max(MAX_NOTE_LENGTH, `Note to all cannot exceed ${MAX_NOTE_LENGTH} chars`)
     .default(""),
   createdAt,
-  profileUrl: z.string(),
+  profileUrl: z.string().nullable(),
 });
 
 export const FollowSchema = z.object({
