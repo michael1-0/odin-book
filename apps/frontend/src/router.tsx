@@ -3,6 +3,7 @@ import AppLayout from "./components/AppLayout.tsx";
 import App from "./App.tsx";
 import Home from "./pages/Home.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import ErrorBoundary from "./pages/ErrorBoundary.tsx";
 import LogIn from "./pages/LogIn.tsx";
 import Users from "./pages/Users.tsx";
 import PostDetail from "./pages/PostDetail.tsx";
@@ -15,6 +16,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     Component: App,
+    errorElement: <ErrorBoundary />,
     children: [
       {
         id: "user-data",
