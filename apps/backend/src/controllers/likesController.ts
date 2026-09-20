@@ -47,6 +47,10 @@ async function unlikePost(req: Request<PostIdParams>, res: Response) {
 
   const feedPost = await getPostFeedItem(postId);
 
+  if (!feedPost) {
+    throw new AppError("Post not found", 404);
+  }
+
   return res.status(200).json({ data: feedPost });
 }
 
