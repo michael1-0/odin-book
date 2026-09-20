@@ -273,18 +273,11 @@ async function deletePost(req: Request<PostIdParams>, res: Response) {
     throw new AppError("Unauthorized", 403);
   }
 
-  await prisma.$transaction([
-    prisma.comment.deleteMany({
-      where: {
-        postId,
-      },
-    }),
-    prisma.post.delete({
-      where: {
-        id: postId,
-      },
-    }),
-  ]);
+  await prisma.post.delete({
+    where: {
+      id: postId,
+    },
+  });
 
   if (post.images.length > 0) {
     await deletePostImageUrls(post.images.map((image) => image.url));

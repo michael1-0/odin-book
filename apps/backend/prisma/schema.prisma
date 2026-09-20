@@ -33,8 +33,8 @@ model Follow {
   followedById Int
   followingId  Int
 
-  followedBy User @relation("followedBy", fields: [followedById], references: [id])
-  following  User @relation("following", fields: [followingId], references: [id])
+  followedBy User @relation("followedBy", fields: [followedById], references: [id], onDelete: Cascade)
+  following  User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@id([followedById, followingId])
   @@map("follows")
@@ -46,7 +46,7 @@ model Post {
   posterId  Int
   createdAt DateTime @default(now())
 
-  user     User        @relation(fields: [posterId], references: [id])
+  user     User        @relation(fields: [posterId], references: [id], onDelete: Cascade)
   comments Comment[]
   likes    Like[] // Relation to see who liked this post
   images   PostImage[]
@@ -84,8 +84,8 @@ model Comment {
   content   String
   createdAt DateTime @default(now())
 
-  post Post @relation(fields: [postId], references: [id])
-  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("comments")
 }
