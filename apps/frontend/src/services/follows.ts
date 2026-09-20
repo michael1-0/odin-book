@@ -4,9 +4,16 @@ async function followUser(formData: FormData) {
   const response = await fetch(`/api/follows/${targetUserId}`, {
     method: "POST",
   });
-  const follow = await response.json();
+  const result = await response.json();
 
-  return follow.data;
+  if (!response.ok) {
+    return {
+      error: true,
+      message: result.error?.message ?? "Failed to follow user",
+    };
+  }
+
+  return result.data;
 }
 
 async function unfollowUser(formData: FormData) {
@@ -15,9 +22,16 @@ async function unfollowUser(formData: FormData) {
   const response = await fetch(`/api/follows/${targetUserId}`, {
     method: "DELETE",
   });
-  const follow = await response.json();
+  const result = await response.json();
 
-  return follow.data;
+  if (!response.ok) {
+    return {
+      error: true,
+      message: result.error?.message ?? "Failed to unfollow user",
+    };
+  }
+
+  return result.data;
 }
 
 export { followUser, unfollowUser };

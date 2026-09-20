@@ -4,9 +4,16 @@ async function likePost(formData: FormData) {
   const response = await fetch(`/api/likes/${postId}`, {
     method: "POST",
   });
-  const likedPost = await response.json();
+  const result = await response.json();
 
-  return likedPost.data;
+  if (!response.ok) {
+    return {
+      error: true,
+      message: result.error?.message ?? "Failed to like post",
+    };
+  }
+
+  return result.data;
 }
 
 async function unlikePost(formData: FormData) {
@@ -15,9 +22,16 @@ async function unlikePost(formData: FormData) {
   const response = await fetch(`/api/likes/${postId}`, {
     method: "DELETE",
   });
-  const unlikedPost = await response.json();
+  const result = await response.json();
 
-  return unlikedPost.data;
+  if (!response.ok) {
+    return {
+      error: true,
+      message: result.error?.message ?? "Failed to unlike post",
+    };
+  }
+
+  return result.data;
 }
 
 export { likePost, unlikePost };

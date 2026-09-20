@@ -21,9 +21,13 @@ function PostItem({
   const likeFetcher = useFetcher();
   const navigate = useNavigate();
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+  const likeFetcherData = likeFetcher.data as
+    | (PostFeedItem & { error?: never })
+    | { error: true; message?: string }
+    | undefined;
   const currentPost =
-    likeFetcher.state === "idle" && likeFetcher.data
-      ? (likeFetcher.data as PostFeedItem)
+    likeFetcher.state === "idle" && likeFetcherData && !likeFetcherData.error
+      ? likeFetcherData
       : post;
   const likesCount = currentPost._count.likes;
   const isLikedByMe = checkIfLiked(currentPost.likes);

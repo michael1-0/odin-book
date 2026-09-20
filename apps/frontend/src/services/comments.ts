@@ -9,7 +9,11 @@ async function createComment(content: string, postId: number) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { error: true, errors: result };
+    return {
+      error: true,
+      errors: result,
+      message: result.error?.message,
+    };
   }
 
   return result.data;

@@ -9,9 +9,15 @@ async function getUsers(offset?: number) {
   const response = await fetch(
     queryString ? `/api/users?${queryString}` : "/api/users",
   );
-  const users = await response.json();
+  const result = await response.json();
 
-  return users;
+  if (!response.ok) {
+    throw new Response(result.error?.message ?? "Failed to load users", {
+      status: response.status,
+    });
+  }
+
+  return result;
 }
 
 async function updateUser(formData: FormData) {
@@ -35,9 +41,15 @@ async function updateUser(formData: FormData) {
 
 async function getUserProfile(userId: string | undefined) {
   const response = await fetch(`/api/users/${userId}?include=posts`);
-  const user = await response.json();
+  const result = await response.json();
 
-  return user.data;
+  if (!response.ok) {
+    throw new Response(result.error?.message ?? "Failed to load profile", {
+      status: response.status,
+    });
+  }
+
+  return result.data;
 }
 
 export { getUsers, updateUser, getUserProfile };

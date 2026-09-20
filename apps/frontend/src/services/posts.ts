@@ -23,9 +23,15 @@ async function loadPosts({ cursor, scope, period }: LoadPostsOptions = {}) {
   const response = await fetch(
     queryString ? `/api/posts?${queryString}` : "/api/posts",
   );
-  const posts = await response.json();
+  const result = await response.json();
 
-  return posts;
+  if (!response.ok) {
+    throw new Response(result.error?.message ?? "Failed to load posts", {
+      status: response.status,
+    });
+  }
+
+  return result;
 }
 
 async function createPost(formData: FormData) {
@@ -80,9 +86,15 @@ async function getPostWithComments(
   }
 
   const response = await fetch(`/api/posts/${postId}?${searchParams}`);
-  const post = await response.json();
+  const result = await response.json();
 
-  return post;
+  if (!response.ok) {
+    throw new Response(result.error?.message ?? "Failed to load post", {
+      status: response.status,
+    });
+  }
+
+  return result;
 }
 
 async function getCurrentUserPosts() {
