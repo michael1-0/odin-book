@@ -4,6 +4,7 @@ import type {
   Response,
   NextFunction,
 } from "express";
+import type { ErrorRequestHandler as ValidationErrorHandler } from "express-zod-safe";
 
 import { Prisma } from "../db/generated/prisma/client.ts";
 import { AppError } from "../errors/AppError.ts";
@@ -54,4 +55,19 @@ const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
   });
 };
 
-export { notFound, errorHandler };
+const validationErrorHandler: ValidationErrorHandler = (errors, _req, res) => {
+  const message = errors
+    .map(({ type, errors: { issues } }) =>
+      issues.map((issue) => `${type}: ${issue.message}`).join(", "),
+    )
+    .join(", ");
+
+  res.status(400).json({
+    error: {
+      code: 400,
+      message: `${message.charAt(0).toUpperCase()}${message.slice(1)}`,
+    },
+  });
+};
+
+export { notFound, errorHandler, validationErrorHandler };
