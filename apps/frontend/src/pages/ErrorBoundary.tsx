@@ -1,8 +1,18 @@
-import { Link, isRouteErrorResponse, useRouteError } from "react-router";
+import {
+  Link,
+  Navigate,
+  isRouteErrorResponse,
+  useRouteError,
+} from "react-router";
 import Logo from "../components/Logo";
 
 function ErrorBoundary() {
   const error = useRouteError();
+
+  if (isRouteErrorResponse(error) && error.status === 401) {
+    return <Navigate to="/login" replace />;
+  }
+
   let title = "Something went wrong";
   let message: string | undefined;
 
