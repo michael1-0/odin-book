@@ -9,31 +9,22 @@ import {
 import validate from "express-zod-safe";
 import profilePictureUpload from "../middlewares/profilePictureMiddleware.ts";
 import {
-  UserIdParamsSchema,
-  UserGetQuerySchema,
-  UsersGetQuerySchema,
-  UserUpdateBodySchema,
+  userGetSpec,
+  usersGetSpec,
+  userUpdateSpec,
 } from "@repo/zod-validations";
 
 const usersRouter: RouterType = Router();
 
 usersRouter.use(requireAuth);
 
-usersRouter.get(
-  "/",
-  validate({ query: UsersGetQuerySchema }),
-  getUsersWithoutCurrentUser,
-);
+usersRouter.get("/", validate(usersGetSpec), getUsersWithoutCurrentUser);
 usersRouter.put(
   "/:userId",
   profilePictureUpload,
-  validate({ params: UserIdParamsSchema, body: UserUpdateBodySchema }),
+  validate(userUpdateSpec),
   updateCurrentUser,
 );
-usersRouter.get(
-  "/:userId",
-  validate({ params: UserIdParamsSchema, query: UserGetQuerySchema }),
-  getUser,
-);
+usersRouter.get("/:userId", validate(userGetSpec), getUser);
 
 export default usersRouter;

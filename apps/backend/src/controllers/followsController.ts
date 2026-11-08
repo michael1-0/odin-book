@@ -1,10 +1,14 @@
-import type { Request, Response } from "express";
+import type { Response } from "express";
+import type { ValidatedRequest } from "express-zod-safe";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
-import type { FollowParams } from "@repo/zod-validations";
+import type { FollowParamsSpec } from "@repo/zod-validations";
 import { ERROR_MESSAGES } from "../constants/errors.ts";
 
-async function followUser(req: Request<FollowParams>, res: Response) {
+async function followUser(
+  req: ValidatedRequest<FollowParamsSpec>,
+  res: Response,
+) {
   if (!req.user) {
     throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
@@ -44,7 +48,10 @@ async function followUser(req: Request<FollowParams>, res: Response) {
   });
 }
 
-async function unfollowUser(req: Request<FollowParams>, res: Response) {
+async function unfollowUser(
+  req: ValidatedRequest<FollowParamsSpec>,
+  res: Response,
+) {
   if (!req.user) {
     throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }

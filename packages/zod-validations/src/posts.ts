@@ -77,3 +77,18 @@ export const PostGetQuerySchema = z.object({
   offset: z.coerce.number().int().nonnegative().optional(),
 });
 export type PostGetQuery = z.infer<typeof PostGetQuerySchema>;
+
+export const postIdParamsSpec = { params: PostIdParamsSchema };
+export type PostIdParamsSpec = typeof postIdParamsSpec;
+
+export const postsGetSpec = { query: PostsGetQuerySchema };
+export type PostsGetSpec = typeof postsGetSpec;
+
+export const postGetSpec = {
+  params: PostIdParamsSchema,
+  query: PostGetQuerySchema,
+};
+export type PostGetSpec = typeof postGetSpec;
+
+export const postCreateSpec = { body: PostCreateBodySchema };
+export type PostCreateSpec = typeof postCreateSpec;

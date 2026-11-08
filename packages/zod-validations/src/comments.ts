@@ -8,3 +8,6 @@ export const CommentCreateBodySchema = CommentSchema.pick({
   postId: coercedId,
 });
 export type CommentCreateBody = z.infer<typeof CommentCreateBodySchema>;
+
+export const commentCreateSpec = { body: CommentCreateBodySchema };
+export type CommentCreateSpec = typeof commentCreateSpec;

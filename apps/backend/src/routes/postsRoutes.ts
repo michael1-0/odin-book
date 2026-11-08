@@ -10,32 +10,24 @@ import {
 } from "../controllers/postsController.ts";
 import validate from "express-zod-safe";
 import {
-  PostCreateBodySchema,
-  PostIdParamsSchema,
-  PostGetQuerySchema,
-  PostsGetQuerySchema,
+  postCreateSpec,
+  postGetSpec,
+  postIdParamsSpec,
+  postsGetSpec,
 } from "@repo/zod-validations";
 
 const postsRouter: RouterType = Router();
 
 postsRouter.use(requireAuth);
 
-postsRouter.get("/", validate({ query: PostsGetQuerySchema }), getPosts);
-postsRouter.get(
-  "/:postId",
-  validate({ params: PostIdParamsSchema, query: PostGetQuerySchema }),
-  getPost,
-);
+postsRouter.get("/", validate(postsGetSpec), getPosts);
+postsRouter.get("/:postId", validate(postGetSpec), getPost);
 postsRouter.post(
   "/",
   postImagesUploadMiddleware,
-  validate({ body: PostCreateBodySchema }),
+  validate(postCreateSpec),
   createPost,
 );
-postsRouter.delete(
-  "/:postId",
-  validate({ params: PostIdParamsSchema }),
-  deletePost,
-);
+postsRouter.delete("/:postId", validate(postIdParamsSpec), deletePost);
 
 export default postsRouter;

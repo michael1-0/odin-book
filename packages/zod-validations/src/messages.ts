@@ -45,3 +45,15 @@ export const MessageCreateBodySchema = z.object({
     ),
 });
 export type MessageCreateBody = z.infer<typeof MessageCreateBodySchema>;
+
+export const messagesGetSpec = {
+  params: FriendIdParamsSchema,
+  query: MessagesGetQuerySchema,
+};
+export type MessagesGetSpec = typeof messagesGetSpec;
+
+export const messageCreateSpec = {
+  params: FriendIdParamsSchema,
+  body: MessageCreateBodySchema,
+};
+export type MessageCreateSpec = typeof messageCreateSpec;

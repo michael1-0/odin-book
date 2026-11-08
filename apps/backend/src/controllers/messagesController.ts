@@ -1,11 +1,11 @@
-import type { Request, Response } from "express";
+import type { Response } from "express";
+import type { ValidatedRequest } from "express-zod-safe";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
 import type {
-  FriendIdParams,
-  MessageCreateBody,
-  MessagesGetQuery,
+  MessageCreateSpec,
   MessagesGetResponse,
+  MessagesGetSpec,
 } from "@repo/zod-validations";
 import {
   FRIEND_REQUEST_STATUS,
@@ -32,7 +32,7 @@ async function assertFriendship(userId: number, friendId: number) {
 }
 
 async function getMessages(
-  req: Request<FriendIdParams, unknown, unknown, MessagesGetQuery>,
+  req: ValidatedRequest<MessagesGetSpec>,
   res: Response,
 ) {
   if (!req.user) {
@@ -74,7 +74,7 @@ async function getMessages(
 }
 
 async function createMessage(
-  req: Request<FriendIdParams, unknown, MessageCreateBody>,
+  req: ValidatedRequest<MessageCreateSpec>,
   res: Response,
 ) {
   if (!req.user) {

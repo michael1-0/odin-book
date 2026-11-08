@@ -1,9 +1,14 @@
-import type { Request, Response } from "express";
-import { AppError } from "../errors/AppError.ts";
+import type { Response } from "express";
+import type { ValidatedRequest } from "express-zod-safe";
+import type { CommentCreateSpec } from "@repo/zod-validations";
 import { prisma } from "../db/prisma.ts";
+import { AppError } from "../errors/AppError.ts";
 import { ERROR_MESSAGES } from "../constants/errors.ts";
 
-async function createComment(req: Request, res: Response) {
+async function createComment(
+  req: ValidatedRequest<CommentCreateSpec>,
+  res: Response,
+) {
   if (!req.user) {
     throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }

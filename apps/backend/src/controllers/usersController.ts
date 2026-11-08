@@ -1,18 +1,18 @@
-import type { Request, Response } from "express";
+import type { Response } from "express";
+import type { ValidatedRequest } from "express-zod-safe";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
 import type {
-  UserIdParams,
-  UserGetQuery,
-  UsersGetQuery,
-  UserUpdateBody,
+  UserGetSpec,
+  UsersGetSpec,
+  UserUpdateSpec,
 } from "@repo/zod-validations";
 import { USERS_PAGE_SIZE } from "@repo/constants";
 import { ERROR_MESSAGES } from "../constants/errors.ts";
 import { uploadProfilePicture } from "../utils/cloudinary.ts";
 
 async function getUsersWithoutCurrentUser(
-  req: Request<unknown, unknown, unknown, UsersGetQuery>,
+  req: ValidatedRequest<UsersGetSpec>,
   res: Response,
 ) {
   if (!req.user) {
@@ -79,7 +79,7 @@ async function getUsersWithoutCurrentUser(
 }
 
 async function updateCurrentUser(
-  req: Request<UserIdParams, unknown, UserUpdateBody>,
+  req: ValidatedRequest<UserUpdateSpec>,
   res: Response,
 ) {
   if (!req.user) {
@@ -118,10 +118,7 @@ async function updateCurrentUser(
   return res.status(200).json({ data: updatedUser });
 }
 
-async function getUser(
-  req: Request<UserIdParams, unknown, UserGetQuery>,
-  res: Response,
-) {
+async function getUser(req: ValidatedRequest<UserGetSpec>, res: Response) {
   if (!req.user) {
     throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }

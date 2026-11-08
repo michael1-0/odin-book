@@ -1,11 +1,7 @@
 import type { Router as RouterType } from "express";
 import { Router } from "express";
 import validate from "express-zod-safe";
-import {
-  FriendIdParamsSchema,
-  MessageCreateBodySchema,
-  MessagesGetQuerySchema,
-} from "@repo/zod-validations";
+import { messageCreateSpec, messagesGetSpec } from "@repo/zod-validations";
 import requireAuth from "../middlewares/authMiddleware.ts";
 import {
   createMessage,
@@ -16,15 +12,7 @@ const messagesRouter: RouterType = Router();
 
 messagesRouter.use(requireAuth);
 
-messagesRouter.get(
-  "/:friendId",
-  validate({ params: FriendIdParamsSchema, query: MessagesGetQuerySchema }),
-  getMessages,
-);
-messagesRouter.post(
-  "/:friendId",
-  validate({ params: FriendIdParamsSchema, body: MessageCreateBodySchema }),
-  createMessage,
-);
+messagesRouter.get("/:friendId", validate(messagesGetSpec), getMessages);
+messagesRouter.post("/:friendId", validate(messageCreateSpec), createMessage);
 
 export default messagesRouter;

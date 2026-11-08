@@ -1,14 +1,15 @@
 import type { Request, Response } from "express";
+import type { ValidatedRequest } from "express-zod-safe";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
 import type {
   Friend,
   FriendExploreItem,
-  FriendExploreQuery,
-  FriendRequestIdParams,
+  FriendExploreSpec,
+  FriendRequestIdParamsSpec,
   FriendRequestWithUsers,
   FriendsGetResponse,
-  TargetUserIdParams,
+  TargetUserIdParamsSpec,
 } from "@repo/zod-validations";
 import {
   FRIEND_REQUEST_STATUS,
@@ -111,7 +112,7 @@ async function getFriends(req: Request, res: Response) {
 }
 
 async function exploreFriends(
-  req: Request<unknown, unknown, unknown, FriendExploreQuery>,
+  req: ValidatedRequest<FriendExploreSpec>,
   res: Response,
 ) {
   if (!req.user) {
@@ -201,7 +202,7 @@ async function exploreFriends(
 }
 
 async function sendFriendRequest(
-  req: Request<TargetUserIdParams>,
+  req: ValidatedRequest<TargetUserIdParamsSpec>,
   res: Response,
 ) {
   if (!req.user) {
@@ -299,7 +300,7 @@ async function sendFriendRequest(
 }
 
 async function cancelFriendRequest(
-  req: Request<TargetUserIdParams>,
+  req: ValidatedRequest<TargetUserIdParamsSpec>,
   res: Response,
 ) {
   if (!req.user) {
@@ -332,7 +333,7 @@ async function cancelFriendRequest(
 }
 
 async function acceptFriendRequest(
-  req: Request<FriendRequestIdParams>,
+  req: ValidatedRequest<FriendRequestIdParamsSpec>,
   res: Response,
 ) {
   if (!req.user) {
@@ -378,7 +379,7 @@ async function acceptFriendRequest(
 }
 
 async function declineFriendRequest(
-  req: Request<FriendRequestIdParams>,
+  req: ValidatedRequest<FriendRequestIdParamsSpec>,
   res: Response,
 ) {
   if (!req.user) {

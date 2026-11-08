@@ -76,3 +76,14 @@ export const FriendExploreItemSchema = FriendUserSchema.extend({
   requestId: z.number().int().positive().nullable(),
 });
 export type FriendExploreItem = z.infer<typeof FriendExploreItemSchema>;
+
+export const friendExploreSpec = { query: FriendExploreQuerySchema };
+export type FriendExploreSpec = typeof friendExploreSpec;
+
+export const targetUserIdParamsSpec = { params: TargetUserIdParamsSchema };
+export type TargetUserIdParamsSpec = typeof targetUserIdParamsSpec;
+
+export const friendRequestIdParamsSpec = {
+  params: FriendRequestIdParamsSchema,
+};
+export type FriendRequestIdParamsSpec = typeof friendRequestIdParamsSpec;

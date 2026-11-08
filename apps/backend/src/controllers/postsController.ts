@@ -1,11 +1,12 @@
-import type { Request, Response } from "express";
+import type { Response } from "express";
+import type { ValidatedRequest } from "express-zod-safe";
 import type {
+  PostCreateSpec,
   PostFeedItem,
-  PostCreateBody,
-  PostIdParams,
-  PostGetQuery,
+  PostGetSpec,
+  PostIdParamsSpec,
   PostsGetResponse,
-  PostsGetQuery,
+  PostsGetSpec,
 } from "@repo/zod-validations";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
@@ -20,10 +21,7 @@ import { COMMENTS_PAGE_SIZE, FEED_PAGE_SIZE } from "@repo/constants";
 import { TRENDING_WINDOW_MS } from "../constants/feed.ts";
 import { ERROR_MESSAGES } from "../constants/errors.ts";
 
-async function getPosts(
-  req: Request<unknown, unknown, unknown, PostsGetQuery>,
-  res: Response,
-) {
+async function getPosts(req: ValidatedRequest<PostsGetSpec>, res: Response) {
   if (!req.user) {
     throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
@@ -84,7 +82,7 @@ async function getPosts(
 }
 
 async function createPost(
-  req: Request<unknown, unknown, PostCreateBody>,
+  req: ValidatedRequest<PostCreateSpec>,
   res: Response,
 ) {
   if (!req.user) {
@@ -152,10 +150,7 @@ async function createPost(
   res.status(200).json({ data: feedPost });
 }
 
-async function getPost(
-  req: Request<PostIdParams, unknown, unknown, PostGetQuery>,
-  res: Response,
-) {
+async function getPost(req: ValidatedRequest<PostGetSpec>, res: Response) {
   const { postId } = req.params;
   const { include, offset: offsetParam } = req.query;
 
@@ -240,7 +235,10 @@ async function getPost(
   });
 }
 
-async function deletePost(req: Request<PostIdParams>, res: Response) {
+async function deletePost(
+  req: ValidatedRequest<PostIdParamsSpec>,
+  res: Response,
+) {
   if (!req.user) {
     throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }

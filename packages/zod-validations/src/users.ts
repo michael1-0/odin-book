@@ -34,3 +34,18 @@ export const UsersGetQuerySchema = z.object({
   offset: z.coerce.number().int().nonnegative().optional(),
 });
 export type UsersGetQuery = z.infer<typeof UsersGetQuerySchema>;
+
+export const usersGetSpec = { query: UsersGetQuerySchema };
+export type UsersGetSpec = typeof usersGetSpec;
+
+export const userGetSpec = {
+  params: UserIdParamsSchema,
+  query: UserGetQuerySchema,
+};
+export type UserGetSpec = typeof userGetSpec;
+
+export const userUpdateSpec = {
+  params: UserIdParamsSchema,
+  body: UserUpdateBodySchema,
+};
+export type UserUpdateSpec = typeof userUpdateSpec;
