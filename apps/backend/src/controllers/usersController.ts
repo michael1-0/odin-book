@@ -7,6 +7,8 @@ import type {
   UsersGetQuery,
   UserUpdateBody,
 } from "@repo/zod-validations";
+import { USERS_PAGE_SIZE } from "@repo/constants";
+import { ERROR_MESSAGES } from "../constants/errors.ts";
 import { uploadProfilePicture } from "../utils/cloudinary.ts";
 
 async function getUsersWithoutCurrentUser(
@@ -14,12 +16,12 @@ async function getUsersWithoutCurrentUser(
   res: Response,
 ) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const offset = req.query.offset ?? 0;
   const currentUserId = req.user.id;
-  const limit = 12;
+  const limit = USERS_PAGE_SIZE;
 
   const users = await prisma.user.findMany({
     take: limit + 1,
@@ -81,13 +83,13 @@ async function updateCurrentUser(
   res: Response,
 ) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const { userId } = req.params;
 
   if (req.user.id !== userId) {
-    throw new AppError("Unauthorized", 403);
+    throw new AppError(ERROR_MESSAGES.unauthorized, 403);
   }
 
   const { username, noteToAll } = req.body;
@@ -121,7 +123,7 @@ async function getUser(
   res: Response,
 ) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const { userId } = req.params;
@@ -188,7 +190,7 @@ async function getUser(
   });
 
   if (!user) {
-    throw new AppError("User not found", 404);
+    throw new AppError(ERROR_MESSAGES.userNotFound, 404);
   }
 
   const { following, ...userData } = user;

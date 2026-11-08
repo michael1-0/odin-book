@@ -15,15 +15,17 @@ import type { UserWithPosts } from "@repo/zod-validations";
 import Back from "../components/Back";
 import PageContainer from "../components/PageContainer";
 import { followUser, unfollowUser } from "../services/follows";
+import { APP_ROUTES, FORM_INTENTS, ROUTE_ID } from "../constants/routes";
+import { API_PATHS } from "../constants/api";
 
 async function loader({ params }: LoaderFunctionArgs) {
-  const response = await fetch("/api/auth/me");
+  const response = await fetch(API_PATHS.authMe);
 
   if (response.ok) {
     const currentUser = await response.json();
 
     if (currentUser.id === Number(params.userId)) {
-      throw redirect("/profile");
+      throw redirect(APP_ROUTES.profile);
     }
   }
 
@@ -35,13 +37,13 @@ async function action({ request }: ActionFunctionArgs) {
   const intent = formData.get("intent");
 
   switch (intent) {
-    case "like-post":
+    case FORM_INTENTS.likePost:
       return await likePost(formData);
-    case "unlike-post":
+    case FORM_INTENTS.unlikePost:
       return await unlikePost(formData);
-    case "follow-user":
+    case FORM_INTENTS.followUser:
       return await followUser(formData);
-    case "unfollow-user":
+    case FORM_INTENTS.unfollowUser:
       return await unfollowUser(formData);
     default:
       throw new Response("Unknown intent", { status: 400 });
@@ -49,7 +51,7 @@ async function action({ request }: ActionFunctionArgs) {
 }
 
 function UserDetail() {
-  const { user } = useRouteLoaderData("user-data");
+  const { user } = useRouteLoaderData(ROUTE_ID);
   const userWithPosts: UserWithPosts = useLoaderData();
   const fetcher = useFetcher();
 
@@ -80,7 +82,11 @@ function UserDetail() {
           <input
             type="hidden"
             name="intent"
-            value={userWithPosts.isFollowing ? "unfollow-user" : "follow-user"}
+            value={
+              userWithPosts.isFollowing
+                ? FORM_INTENTS.unfollowUser
+                : FORM_INTENTS.followUser
+            }
           />
           <button
             disabled={fetcher.state !== "idle"}

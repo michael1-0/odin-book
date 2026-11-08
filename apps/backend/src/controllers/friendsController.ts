@@ -10,6 +10,12 @@ import type {
   FriendsGetResponse,
   TargetUserIdParams,
 } from "@repo/zod-validations";
+import {
+  FRIEND_REQUEST_STATUS,
+  FRIENDS_PAGE_SIZE,
+  SOCKET_EVENTS,
+} from "@repo/constants";
+import { ERROR_MESSAGES } from "../constants/errors.ts";
 import type { Prisma } from "../db/generated/prisma/client.ts";
 import { getIo, userRoom } from "../socket/io.ts";
 
@@ -27,7 +33,7 @@ const friendRequestWithUsersInclude = {
 
 async function getFriends(req: Request, res: Response) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const currentUserId = req.user.id;
@@ -47,11 +53,11 @@ async function getFriends(req: Request, res: Response) {
   const outgoingRequests: FriendRequestWithUsers[] = [];
 
   for (const request of requests) {
-    if (request.status === "ACCEPTED") {
+    if (request.status === FRIEND_REQUEST_STATUS.ACCEPTED) {
       const friend =
         request.senderId === currentUserId ? request.receiver : request.sender;
       friendsData.push({ ...friend, friendshipId: request.id });
-    } else if (request.status === "PENDING") {
+    } else if (request.status === FRIEND_REQUEST_STATUS.PENDING) {
       if (request.receiverId === currentUserId) {
         incomingRequests.push(request);
       } else {
@@ -109,12 +115,12 @@ async function exploreFriends(
   res: Response,
 ) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const currentUserId = req.user.id;
   const offset = req.query.offset ?? 0;
-  const limit = 12;
+  const limit = FRIENDS_PAGE_SIZE;
   const query = req.query.query;
 
   const users = await prisma.user.findMany({
@@ -126,12 +132,18 @@ async function exploreFriends(
       AND: [
         {
           sentFriendRequests: {
-            none: { receiverId: currentUserId, status: "ACCEPTED" },
+            none: {
+              receiverId: currentUserId,
+              status: FRIEND_REQUEST_STATUS.ACCEPTED,
+            },
           },
         },
         {
           receivedFriendRequests: {
-            none: { senderId: currentUserId, status: "ACCEPTED" },
+            none: {
+              senderId: currentUserId,
+              status: FRIEND_REQUEST_STATUS.ACCEPTED,
+            },
           },
         },
       ],
@@ -193,7 +205,7 @@ async function sendFriendRequest(
   res: Response,
 ) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const senderId = req.user.id;
@@ -208,7 +220,7 @@ async function sendFriendRequest(
   });
 
   if (!receiver) {
-    throw new AppError("User not found", 404);
+    throw new AppError(ERROR_MESSAGES.userNotFound, 404);
   }
 
   const existingRequest = await prisma.friendRequest.findUnique({
@@ -220,12 +232,12 @@ async function sendFriendRequest(
     },
   });
 
-  if (existingRequest?.status === "PENDING") {
+  if (existingRequest?.status === FRIEND_REQUEST_STATUS.PENDING) {
     throw new AppError("Request already sent", 400);
   }
 
-  if (existingRequest?.status === "ACCEPTED") {
-    throw new AppError("You are already friends", 400);
+  if (existingRequest?.status === FRIEND_REQUEST_STATUS.ACCEPTED) {
+    throw new AppError(ERROR_MESSAGES.alreadyFriends, 400);
   }
 
   const reverseRequest = await prisma.friendRequest.findUnique({
@@ -237,11 +249,11 @@ async function sendFriendRequest(
     },
   });
 
-  if (reverseRequest?.status === "ACCEPTED") {
-    throw new AppError("You are already friends", 400);
+  if (reverseRequest?.status === FRIEND_REQUEST_STATUS.ACCEPTED) {
+    throw new AppError(ERROR_MESSAGES.alreadyFriends, 400);
   }
 
-  if (reverseRequest?.status === "PENDING") {
+  if (reverseRequest?.status === FRIEND_REQUEST_STATUS.PENDING) {
     throw new AppError("This user already sent you a request", 400);
   }
 
@@ -253,7 +265,7 @@ async function sendFriendRequest(
       },
     },
     update: {
-      status: "PENDING",
+      status: FRIEND_REQUEST_STATUS.PENDING,
     },
     create: {
       senderId,
@@ -280,7 +292,7 @@ async function sendFriendRequest(
 
     getIo()
       .to(userRoom(receiverId))
-      .emit("friend-request:new", { request: payload });
+      .emit(SOCKET_EVENTS.friendRequestNew, { request: payload });
   }
 
   return res.status(200).json({ data: request });
@@ -291,7 +303,7 @@ async function cancelFriendRequest(
   res: Response,
 ) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const senderId = req.user.id;
@@ -306,7 +318,7 @@ async function cancelFriendRequest(
     },
   });
 
-  if (!request || request.status !== "PENDING") {
+  if (!request || request.status !== FRIEND_REQUEST_STATUS.PENDING) {
     throw new AppError("No pending request found", 404);
   }
 
@@ -324,7 +336,7 @@ async function acceptFriendRequest(
   res: Response,
 ) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const currentUserId = req.user.id;
@@ -335,20 +347,20 @@ async function acceptFriendRequest(
   });
 
   if (!request) {
-    throw new AppError("Request not found", 404);
+    throw new AppError(ERROR_MESSAGES.friendRequestNotFound, 404);
   }
 
   if (request.receiverId !== currentUserId) {
-    throw new AppError("Unauthorized", 403);
+    throw new AppError(ERROR_MESSAGES.unauthorized, 403);
   }
 
-  if (request.status !== "PENDING") {
-    throw new AppError("Request was already handled", 400);
+  if (request.status !== FRIEND_REQUEST_STATUS.PENDING) {
+    throw new AppError(ERROR_MESSAGES.friendRequestAlreadyHandled, 400);
   }
 
   const updatedRequest = await prisma.friendRequest.update({
     where: { id: requestId },
-    data: { status: "ACCEPTED" },
+    data: { status: FRIEND_REQUEST_STATUS.ACCEPTED },
     include: friendRequestWithUsersInclude,
   });
 
@@ -360,7 +372,7 @@ async function acceptFriendRequest(
 
   getIo()
     .to(userRoom(updatedRequest.senderId))
-    .emit("friend-request:accepted", { friend: friendForSender });
+    .emit(SOCKET_EVENTS.friendRequestAccepted, { friend: friendForSender });
 
   return res.status(200).json({ data: updatedRequest });
 }
@@ -370,7 +382,7 @@ async function declineFriendRequest(
   res: Response,
 ) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const currentUserId = req.user.id;
@@ -381,25 +393,27 @@ async function declineFriendRequest(
   });
 
   if (!request) {
-    throw new AppError("Request not found", 404);
+    throw new AppError(ERROR_MESSAGES.friendRequestNotFound, 404);
   }
 
   if (request.receiverId !== currentUserId) {
-    throw new AppError("Unauthorized", 403);
+    throw new AppError(ERROR_MESSAGES.unauthorized, 403);
   }
 
-  if (request.status !== "PENDING") {
-    throw new AppError("Request was already handled", 400);
+  if (request.status !== FRIEND_REQUEST_STATUS.PENDING) {
+    throw new AppError(ERROR_MESSAGES.friendRequestAlreadyHandled, 400);
   }
 
   const updatedRequest = await prisma.friendRequest.update({
     where: { id: requestId },
-    data: { status: "DECLINED" },
+    data: { status: FRIEND_REQUEST_STATUS.DECLINED },
   });
 
   getIo()
     .to(userRoom(updatedRequest.senderId))
-    .emit("friend-request:declined", { requestId: updatedRequest.id });
+    .emit(SOCKET_EVENTS.friendRequestDeclined, {
+      requestId: updatedRequest.id,
+    });
 
   return res.status(200).json({ data: updatedRequest });
 }

@@ -4,9 +4,10 @@ import type {
   Message,
   MessagesGetResponse,
 } from "@repo/zod-validations";
+import { API_PATHS } from "../constants/api";
 
 async function getFriends(): Promise<FriendsGetResponse["data"]> {
-  const response = await fetch("/api/friends");
+  const response = await fetch(API_PATHS.friends);
   const result = (await response.json()) as FriendsGetResponse & {
     error?: { message?: string };
   };
@@ -40,8 +41,8 @@ async function exploreFriends(
   const queryString = searchParams.toString();
   const response = await fetch(
     queryString
-      ? `/api/friends/explore?${queryString}`
-      : "/api/friends/explore",
+      ? `${API_PATHS.friendExplore}?${queryString}`
+      : API_PATHS.friendExplore,
   );
   const result = await response.json();
 
@@ -57,7 +58,11 @@ async function exploreFriends(
 async function sendFriendRequest(formData: FormData) {
   const targetUserId = formData.get("targetUserId");
 
-  const response = await fetch(`/api/friends/requests/${targetUserId}`, {
+  if (typeof targetUserId !== "string") {
+    return { error: true, message: "Missing target user ID" };
+  }
+
+  const response = await fetch(API_PATHS.friendRequest(targetUserId), {
     method: "POST",
   });
   const result = await response.json();
@@ -75,7 +80,11 @@ async function sendFriendRequest(formData: FormData) {
 async function cancelFriendRequest(formData: FormData) {
   const targetUserId = formData.get("targetUserId");
 
-  const response = await fetch(`/api/friends/requests/${targetUserId}`, {
+  if (typeof targetUserId !== "string") {
+    return { error: true, message: "Missing target user ID" };
+  }
+
+  const response = await fetch(API_PATHS.friendRequest(targetUserId), {
     method: "DELETE",
   });
   const result = await response.json();
@@ -93,7 +102,11 @@ async function cancelFriendRequest(formData: FormData) {
 async function acceptFriendRequest(formData: FormData) {
   const requestId = formData.get("requestId");
 
-  const response = await fetch(`/api/friends/requests/${requestId}/accept`, {
+  if (typeof requestId !== "string") {
+    return { error: true, message: "Missing request ID" };
+  }
+
+  const response = await fetch(API_PATHS.friendRequestAccept(requestId), {
     method: "POST",
   });
   const result = await response.json();
@@ -111,7 +124,11 @@ async function acceptFriendRequest(formData: FormData) {
 async function declineFriendRequest(formData: FormData) {
   const requestId = formData.get("requestId");
 
-  const response = await fetch(`/api/friends/requests/${requestId}/decline`, {
+  if (typeof requestId !== "string") {
+    return { error: true, message: "Missing request ID" };
+  }
+
+  const response = await fetch(API_PATHS.friendRequestDecline(requestId), {
     method: "POST",
   });
   const result = await response.json();
@@ -138,7 +155,7 @@ async function getMessages(
 
   const queryString = searchParams.toString();
   const response = await fetch(
-    `/api/messages/${friendId}${queryString ? `?${queryString}` : ""}`,
+    `${API_PATHS.messages(friendId)}${queryString ? `?${queryString}` : ""}`,
   );
   const result = await response.json();
 
@@ -155,7 +172,7 @@ async function sendMessage(
   friendId: number,
   content: string,
 ): Promise<Message> {
-  const response = await fetch(`/api/messages/${friendId}`, {
+  const response = await fetch(API_PATHS.messages(friendId), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

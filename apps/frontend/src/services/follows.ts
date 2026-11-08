@@ -1,7 +1,13 @@
+import { API_PATHS } from "../constants/api";
+
 async function followUser(formData: FormData) {
   const targetUserId = formData.get("targetUserId");
 
-  const response = await fetch(`/api/follows/${targetUserId}`, {
+  if (typeof targetUserId !== "string") {
+    return { error: true, message: "Missing target user ID" };
+  }
+
+  const response = await fetch(API_PATHS.follows(targetUserId), {
     method: "POST",
   });
   const result = await response.json();
@@ -19,7 +25,11 @@ async function followUser(formData: FormData) {
 async function unfollowUser(formData: FormData) {
   const targetUserId = formData.get("targetUserId");
 
-  const response = await fetch(`/api/follows/${targetUserId}`, {
+  if (typeof targetUserId !== "string") {
+    return { error: true, message: "Missing target user ID" };
+  }
+
+  const response = await fetch(API_PATHS.follows(targetUserId), {
     method: "DELETE",
   });
   const result = await response.json();

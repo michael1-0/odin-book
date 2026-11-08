@@ -7,14 +7,18 @@ import type {
   MessagesGetQuery,
   MessagesGetResponse,
 } from "@repo/zod-validations";
+import {
+  FRIEND_REQUEST_STATUS,
+  MESSAGES_PAGE_SIZE,
+  SOCKET_EVENTS,
+} from "@repo/constants";
+import { ERROR_MESSAGES } from "../constants/errors.ts";
 import { getIo, userRoom } from "../socket/io.ts";
-
-const PAGE_SIZE = 50;
 
 async function assertFriendship(userId: number, friendId: number) {
   const request = await prisma.friendRequest.findFirst({
     where: {
-      status: "ACCEPTED",
+      status: FRIEND_REQUEST_STATUS.ACCEPTED,
       OR: [
         { senderId: userId, receiverId: friendId },
         { senderId: friendId, receiverId: userId },
@@ -32,7 +36,7 @@ async function getMessages(
   res: Response,
 ) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const currentUserId = req.user.id;
@@ -51,11 +55,11 @@ async function getMessages(
     orderBy: {
       id: "desc",
     },
-    take: PAGE_SIZE + 1,
+    take: MESSAGES_PAGE_SIZE + 1,
   });
 
-  const hasMore = messages.length > PAGE_SIZE;
-  const page = hasMore ? messages.slice(0, PAGE_SIZE) : messages;
+  const hasMore = messages.length > MESSAGES_PAGE_SIZE;
+  const page = hasMore ? messages.slice(0, MESSAGES_PAGE_SIZE) : messages;
   page.reverse();
 
   const response: MessagesGetResponse = {
@@ -74,7 +78,7 @@ async function createMessage(
   res: Response,
 ) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const senderId = req.user.id;
@@ -93,7 +97,7 @@ async function createMessage(
   getIo()
     .to(userRoom(senderId))
     .to(userRoom(recipientId))
-    .emit("message:new", { message });
+    .emit(SOCKET_EVENTS.messageNew, { message });
 
   return res.status(201).json({ data: message });
 }

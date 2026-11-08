@@ -1,8 +1,10 @@
 import "../config/env.ts";
 import { v2 as cloudinary } from "cloudinary";
-
-const PROFILE_PICTURE_FOLDER = "odin-book/profile-pictures";
-const POST_IMAGES_FOLDER = "odin-book/post-images";
+import {
+  POST_IMAGES_FOLDER,
+  PROFILE_PICTURE_FOLDER,
+  UPLOAD_ALLOWED_FORMATS,
+} from "../constants/images.ts";
 
 function uploadProfilePicture(buffer: Buffer, userId: number) {
   cloudinary.config();
@@ -15,7 +17,7 @@ function uploadProfilePicture(buffer: Buffer, userId: number) {
         resource_type: "image",
         overwrite: true,
         invalidate: true,
-        allowed_formats: ["jpg", "jpeg", "png", "webp"],
+        allowed_formats: UPLOAD_ALLOWED_FORMATS,
       },
       (error, result) => {
         if (error || !result) {
@@ -40,7 +42,7 @@ function uploadPostImage(buffer: Buffer, publicId: string) {
         folder: POST_IMAGES_FOLDER,
         public_id: publicId,
         resource_type: "image",
-        allowed_formats: ["jpg", "jpeg", "png", "webp"],
+        allowed_formats: UPLOAD_ALLOWED_FORMATS,
       },
       (error, result) => {
         if (error || !result) {

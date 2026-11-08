@@ -17,6 +17,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^7.4.0",
+    "@repo/constants": "workspace:*",
     "@repo/zod-validations": "workspace:*",
     "cloudinary": "^2.10.0",
     "cookie": "^2.0.1",

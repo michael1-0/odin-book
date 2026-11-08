@@ -1,10 +1,11 @@
 import type { Request, Response } from "express";
 import { AppError } from "../errors/AppError.ts";
 import { prisma } from "../db/prisma.ts";
+import { ERROR_MESSAGES } from "../constants/errors.ts";
 
 async function createComment(req: Request, res: Response) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const userId = req.user.id;
@@ -16,7 +17,7 @@ async function createComment(req: Request, res: Response) {
   });
 
   if (!post) {
-    throw new AppError("Post not found", 404);
+    throw new AppError(ERROR_MESSAGES.postNotFound, 404);
   }
 
   const comment = await prisma.comment.create({

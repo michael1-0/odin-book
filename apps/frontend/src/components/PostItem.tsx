@@ -3,8 +3,11 @@ import { LucideHeart, MessageSquare } from "lucide-react";
 import { Link, useFetcher, useNavigate } from "react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import toast from "react-hot-toast";
+import { postPath, userPath, FORM_INTENTS } from "../constants/routes";
 import PostImageModal from "./PostImageModal";
 import getOptimizedImageUrl from "../utils/cloudinaryUrl";
+import { formatShortDate } from "../utils/formatDate";
+import { IMAGE_WIDTHS } from "../constants/ui";
 
 type PostItemProps = {
   post: PostFeedItem;
@@ -45,7 +48,7 @@ function PostItem({
   }
 
   function handleCardClick() {
-    navigate(`/posts/${post.id}`);
+    navigate(postPath(post.id));
   }
 
   return (
@@ -55,7 +58,7 @@ function PostItem({
     >
       {includeHeader && (
         <Link
-          to={`/users/${post.user.id}`}
+          to={userPath(post.user.id)}
           onClick={(e) => e.stopPropagation()}
           className="flex gap-5 items-center"
         >
@@ -70,7 +73,7 @@ function PostItem({
       <div>{post.content}</div>
       {images.length === 1 && (
         <img
-          src={getOptimizedImageUrl(images[0].url, 1200)}
+          src={getOptimizedImageUrl(images[0].url, IMAGE_WIDTHS.large)}
           alt="Post image 1"
           loading="lazy"
           onClick={(e) => {
@@ -85,7 +88,7 @@ function PostItem({
           {images.map((image, index) => (
             <img
               key={image.id}
-              src={getOptimizedImageUrl(image.url, 600)}
+              src={getOptimizedImageUrl(image.url, IMAGE_WIDTHS.small)}
               alt={`Post image ${index + 1}`}
               loading="lazy"
               onClick={(e) => {
@@ -102,7 +105,10 @@ function PostItem({
           {images.slice(0, 3).map((image, index) => (
             <img
               key={image.id}
-              src={getOptimizedImageUrl(image.url, index === 0 ? 900 : 600)}
+              src={getOptimizedImageUrl(
+                image.url,
+                index === 0 ? IMAGE_WIDTHS.medium : IMAGE_WIDTHS.small,
+              )}
               alt={`Post image ${index + 1}`}
               loading="lazy"
               onClick={(e) => {
@@ -120,7 +126,9 @@ function PostItem({
           <button
             type="submit"
             name="intent"
-            value={isLikedByMe ? "unlike-post" : "like-post"}
+            value={
+              isLikedByMe ? FORM_INTENTS.unlikePost : FORM_INTENTS.likePost
+            }
             onClick={(e) => e.stopPropagation()}
             disabled={likeFetcher.state !== "idle"}
           >
@@ -134,13 +142,7 @@ function PostItem({
           <MessageSquare />
           <div>{post._count.comments}</div>
         </div>
-        <div className="text-sm ml-auto">
-          {new Date(post.createdAt).toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })}
-        </div>
+        <div className="text-sm ml-auto">{formatShortDate(post.createdAt)}</div>
         {deleteButton}
       </div>
       {selectedImageUrl && (

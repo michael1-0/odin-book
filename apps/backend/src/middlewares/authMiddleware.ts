@@ -1,4 +1,5 @@
 import { AppError } from "../errors/AppError.ts";
+import { ERROR_MESSAGES } from "../constants/errors.ts";
 import passport from "./passportMiddleware.ts";
 
 import type { NextFunction, Request, Response } from "express";
@@ -13,7 +14,7 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
       }
 
       if (!user) {
-        return next(new AppError("Unauthorized", 401));
+        return next(new AppError(ERROR_MESSAGES.unauthorized, 401));
       }
 
       req.user = user;

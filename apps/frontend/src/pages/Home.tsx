@@ -12,13 +12,20 @@ import {
   type ChangeEvent,
 } from "react";
 import {
-  MAX_POST_IMAGES,
-  MAX_POST_IMAGE_SIZE,
   PostCreateBodySchema,
   z,
   type PostFeedItem,
   type PostsGetResponse,
 } from "@repo/zod-validations";
+import {
+  ACCEPTED_IMAGE_MIME_TYPES,
+  FEED_PAGE_SIZE,
+  MAX_POST_IMAGES,
+  MAX_POST_IMAGE_SIZE,
+  POST_IMAGES_FIELD,
+} from "@repo/constants";
+import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
+import { LOAD_MORE_ROOT_MARGIN } from "../constants/ui";
 import { createPost, loadPosts } from "../services/posts";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
@@ -26,8 +33,6 @@ import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 import toast from "react-hot-toast";
 import { ImagePlus, X } from "lucide-react";
-
-const PAGE_SIZE = 10;
 
 async function loader() {
   return await loadPosts();
@@ -52,9 +57,9 @@ async function action({ request }: ActionFunctionArgs) {
 
       return await createPost(formData);
     }
-    case "like-post":
+    case FORM_INTENTS.likePost:
       return await likePost(formData);
-    case "unlike-post":
+    case FORM_INTENTS.unlikePost:
       return await unlikePost(formData);
     default:
       throw new Response("Unknown intent", { status: 400 });
@@ -62,7 +67,7 @@ async function action({ request }: ActionFunctionArgs) {
 }
 
 function Home() {
-  const { user } = useRouteLoaderData("user-data");
+  const { user } = useRouteLoaderData(ROUTE_ID);
   const postFetcher = useFetcher();
   const { data: postFetcherData, state: postFetcherState } = postFetcher;
 
@@ -139,7 +144,9 @@ function Home() {
     }
 
     if (files.some((file) => file.size > MAX_POST_IMAGE_SIZE)) {
-      setImageError("Each image must be 5 MB or smaller");
+      setImageError(
+        `Each image must be ${MAX_POST_IMAGE_SIZE / 1024 / 1024} MB or smaller`,
+      );
       event.currentTarget.value = "";
       return;
     }
@@ -210,13 +217,13 @@ function Home() {
       const mergedPosts = [
         createdPost,
         ...firstPage.data.filter((post) => post.id !== createdPost.id),
-      ].slice(0, PAGE_SIZE);
+      ].slice(0, FEED_PAGE_SIZE);
 
       return [
         {
           data: mergedPosts,
           nextCursor:
-            mergedPosts.length === PAGE_SIZE
+            mergedPosts.length === FEED_PAGE_SIZE
               ? (mergedPosts[mergedPosts.length - 1]?.id ?? null)
               : null,
         },
@@ -241,7 +248,7 @@ function Home() {
         void loadNextPage();
       },
       {
-        rootMargin: "200px",
+        rootMargin: LOAD_MORE_ROOT_MARGIN,
       },
     );
 
@@ -332,10 +339,10 @@ function Home() {
           </label>
           <input
             type="file"
-            name="images"
+            name={POST_IMAGES_FIELD}
             id="post-images"
             ref={imagesInputRef}
-            accept="image/jpeg,image/png,image/webp"
+            accept={ACCEPTED_IMAGE_MIME_TYPES.join(",")}
             multiple
             onChange={handleImagesChange}
             disabled={isPosting}

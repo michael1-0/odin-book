@@ -8,9 +8,6 @@ import {
 } from "./entities.js";
 import { PostLikeSchema } from "./likes.js";
 
-export const MAX_POST_IMAGES = 3;
-export const MAX_POST_IMAGE_SIZE = 5 * 1024 * 1024;
-
 const PostAuthorSchema = UserSchema.pick({
   id: true,
   profileUrl: true,

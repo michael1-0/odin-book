@@ -5,15 +5,17 @@ import { Link } from "react-router";
 import toast from "react-hot-toast";
 import { MessageCircle, X } from "lucide-react";
 import type { Friend, Message } from "@repo/zod-validations";
+import { MAX_MESSAGE_LENGTH } from "@repo/zod-validations";
+import { SOCKET_EVENTS } from "@repo/constants";
+import { MESSAGE_GROUP_WINDOW_MS } from "../constants/ui";
 import { getMessages, sendMessage } from "../services/friends";
 import { getSocket } from "../services/socket";
+import { userPath } from "../constants/routes";
 import {
   formatDayLabel,
   formatMessageTime,
   isSameDay,
 } from "../utils/formatDate";
-
-const GROUP_MESSAGE_WINDOW_MS = 5 * 60 * 1000;
 
 type ChatModalProps = {
   friend: Friend;
@@ -131,10 +133,10 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
       }
     }
 
-    socket.on("message:new", handleNewMessage);
+    socket.on(SOCKET_EVENTS.messageNew, handleNewMessage);
 
     return () => {
-      socket.off("message:new", handleNewMessage);
+      socket.off(SOCKET_EVENTS.messageNew, handleNewMessage);
     };
   }, [friendId, currentUserId, addMessage]);
 
@@ -208,7 +210,7 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
       <header className="p-4">
         <div className="mx-auto flex w-full max-w-165 items-center gap-3">
           <Link
-            to={`/users/${friend.id}`}
+            to={userPath(friend.id)}
             aria-label={`View ${friend.username}'s profile`}
             onClick={onClose}
           >
@@ -219,7 +221,7 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
             />
           </Link>
           <Link
-            to={`/users/${friend.id}`}
+            to={userPath(friend.id)}
             className="min-w-0 truncate font-semibold hover:underline"
             title={friend.username}
             onClick={onClose}
@@ -285,7 +287,7 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
                 previous.senderId === message.senderId &&
                 new Date(message.createdAt).getTime() -
                   new Date(previous.createdAt).getTime() <
-                  GROUP_MESSAGE_WINDOW_MS;
+                  MESSAGE_GROUP_WINDOW_MS;
 
               return (
                 <div key={message.id} className="flex flex-col">
@@ -326,7 +328,7 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             placeholder="Write a message"
-            maxLength={1000}
+            maxLength={MAX_MESSAGE_LENGTH}
             aria-label="Write a message"
             autoFocus
             className="min-w-0 flex-1 rounded-sm bg-neutral-100 p-3 text-sm outline-none focus:ring-2 focus:ring-black"

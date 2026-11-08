@@ -4,7 +4,10 @@ import { Link, useFetcher } from "react-router";
 import toast from "react-hot-toast";
 import { Check, Search, X } from "lucide-react";
 import type { FriendExploreItem } from "@repo/zod-validations";
+import { FRIEND_REQUEST_STATUS } from "@repo/constants";
 import { exploreFriends } from "../services/friends";
+import { APP_ROUTES, FORM_INTENTS, userPath } from "../constants/routes";
+import { FRIEND_SEARCH_DEBOUNCE_MS } from "../constants/ui";
 import Avatar from "./Avatar";
 
 function ExploreItem({
@@ -28,12 +31,13 @@ function ExploreItem({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher.data]);
 
-  const hasPendingRequest = item.requestStatus === "PENDING";
+  const hasPendingRequest =
+    item.requestStatus === FRIEND_REQUEST_STATUS.PENDING;
 
   return (
     <li className="flex items-center justify-between gap-2 rounded-sm bg-neutral-100 p-3">
       <Link
-        to={`/users/${item.id}`}
+        to={userPath(item.id)}
         className="flex min-w-0 items-center gap-3 hover:underline"
         onClick={onNavigate}
       >
@@ -48,12 +52,12 @@ function ExploreItem({
           Request sent
         </span>
       ) : (
-        <fetcher.Form method="POST" action="/friends">
+        <fetcher.Form method="POST" action={APP_ROUTES.friends}>
           <input type="hidden" name="targetUserId" value={item.id} />
           <button
             type="submit"
             name="intent"
-            value="send-request"
+            value={FORM_INTENTS.sendRequest}
             disabled={isPending}
             className="rounded-sm bg-black p-2 text-xs text-white transition-colors hover:bg-neutral-700 disabled:opacity-50"
           >
@@ -124,7 +128,7 @@ function AddFriendsModal({ onClose }: AddFriendsModalProps) {
 
     const timeout = setTimeout(() => {
       void loadResults(query, undefined, true);
-    }, 300);
+    }, FRIEND_SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timeout);
   }, [query, loadResults]);
@@ -149,7 +153,7 @@ function AddFriendsModal({ onClose }: AddFriendsModalProps) {
     setResults((current) =>
       current.map((user) =>
         user.id === userId
-          ? { ...user, requestStatus: "PENDING", requestId }
+          ? { ...user, requestStatus: FRIEND_REQUEST_STATUS.PENDING, requestId }
           : user,
       ),
     );

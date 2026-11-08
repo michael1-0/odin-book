@@ -1,20 +1,27 @@
 import type { RequestHandler } from "express";
 import multer from "multer";
 import { AppError } from "../errors/AppError.ts";
-import { MAX_POST_IMAGES, MAX_POST_IMAGE_SIZE } from "@repo/zod-validations";
-
-const acceptedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+import {
+  MAX_POST_IMAGES,
+  MAX_POST_IMAGE_SIZE,
+  POST_IMAGES_FIELD,
+} from "@repo/constants";
+import {
+  IMAGE_MIME_TYPE_ALLOWLIST,
+  POST_IMAGE_PART_COUNT_LIMIT,
+  UPLOAD_FIELD_COUNT_LIMIT,
+} from "../constants/images.ts";
 
 const postImagesUpload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: MAX_POST_IMAGE_SIZE,
     files: MAX_POST_IMAGES,
-    fields: 5,
-    parts: 9,
+    fields: UPLOAD_FIELD_COUNT_LIMIT,
+    parts: POST_IMAGE_PART_COUNT_LIMIT,
   },
   fileFilter: (_req, file, callback) => {
-    if (!acceptedMimeTypes.has(file.mimetype)) {
+    if (!IMAGE_MIME_TYPE_ALLOWLIST.has(file.mimetype)) {
       callback(new AppError("Post images must be JPEG, PNG, or WebP", 415));
       return;
     }
@@ -40,7 +47,7 @@ function getMulterErrorMessage(error: multer.MulterError) {
 }
 
 const postImagesUploadHandler = postImagesUpload.array(
-  "images",
+  POST_IMAGES_FIELD,
   MAX_POST_IMAGES,
 ) as unknown as RequestHandler;
 

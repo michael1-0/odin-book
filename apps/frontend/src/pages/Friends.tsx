@@ -27,6 +27,8 @@ import {
 } from "../services/friends";
 import { disconnectSocket, getSocket } from "../services/socket";
 import { formatFriendTime } from "../utils/formatDate";
+import { SOCKET_EVENTS } from "@repo/constants";
+import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
 
 type FriendsLoaderData = FriendsGetResponse["data"];
 type UserData = { user: { id: number } };
@@ -40,13 +42,13 @@ async function action({ request }: ActionFunctionArgs) {
   const intent = formData.get("intent");
 
   switch (intent) {
-    case "send-request":
+    case FORM_INTENTS.sendRequest:
       return await sendFriendRequest(formData);
-    case "cancel-request":
+    case FORM_INTENTS.cancelRequest:
       return await cancelFriendRequest(formData);
-    case "accept-request":
+    case FORM_INTENTS.acceptRequest:
       return await acceptFriendRequest(formData);
-    case "decline-request":
+    case FORM_INTENTS.declineRequest:
       return await declineFriendRequest(formData);
     default:
       throw new Response("Unknown intent", { status: 400 });
@@ -56,7 +58,7 @@ async function action({ request }: ActionFunctionArgs) {
 function Friends() {
   const { friends, incomingRequests, outgoingRequests } =
     useLoaderData() as FriendsLoaderData;
-  const { user } = useRouteLoaderData<UserData>("user-data")!;
+  const { user } = useRouteLoaderData<UserData>(ROUTE_ID)!;
   const revalidator = useRevalidator();
   const revalidateRef = useRef(revalidator.revalidate);
   const [activeModal, setActiveModal] = useState<"requests" | "add" | null>(
@@ -111,16 +113,16 @@ function Friends() {
       void revalidateRef.current();
     }
 
-    socket.on("friend-request:new", handleNewRequest);
-    socket.on("friend-request:accepted", handleAccepted);
-    socket.on("friend-request:declined", handleDeclined);
-    socket.on("message:new", handleNewMessage);
+    socket.on(SOCKET_EVENTS.friendRequestNew, handleNewRequest);
+    socket.on(SOCKET_EVENTS.friendRequestAccepted, handleAccepted);
+    socket.on(SOCKET_EVENTS.friendRequestDeclined, handleDeclined);
+    socket.on(SOCKET_EVENTS.messageNew, handleNewMessage);
 
     return () => {
-      socket.off("friend-request:new", handleNewRequest);
-      socket.off("friend-request:accepted", handleAccepted);
-      socket.off("friend-request:declined", handleDeclined);
-      socket.off("message:new", handleNewMessage);
+      socket.off(SOCKET_EVENTS.friendRequestNew, handleNewRequest);
+      socket.off(SOCKET_EVENTS.friendRequestAccepted, handleAccepted);
+      socket.off(SOCKET_EVENTS.friendRequestDeclined, handleDeclined);
+      socket.off(SOCKET_EVENTS.messageNew, handleNewMessage);
     };
   }, []);
 

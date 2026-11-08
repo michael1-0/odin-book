@@ -4,6 +4,7 @@ import { parseCookie } from "cookie";
 import jwt from "jsonwebtoken";
 import { prisma } from "../db/prisma.ts";
 import env from "../config/env.ts";
+import { AUTH_COOKIE_NAME } from "../constants/auth.ts";
 
 let io: SocketServer | null = null;
 
@@ -19,7 +20,7 @@ function initSocketServer(httpServer: HttpServer) {
   io.use(async (socket, next) => {
     try {
       const cookies = parseCookie(socket.handshake.headers.cookie ?? "");
-      const token = cookies["token"];
+      const token = cookies[AUTH_COOKIE_NAME];
 
       if (!token) {
         return next(new Error("Unauthorized"));

@@ -11,15 +11,16 @@ import Profile from "./pages/Profile.tsx";
 import UserDetail from "./pages/UserDetail.tsx";
 import Updates from "./pages/Updates.tsx";
 import Friends from "./pages/Friends.tsx";
+import { APP_ROUTES, ROUTE_ID, ROUTE_PATTERNS } from "./constants/routes";
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: APP_ROUTES.home,
     Component: App,
     errorElement: <ErrorBoundary />,
     children: [
       {
-        id: "user-data",
+        id: ROUTE_ID,
         loader: App.protectedLoader,
         children: [
           {
@@ -32,37 +33,37 @@ const router = createBrowserRouter([
                 action: Home.action,
               },
               {
-                path: "/updates",
+                path: APP_ROUTES.updates,
                 Component: Updates,
                 loader: Updates.loader,
                 action: Updates.action,
               },
               {
-                path: "/users",
+                path: APP_ROUTES.users,
                 Component: Users,
                 loader: Users.loader,
                 action: Users.action,
               },
               {
-                path: "/friends",
+                path: APP_ROUTES.friends,
                 Component: Friends,
                 loader: Friends.loader,
                 action: Friends.action,
               },
               {
-                path: "/users/:userId",
+                path: ROUTE_PATTERNS.userDetail,
                 Component: UserDetail,
                 loader: UserDetail.loader,
                 action: UserDetail.action,
               },
               {
-                path: "/posts/:postId",
+                path: ROUTE_PATTERNS.postDetail,
                 Component: PostDetail,
                 loader: PostDetail.loader,
                 action: PostDetail.action,
               },
               {
-                path: "/profile",
+                path: APP_ROUTES.profile,
                 Component: Profile,
                 loader: Profile.loader,
                 action: Profile.action,
@@ -73,7 +74,7 @@ const router = createBrowserRouter([
       },
       {
         loader: App.guestLoader,
-        children: [{ path: "/login", Component: LogIn }],
+        children: [{ path: APP_ROUTES.login, Component: LogIn }],
       },
       { path: "*", Component: NotFound },
     ],

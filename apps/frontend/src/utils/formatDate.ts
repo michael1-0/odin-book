@@ -20,6 +20,14 @@ export function formatMessageTime(value: Date | string): string {
   });
 }
 
+export function formatShortDate(value: Date | string): string {
+  return parseDate(value).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export function formatDayLabel(value: Date | string): string {
   const date = parseDate(value);
   const today = new Date();

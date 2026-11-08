@@ -16,15 +16,16 @@ import {
   uploadPostImage,
 } from "../utils/cloudinary.ts";
 import { getPostFeedItem, postFeedSelect } from "../utils/postFeed.ts";
-
-const PAGE_SIZE = 10;
+import { COMMENTS_PAGE_SIZE, FEED_PAGE_SIZE } from "@repo/constants";
+import { TRENDING_WINDOW_MS } from "../constants/feed.ts";
+import { ERROR_MESSAGES } from "../constants/errors.ts";
 
 async function getPosts(
   req: Request<unknown, unknown, unknown, PostsGetQuery>,
   res: Response,
 ) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const scope = req.query.scope ?? "all";
@@ -32,7 +33,7 @@ async function getPosts(
 
   if (req.query.period === "month") {
     where.createdAt = {
-      gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      gte: new Date(Date.now() - TRENDING_WINDOW_MS),
     };
   }
 
@@ -64,12 +65,12 @@ async function getPosts(
           skip: 1,
         }
       : {}),
-    take: PAGE_SIZE + 1,
+    take: FEED_PAGE_SIZE + 1,
   });
 
-  const hasMore = posts.length > PAGE_SIZE;
+  const hasMore = posts.length > FEED_PAGE_SIZE;
   const pagedPosts: PostFeedItem[] = hasMore
-    ? posts.slice(0, PAGE_SIZE)
+    ? posts.slice(0, FEED_PAGE_SIZE)
     : posts;
 
   const response: PostsGetResponse = {
@@ -87,7 +88,7 @@ async function createPost(
   res: Response,
 ) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const userId = req.user.id;
@@ -159,7 +160,6 @@ async function getPost(
   const { include, offset: offsetParam } = req.query;
 
   const offset = offsetParam ?? 0;
-  const commentsLimit = 10;
 
   const post = await prisma.post.findUnique({
     select: {
@@ -211,7 +211,7 @@ async function getPost(
               orderBy: {
                 createdAt: "desc",
               },
-              take: offset + commentsLimit + 1,
+              take: offset + COMMENTS_PAGE_SIZE + 1,
             }
           : false,
     },
@@ -221,18 +221,18 @@ async function getPost(
   });
 
   if (!post) {
-    throw new AppError("Post not found", 404);
+    throw new AppError(ERROR_MESSAGES.postNotFound, 404);
   }
 
   const comments = post.comments;
 
   const hasNextPage =
-    Array.isArray(comments) && comments.length > offset + commentsLimit;
+    Array.isArray(comments) && comments.length > offset + COMMENTS_PAGE_SIZE;
   if (hasNextPage) {
     comments.pop();
   }
 
-  const nextCursor = hasNextPage ? offset + commentsLimit : null;
+  const nextCursor = hasNextPage ? offset + COMMENTS_PAGE_SIZE : null;
 
   return res.status(200).json({
     data: post,
@@ -242,7 +242,7 @@ async function getPost(
 
 async function deletePost(req: Request<PostIdParams>, res: Response) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const { postId } = req.params;
@@ -262,11 +262,11 @@ async function deletePost(req: Request<PostIdParams>, res: Response) {
   });
 
   if (!post) {
-    throw new AppError("Post not found", 404);
+    throw new AppError(ERROR_MESSAGES.postNotFound, 404);
   }
 
   if (post.posterId !== req.user.id) {
-    throw new AppError("Unauthorized", 403);
+    throw new AppError(ERROR_MESSAGES.unauthorized, 403);
   }
 
   await prisma.post.delete({

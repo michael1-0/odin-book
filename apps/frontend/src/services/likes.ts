@@ -1,7 +1,13 @@
+import { API_PATHS } from "../constants/api";
+
 async function likePost(formData: FormData) {
   const postId = formData.get("postId");
 
-  const response = await fetch(`/api/likes/${postId}`, {
+  if (typeof postId !== "string") {
+    return { error: true, message: "Missing post ID" };
+  }
+
+  const response = await fetch(API_PATHS.likes(postId), {
     method: "POST",
   });
   const result = await response.json();
@@ -19,7 +25,11 @@ async function likePost(formData: FormData) {
 async function unlikePost(formData: FormData) {
   const postId = formData.get("postId");
 
-  const response = await fetch(`/api/likes/${postId}`, {
+  if (typeof postId !== "string") {
+    return { error: true, message: "Missing post ID" };
+  }
+
+  const response = await fetch(API_PATHS.likes(postId), {
     method: "DELETE",
   });
   const result = await response.json();

@@ -2,20 +2,26 @@ import type { RequestHandler } from "express";
 import multer from "multer";
 import { AppError } from "../errors/AppError.ts";
 import type { UserIdParams } from "@repo/zod-validations";
-
-const MAX_PROFILE_PICTURE_SIZE = 5 * 1024 * 1024;
-const acceptedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+import {
+  MAX_PROFILE_PICTURE_SIZE,
+  PROFILE_PICTURE_FIELD,
+} from "@repo/constants";
+import {
+  IMAGE_MIME_TYPE_ALLOWLIST,
+  PROFILE_PICTURE_PART_COUNT_LIMIT,
+  UPLOAD_FIELD_COUNT_LIMIT,
+} from "../constants/images.ts";
 
 const profilePictureUpload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: MAX_PROFILE_PICTURE_SIZE,
     files: 1,
-    fields: 5,
-    parts: 6,
+    fields: UPLOAD_FIELD_COUNT_LIMIT,
+    parts: PROFILE_PICTURE_PART_COUNT_LIMIT,
   },
   fileFilter: (_req, file, callback) => {
-    if (!acceptedMimeTypes.has(file.mimetype)) {
+    if (!IMAGE_MIME_TYPE_ALLOWLIST.has(file.mimetype)) {
       callback(
         new AppError("Profile picture must be a JPEG, PNG, or WebP image", 415),
       );
@@ -29,7 +35,9 @@ const profilePictureUpload = multer({
 function getMulterErrorMessage(error: multer.MulterError) {
   switch (error.code) {
     case "LIMIT_FILE_SIZE":
-      return "Profile picture must be 5 MB or smaller";
+      return `Profile picture must be ${
+        MAX_PROFILE_PICTURE_SIZE / 1024 / 1024
+      } MB or smaller`;
     case "LIMIT_FILE_COUNT":
     case "LIMIT_UNEXPECTED_FILE":
       return "Only one profile picture can be uploaded";
@@ -43,7 +51,7 @@ function getMulterErrorMessage(error: multer.MulterError) {
 }
 
 const profilePictureUploadHandler = profilePictureUpload.single(
-  "profilePicture",
+  PROFILE_PICTURE_FIELD,
 ) as unknown as RequestHandler<UserIdParams>;
 
 const profilePictureUploadMiddleware: RequestHandler<UserIdParams> = (

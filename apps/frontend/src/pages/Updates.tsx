@@ -7,6 +7,8 @@ import { getFollowingPostsFromLastMonth, loadPosts } from "../services/posts";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 import type { PostsGetResponse } from "@repo/zod-validations";
+import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
+import { LOAD_MORE_ROOT_MARGIN } from "../constants/ui";
 import toast from "react-hot-toast";
 
 async function loader() {
@@ -18,9 +20,9 @@ async function action({ request }: ActionFunctionArgs) {
   const intent = formData.get("intent");
 
   switch (intent) {
-    case "like-post":
+    case FORM_INTENTS.likePost:
       return await likePost(formData);
-    case "unlike-post":
+    case FORM_INTENTS.unlikePost:
       return await unlikePost(formData);
     default:
       throw new Response("Unknown intent", { status: 400 });
@@ -28,7 +30,7 @@ async function action({ request }: ActionFunctionArgs) {
 }
 
 function Updates() {
-  const { user } = useRouteLoaderData("user-data");
+  const { user } = useRouteLoaderData(ROUTE_ID);
   const initialPage = useLoaderData() as PostsGetResponse;
   const [pages, setPages] = useState<PostsGetResponse[]>(() => [initialPage]);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -79,7 +81,7 @@ function Updates() {
         void loadNextPage();
       },
       {
-        rootMargin: "200px",
+        rootMargin: LOAD_MORE_ROOT_MARGIN,
       },
     );
 

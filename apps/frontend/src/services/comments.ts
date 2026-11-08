@@ -1,5 +1,7 @@
+import { API_PATHS } from "../constants/api";
+
 async function createComment(content: string, postId: number) {
-  const response = await fetch("/api/comments", {
+  const response = await fetch(API_PATHS.comments, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

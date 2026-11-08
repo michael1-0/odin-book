@@ -19,6 +19,13 @@ import {
   z,
   type PostsGetResponse,
 } from "@repo/zod-validations";
+import {
+  ACCEPTED_IMAGE_MIME_TYPES,
+  MAX_PROFILE_PICTURE_SIZE,
+  PROFILE_PICTURE_FIELD,
+} from "@repo/constants";
+import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
+import { LOAD_MORE_ROOT_MARGIN } from "../constants/ui";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
 import { updateUser } from "../services/users";
@@ -28,8 +35,6 @@ import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 import ProfilePictureCropModal from "../components/ProfilePictureCropModal";
-
-const MAX_PROFILE_PICTURE_SIZE = 5 * 1024 * 1024;
 
 async function loader() {
   return await getCurrentUserPosts();
@@ -55,9 +60,9 @@ async function action({ request }: ActionFunctionArgs) {
 
       return await updateUser(formData);
     }
-    case "like-post":
+    case FORM_INTENTS.likePost:
       return await likePost(formData);
-    case "unlike-post":
+    case FORM_INTENTS.unlikePost:
       return await unlikePost(formData);
     case "delete-post":
       return await deletePost(formData);
@@ -67,7 +72,7 @@ async function action({ request }: ActionFunctionArgs) {
 }
 
 function Profile() {
-  const { user } = useRouteLoaderData("user-data");
+  const { user } = useRouteLoaderData(ROUTE_ID);
   const { revalidate } = useRevalidator();
   const fetcher = useFetcher();
   const deleteFetcher = useFetcher();
@@ -96,12 +101,16 @@ function Profile() {
       return;
     }
 
-    const isAllowedType = ["image/jpeg", "image/png", "image/webp"].includes(
-      file.type,
-    );
+    const isAllowedType = (
+      ACCEPTED_IMAGE_MIME_TYPES as readonly string[]
+    ).includes(file.type);
 
     if (!isAllowedType || file.size > MAX_PROFILE_PICTURE_SIZE) {
-      toast.error("Choose a JPEG, PNG, or WebP image up to 5 MB");
+      toast.error(
+        `Choose a JPEG, PNG, or WebP image up to ${
+          MAX_PROFILE_PICTURE_SIZE / 1024 / 1024
+        } MB`,
+      );
       event.currentTarget.value = "";
       return;
     }
@@ -253,7 +262,7 @@ function Profile() {
         void loadNextPage();
       },
       {
-        rootMargin: "200px",
+        rootMargin: LOAD_MORE_ROOT_MARGIN,
       },
     );
 
@@ -293,10 +302,10 @@ function Profile() {
             </label>
             <input
               type="file"
-              name="profilePicture"
+              name={PROFILE_PICTURE_FIELD}
               id="profilePicture"
               ref={profilePictureInputRef}
-              accept="image/jpeg,image/png,image/webp"
+              accept={ACCEPTED_IMAGE_MIME_TYPES.join(",")}
               onChange={handleProfilePictureChange}
               className="sr-only"
             />

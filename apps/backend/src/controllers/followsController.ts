@@ -2,10 +2,11 @@ import type { Request, Response } from "express";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
 import type { FollowParams } from "@repo/zod-validations";
+import { ERROR_MESSAGES } from "../constants/errors.ts";
 
 async function followUser(req: Request<FollowParams>, res: Response) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const followedById = req.user.id;
@@ -21,7 +22,7 @@ async function followUser(req: Request<FollowParams>, res: Response) {
   });
 
   if (!targetUser) {
-    throw new AppError("User not found", 404);
+    throw new AppError(ERROR_MESSAGES.userNotFound, 404);
   }
 
   const newFollow = await prisma.follow.upsert({
@@ -45,7 +46,7 @@ async function followUser(req: Request<FollowParams>, res: Response) {
 
 async function unfollowUser(req: Request<FollowParams>, res: Response) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
   const followedById = req.user.id;
   const followingId = req.params.followingId;

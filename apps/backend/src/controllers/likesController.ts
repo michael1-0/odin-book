@@ -3,10 +3,11 @@ import type { PostIdParams } from "@repo/zod-validations";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
 import { getPostFeedItem } from "../utils/postFeed.ts";
+import { ERROR_MESSAGES } from "../constants/errors.ts";
 
 async function likePost(req: Request<PostIdParams>, res: Response) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const userId = req.user.id;
@@ -18,7 +19,7 @@ async function likePost(req: Request<PostIdParams>, res: Response) {
   });
 
   if (!post) {
-    throw new AppError("Post not found", 404);
+    throw new AppError(ERROR_MESSAGES.postNotFound, 404);
   }
 
   await prisma.like.create({
@@ -32,7 +33,7 @@ async function likePost(req: Request<PostIdParams>, res: Response) {
 
 async function unlikePost(req: Request<PostIdParams>, res: Response) {
   if (!req.user) {
-    throw new AppError("Unauthenticated", 401);
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
   }
 
   const userId = req.user.id;
@@ -48,7 +49,7 @@ async function unlikePost(req: Request<PostIdParams>, res: Response) {
   const feedPost = await getPostFeedItem(postId);
 
   if (!feedPost) {
-    throw new AppError("Post not found", 404);
+    throw new AppError(ERROR_MESSAGES.postNotFound, 404);
   }
 
   return res.status(200).json({ data: feedPost });

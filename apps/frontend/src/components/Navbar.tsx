@@ -2,6 +2,8 @@ import { useState, useEffect, type ReactEventHandler } from "react";
 import { Menu, X } from "lucide-react";
 import Logo from "./Logo";
 import { NavLink, useNavigate } from "react-router";
+import { APP_ROUTES } from "../constants/routes";
+import { API_PATHS } from "../constants/api";
 
 type NavProps = {
   isOpen: boolean;
@@ -12,36 +14,36 @@ type NavProps = {
 function DesktopMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
   return (
     <nav className="sticky top-0 z-50 flex justify-between items-center p-4 bg-white">
-      <NavLink to={"/"}>
+      <NavLink to={APP_ROUTES.home}>
         <Logo />
       </NavLink>
       <div className="hidden md:flex gap-6 items-center font-semibold">
         <NavLink
-          to="/"
+          to={APP_ROUTES.home}
           className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Home
         </NavLink>
         <NavLink
-          to="/updates"
+          to={APP_ROUTES.updates}
           className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Updates
         </NavLink>
         <NavLink
-          to="/users"
+          to={APP_ROUTES.users}
           className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Users
         </NavLink>
         <NavLink
-          to="/friends"
+          to={APP_ROUTES.friends}
           className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Friends
         </NavLink>
         <NavLink
-          to="/profile"
+          to={APP_ROUTES.profile}
           className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Profile
@@ -83,35 +85,35 @@ function MobileMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
       </div>
       <div className="flex flex-col gap-6 text-2xl font-semibold items-center justify-center flex-1 tracking-wide">
         <NavLink
-          to="/"
+          to={APP_ROUTES.home}
           onClick={toggleSidebar}
           className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Home
         </NavLink>
         <NavLink
-          to="/updates"
+          to={APP_ROUTES.updates}
           onClick={toggleSidebar}
           className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Updates
         </NavLink>
         <NavLink
-          to="/users"
+          to={APP_ROUTES.users}
           onClick={toggleSidebar}
           className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Users
         </NavLink>
         <NavLink
-          to="/friends"
+          to={APP_ROUTES.friends}
           onClick={toggleSidebar}
           className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
           Friends
         </NavLink>
         <NavLink
-          to="/profile"
+          to={APP_ROUTES.profile}
           onClick={toggleSidebar}
           className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
         >
@@ -138,14 +140,14 @@ function Navbar() {
 
   async function handleLogout() {
     try {
-      await fetch("/api/auth/logout", {
+      await fetch(API_PATHS.authLogout, {
         method: "POST",
         credentials: "include",
       });
 
-      navigate("/login");
+      navigate(APP_ROUTES.login);
     } catch {
-      navigate("/");
+      navigate(APP_ROUTES.home);
     }
   }
 

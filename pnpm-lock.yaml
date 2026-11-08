@@ -20,6 +20,9 @@ importers:
       '@prisma/client':
         specifier: ^7.4.0
         version: 7.4.0(prisma@7.4.0(@types/react@19.2.13)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)
+      '@repo/constants':
+        specifier: workspace:*
+        version: link:../../packages/constants
       '@repo/zod-validations':
         specifier: workspace:*
         version: link:../../packages/zod-validations
@@ -138,6 +141,9 @@ importers:
 
   apps/frontend:
     dependencies:
+      '@repo/constants':
+        specifier: workspace:*
+        version: link:../../packages/constants
       '@repo/zod-validations':
         specifier: workspace:*
         version: link:../../packages/zod-validations
@@ -218,6 +224,30 @@ importers:
         specifier: ^7.2.4
         version: 7.3.1(@types/node@24.10.11)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)
 
+  packages/constants:
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/prettier-config':
+        specifier: workspace:*
+        version: link:../prettier-config
+      eslint:
+        specifier: ^9.39.2
+        version: 9.39.2(jiti@2.6.1)
+      globals:
+        specifier: ^16.5.0
+        version: 16.5.0
+      prettier:
+        specifier: 3.8.1
+        version: 3.8.1
+      typescript:
+        specifier: ~5.9.3
+        version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.54.0
+        version: 8.54.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+
   packages/eslint-config:
     dependencies:
       '@eslint/js':
@@ -249,6 +279,9 @@ importers:
 
   packages/zod-validations:
     dependencies:
+      '@repo/constants':
+        specifier: workspace:*
+        version: link:../constants
       zod:
         specifier: ^4.4.3
         version: 4.4.3

@@ -1,10 +1,12 @@
 import { Toaster, ToastBar } from "react-hot-toast";
 import { Outlet } from "react-router";
 import { ScrollRestoration } from "react-router";
+import { APP_ROUTES } from "./constants/routes";
+import { API_PATHS } from "./constants/api";
 
 async function checkAuth() {
   try {
-    const response = await fetch("/api/auth/me", {
+    const response = await fetch(API_PATHS.authMe, {
       method: "GET",
       credentials: "include",
     });
@@ -24,7 +26,7 @@ async function protectedLoader() {
   if (!auth.isAuthenticated) {
     throw new Response("Unauthorized", {
       status: 302,
-      headers: { Location: "/login" },
+      headers: { Location: APP_ROUTES.login },
     });
   }
 
@@ -37,7 +39,7 @@ async function guestLoader() {
   if (auth.isAuthenticated) {
     throw new Response("Authorized", {
       status: 302,
-      headers: { Location: "/" },
+      headers: { Location: APP_ROUTES.home },
     });
   }
 

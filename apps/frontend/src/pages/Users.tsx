@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { followUser, unfollowUser } from "../services/follows";
 import { getUsers } from "../services/users";
+import { APP_ROUTES, FORM_INTENTS, userPath } from "../constants/routes";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 
@@ -31,9 +32,9 @@ async function action({ request }: ActionFunctionArgs) {
   const intent = formData.get("intent");
 
   switch (intent) {
-    case "follow-user":
+    case FORM_INTENTS.followUser:
       return await followUser(formData);
-    case "unfollow-user":
+    case FORM_INTENTS.unfollowUser:
       return await unfollowUser(formData);
     default:
       throw new Response("Unknown intent", { status: 400 });
@@ -135,7 +136,7 @@ function Users() {
 
           return (
             <Link
-              to={`/users/${user.id}`}
+              to={userPath(user.id)}
               className="rounded-sm flex flex-col items-center justify-center gap-3 min-w-0 bg-neutral-100 p-4 hover:bg-neutral-200 cursor-pointer"
               key={user.id}
             >
@@ -152,12 +153,12 @@ function Users() {
               </div>
               <fetcher.Form
                 method="POST"
-                action="/users"
+                action={APP_ROUTES.users}
                 onSubmit={(event) => {
                   const formData = new FormData(event.currentTarget);
                   followIntentRef.current = {
                     userId: user.id,
-                    follow: formData.get("intent") === "follow-user",
+                    follow: formData.get("intent") === FORM_INTENTS.followUser,
                   };
                 }}
               >
@@ -165,7 +166,11 @@ function Users() {
                 <input
                   type="hidden"
                   name="intent"
-                  value={user.isFollowing ? "unfollow-user" : "follow-user"}
+                  value={
+                    user.isFollowing
+                      ? FORM_INTENTS.unfollowUser
+                      : FORM_INTENTS.followUser
+                  }
                 />
                 <button
                   disabled={isSubmittingThisUser}

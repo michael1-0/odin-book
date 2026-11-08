@@ -1,5 +1,6 @@
 import { prisma } from "./prisma.ts";
 import { faker } from "@faker-js/faker";
+import { FRIEND_REQUEST_STATUS } from "@repo/constants";
 
 const USER_COUNT = 100;
 const POSTS_PER_USER = 3;
@@ -137,8 +138,8 @@ async function generateFriendRequests(users: { id: number }[]) {
         receiverId: users[targetIndex]!.id,
         status:
           offset === FRIEND_REQUESTS_PER_USER - 1
-            ? ("PENDING" as const)
-            : ("ACCEPTED" as const),
+            ? FRIEND_REQUEST_STATUS.PENDING
+            : FRIEND_REQUEST_STATUS.ACCEPTED,
       };
     }),
   );
@@ -150,7 +151,7 @@ async function generateFriendRequests(users: { id: number }[]) {
 
 async function generateMessages() {
   const acceptedRequests = await prisma.friendRequest.findMany({
-    where: { status: "ACCEPTED" },
+    where: { status: FRIEND_REQUEST_STATUS.ACCEPTED },
     select: { senderId: true, receiverId: true },
   });
 

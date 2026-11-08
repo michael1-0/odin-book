@@ -13,6 +13,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@repo/constants": "workspace:*",
     "@repo/zod-validations": "workspace:*",
     "@tailwindcss/vite": "^4.1.18",
     "lucide-react": "^1.21.0",

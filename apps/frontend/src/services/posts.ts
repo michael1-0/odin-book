@@ -1,3 +1,5 @@
+import { API_PATHS } from "../constants/api";
+
 type LoadPostsOptions = {
   cursor?: number;
   scope?: "all" | "me" | "following";
@@ -21,7 +23,7 @@ async function loadPosts({ cursor, scope, period }: LoadPostsOptions = {}) {
 
   const queryString = searchParams.toString();
   const response = await fetch(
-    queryString ? `/api/posts?${queryString}` : "/api/posts",
+    queryString ? `${API_PATHS.posts}?${queryString}` : API_PATHS.posts,
   );
   const result = await response.json();
 
@@ -35,7 +37,7 @@ async function loadPosts({ cursor, scope, period }: LoadPostsOptions = {}) {
 }
 
 async function createPost(formData: FormData) {
-  const response = await fetch("/api/posts", {
+  const response = await fetch(API_PATHS.posts, {
     method: "POST",
     credentials: "include",
     body: formData,
@@ -57,7 +59,11 @@ async function createPost(formData: FormData) {
 async function deletePost(formData: FormData) {
   const postId = formData.get("postId");
 
-  const response = await fetch(`/api/posts/${postId}`, {
+  if (typeof postId !== "string") {
+    return { error: true, message: "Missing post ID" };
+  }
+
+  const response = await fetch(API_PATHS.post(postId), {
     method: "DELETE",
   });
 
@@ -77,6 +83,10 @@ async function getPostWithComments(
   postId: string | undefined,
   offset?: number,
 ) {
+  if (!postId) {
+    throw new Response("Missing post ID", { status: 400 });
+  }
+
   const searchParams = new URLSearchParams();
 
   searchParams.set("include", "comments");
@@ -85,7 +95,7 @@ async function getPostWithComments(
     searchParams.set("offset", String(offset));
   }
 
-  const response = await fetch(`/api/posts/${postId}?${searchParams}`);
+  const response = await fetch(`${API_PATHS.post(postId)}?${searchParams}`);
   const result = await response.json();
 
   if (!response.ok) {

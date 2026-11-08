@@ -21,6 +21,8 @@ import Back from "../components/Back";
 import PageContainer from "../components/PageContainer";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
+import { FORM_INTENTS, ROUTE_ID, userPath } from "../constants/routes";
+import { formatShortDate } from "../utils/formatDate";
 type PostDetailLoaderData = {
   post: PostFeedItemWithComments;
   nextCursor: number | null;
@@ -62,9 +64,9 @@ async function action({ request }: ActionFunctionArgs) {
         parsedComment.data.postId,
       );
     }
-    case "like-post":
+    case FORM_INTENTS.likePost:
       return await likePost(formData);
-    case "unlike-post":
+    case FORM_INTENTS.unlikePost:
       return await unlikePost(formData);
     default:
       throw new Response("Unknown intent", { status: 400 });
@@ -72,7 +74,7 @@ async function action({ request }: ActionFunctionArgs) {
 }
 
 function PostDetail() {
-  const { user } = useRouteLoaderData("user-data");
+  const { user } = useRouteLoaderData(ROUTE_ID);
   const { post, nextCursor } = useLoaderData() as PostDetailLoaderData;
   const commentFetcher = useFetcher();
   const [searchParams] = useSearchParams();
@@ -147,7 +149,7 @@ function PostDetail() {
               className="flex flex-col gap-3 rounded-sm bg-neutral-100 p-4"
             >
               <Link
-                to={`/users/${comment.user.id}`}
+                to={userPath(comment.user.id)}
                 className="flex items-center gap-3"
               >
                 <img
@@ -159,11 +161,7 @@ function PostDetail() {
               </Link>
               <div>{comment.content}</div>
               <div className="text-sm ml-auto">
-                {new Date(comment.createdAt).toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
+                {formatShortDate(comment.createdAt)}
               </div>
             </div>
           );
