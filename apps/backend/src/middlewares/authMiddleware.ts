@@ -14,7 +14,7 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
       }
 
       if (!user) {
-        return next(new AppError(ERROR_MESSAGES.unauthorized, 401));
+        return next(new AppError(ERROR_MESSAGES.unauthenticated, 401));
       }
 
       req.user = user;
@@ -23,4 +23,13 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
   )(req, res, next);
 }
 
+function requireUser(
+  req: Express.Request,
+): asserts req is Express.AuthenticatedRequest {
+  if (!req.user) {
+    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
+  }
+}
+
 export default requireAuth;
+export { requireUser };

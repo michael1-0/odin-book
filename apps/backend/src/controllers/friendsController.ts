@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import type { ValidatedRequest } from "express-zod-safe";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
+import { requireUser } from "../middlewares/authMiddleware.ts";
 import type {
   Friend,
   FriendExploreItem,
@@ -33,9 +34,7 @@ const friendRequestWithUsersInclude = {
 } satisfies Prisma.FriendRequestInclude;
 
 async function getFriends(req: Request, res: Response) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const currentUserId = req.user.id;
 
@@ -115,9 +114,7 @@ async function exploreFriends(
   req: ValidatedRequest<FriendExploreSpec>,
   res: Response,
 ) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const currentUserId = req.user.id;
   const offset = req.query.offset ?? 0;
@@ -205,9 +202,7 @@ async function sendFriendRequest(
   req: ValidatedRequest<TargetUserIdParamsSpec>,
   res: Response,
 ) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const senderId = req.user.id;
   const receiverId = req.params.targetUserId;
@@ -303,9 +298,7 @@ async function cancelFriendRequest(
   req: ValidatedRequest<TargetUserIdParamsSpec>,
   res: Response,
 ) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const senderId = req.user.id;
   const receiverId = req.params.targetUserId;
@@ -336,9 +329,7 @@ async function acceptFriendRequest(
   req: ValidatedRequest<FriendRequestIdParamsSpec>,
   res: Response,
 ) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const currentUserId = req.user.id;
   const { requestId } = req.params;
@@ -352,7 +343,7 @@ async function acceptFriendRequest(
   }
 
   if (request.receiverId !== currentUserId) {
-    throw new AppError(ERROR_MESSAGES.unauthorized, 403);
+    throw new AppError(ERROR_MESSAGES.forbidden, 403);
   }
 
   if (request.status !== FRIEND_REQUEST_STATUS.PENDING) {
@@ -382,9 +373,7 @@ async function declineFriendRequest(
   req: ValidatedRequest<FriendRequestIdParamsSpec>,
   res: Response,
 ) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const currentUserId = req.user.id;
   const { requestId } = req.params;
@@ -398,7 +387,7 @@ async function declineFriendRequest(
   }
 
   if (request.receiverId !== currentUserId) {
-    throw new AppError(ERROR_MESSAGES.unauthorized, 403);
+    throw new AppError(ERROR_MESSAGES.forbidden, 403);
   }
 
   if (request.status !== FRIEND_REQUEST_STATUS.PENDING) {

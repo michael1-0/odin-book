@@ -1,7 +1,7 @@
 // Repeated AppError message strings used across controllers.
 export const ERROR_MESSAGES = {
   unauthenticated: "Unauthenticated",
-  unauthorized: "Unauthorized",
+  forbidden: "Forbidden",
   userNotFound: "User not found",
   postNotFound: "Post not found",
   friendRequestNotFound: "Request not found",

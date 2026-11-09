@@ -3,6 +3,7 @@ import type { ValidatedRequest } from "express-zod-safe";
 import type { PostIdParamsSpec } from "@repo/zod-validations";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
+import { requireUser } from "../middlewares/authMiddleware.ts";
 import { getPostFeedItem } from "../utils/postFeed.ts";
 import { ERROR_MESSAGES } from "../constants/errors.ts";
 
@@ -10,9 +11,7 @@ async function likePost(
   req: ValidatedRequest<PostIdParamsSpec>,
   res: Response,
 ) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const userId = req.user.id;
   const { postId } = req.params;
@@ -39,9 +38,7 @@ async function unlikePost(
   req: ValidatedRequest<PostIdParamsSpec>,
   res: Response,
 ) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const userId = req.user.id;
   const { postId } = req.params;

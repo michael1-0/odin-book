@@ -2,6 +2,7 @@ import type { Response } from "express";
 import type { ValidatedRequest } from "express-zod-safe";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
+import { requireUser } from "../middlewares/authMiddleware.ts";
 import type {
   MessageCreateSpec,
   MessagesGetResponse,
@@ -12,7 +13,6 @@ import {
   MESSAGES_PAGE_SIZE,
   SOCKET_EVENTS,
 } from "@repo/constants";
-import { ERROR_MESSAGES } from "../constants/errors.ts";
 import { getIo, userRoom } from "../socket/io.ts";
 
 async function assertFriendship(userId: number, friendId: number) {
@@ -35,9 +35,7 @@ async function getMessages(
   req: ValidatedRequest<MessagesGetSpec>,
   res: Response,
 ) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const currentUserId = req.user.id;
   const friendId = req.params.friendId;
@@ -77,9 +75,7 @@ async function createMessage(
   req: ValidatedRequest<MessageCreateSpec>,
   res: Response,
 ) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const senderId = req.user.id;
   const recipientId = req.params.friendId;

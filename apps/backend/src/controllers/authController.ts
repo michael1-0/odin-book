@@ -1,14 +1,13 @@
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { AppError } from "../errors/AppError.ts";
 import env from "../config/env.ts";
+import { requireUser } from "../middlewares/authMiddleware.ts";
 import {
   AUTH_COOKIE_NAME,
   AUTH_TOKEN_TTL_MS,
   OAUTH_FAILURE_REDIRECT_PATH,
   SECURE_COOKIE_OPTIONS,
 } from "../constants/auth.ts";
-import { ERROR_MESSAGES } from "../constants/errors.ts";
 
 function githubCallback(req: Request, res: Response) {
   if (!req.user) {
@@ -35,9 +34,7 @@ function githubCallback(req: Request, res: Response) {
 }
 
 async function getMe(req: Request, res: Response) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthorized, 401);
-  }
+  requireUser(req);
 
   return res.json(req.user);
 }

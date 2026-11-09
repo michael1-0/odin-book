@@ -2,6 +2,7 @@ import type { Response } from "express";
 import type { ValidatedRequest } from "express-zod-safe";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
+import { requireUser } from "../middlewares/authMiddleware.ts";
 import type {
   UserGetSpec,
   UsersGetSpec,
@@ -15,9 +16,7 @@ async function getUsersWithoutCurrentUser(
   req: ValidatedRequest<UsersGetSpec>,
   res: Response,
 ) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const offset = req.query.offset ?? 0;
   const currentUserId = req.user.id;
@@ -82,14 +81,12 @@ async function updateCurrentUser(
   req: ValidatedRequest<UserUpdateSpec>,
   res: Response,
 ) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const { userId } = req.params;
 
   if (req.user.id !== userId) {
-    throw new AppError(ERROR_MESSAGES.unauthorized, 403);
+    throw new AppError(ERROR_MESSAGES.forbidden, 403);
   }
 
   const { username, noteToAll } = req.body;
@@ -119,9 +116,7 @@ async function updateCurrentUser(
 }
 
 async function getUser(req: ValidatedRequest<UserGetSpec>, res: Response) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const { userId } = req.params;
   const { include } = req.query;

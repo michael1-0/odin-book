@@ -10,6 +10,7 @@ import type {
 } from "@repo/zod-validations";
 import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
+import { requireUser } from "../middlewares/authMiddleware.ts";
 import type { PostWhereInput } from "../db/generated/prisma/models.ts";
 import {
   deletePostImageUrls,
@@ -22,9 +23,7 @@ import { TRENDING_WINDOW_MS } from "../constants/feed.ts";
 import { ERROR_MESSAGES } from "../constants/errors.ts";
 
 async function getPosts(req: ValidatedRequest<PostsGetSpec>, res: Response) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const scope = req.query.scope ?? "all";
   const where: PostWhereInput = {};
@@ -85,9 +84,7 @@ async function createPost(
   req: ValidatedRequest<PostCreateSpec>,
   res: Response,
 ) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const userId = req.user.id;
   const { content } = req.body;
@@ -239,9 +236,7 @@ async function deletePost(
   req: ValidatedRequest<PostIdParamsSpec>,
   res: Response,
 ) {
-  if (!req.user) {
-    throw new AppError(ERROR_MESSAGES.unauthenticated, 401);
-  }
+  requireUser(req);
 
   const { postId } = req.params;
 
@@ -264,7 +259,7 @@ async function deletePost(
   }
 
   if (post.posterId !== req.user.id) {
-    throw new AppError(ERROR_MESSAGES.unauthorized, 403);
+    throw new AppError(ERROR_MESSAGES.forbidden, 403);
   }
 
   await prisma.post.delete({
