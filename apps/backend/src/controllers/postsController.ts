@@ -8,16 +8,21 @@ import type {
   PostsGetResponse,
   PostsGetSpec,
 } from "@repo/zod-validations";
-import { prisma } from "../db/prisma.ts";
+import type { PostWhereInput } from "../db/generated/prisma/models.ts";
 import { AppError } from "../errors/AppError.ts";
 import { requireUser } from "../middlewares/authMiddleware.ts";
-import type { PostWhereInput } from "../db/generated/prisma/models.ts";
 import {
   deletePostImageUrls,
   deleteUploadedPostImages,
   uploadPostImage,
 } from "../utils/cloudinary.ts";
-import { getPostFeedItem, postFeedSelect } from "../utils/postFeed.ts";
+import {
+  deletePostById,
+  findPostWithImagesAndPosterId,
+  getFeedPosts,
+  getPostDetail,
+  savePost,
+} from "../db/queries/posts.ts";
 import { COMMENTS_PAGE_SIZE, FEED_PAGE_SIZE } from "@repo/constants";
 import { TRENDING_WINDOW_MS } from "../constants/feed.ts";
 import { ERROR_MESSAGES } from "../constants/errors.ts";
@@ -48,22 +53,7 @@ async function getPosts(req: ValidatedRequest<PostsGetSpec>, res: Response) {
     };
   }
 
-  const posts = await prisma.post.findMany({
-    select: postFeedSelect,
-    where,
-    orderBy: {
-      id: "desc",
-    },
-    ...(req.query.cursor
-      ? {
-          cursor: {
-            id: req.query.cursor,
-          },
-          skip: 1,
-        }
-      : {}),
-    take: FEED_PAGE_SIZE + 1,
-  });
+  const posts = await getFeedPosts(where, req.query.cursor);
 
   const hasMore = posts.length > FEED_PAGE_SIZE;
   const pagedPosts: PostFeedItem[] = hasMore
@@ -119,22 +109,7 @@ async function createPost(
   let newPost;
 
   try {
-    newPost = await prisma.post.create({
-      data: {
-        content,
-        posterId: userId,
-        ...(imageUrls.length > 0
-          ? {
-              images: {
-                create: imageUrls.map((url, index) => ({
-                  url,
-                  position: index,
-                })),
-              },
-            }
-          : {}),
-      },
-    });
+    newPost = await savePost(content, userId, imageUrls);
   } catch (error) {
     if (uploadedPublicIds.length > 0) {
       await deleteUploadedPostImages(uploadedPublicIds);
@@ -142,7 +117,7 @@ async function createPost(
     throw error;
   }
 
-  const feedPost = await getPostFeedItem(newPost.id);
+  const feedPost = await getPostDetail(newPost.id);
 
   res.status(200).json({ data: feedPost });
 }
@@ -153,64 +128,10 @@ async function getPost(req: ValidatedRequest<PostGetSpec>, res: Response) {
 
   const offset = offsetParam ?? 0;
 
-  const post = await prisma.post.findUnique({
-    select: {
-      id: true,
-      content: true,
-      createdAt: true,
-      _count: {
-        select: {
-          comments: true,
-          likes: true,
-        },
-      },
-      user: {
-        select: {
-          id: true,
-          username: true,
-          profileUrl: true,
-        },
-      },
-      likes: {
-        select: {
-          userId: true,
-        },
-      },
-      images: {
-        select: {
-          id: true,
-          url: true,
-        },
-        orderBy: {
-          position: "asc",
-        },
-      },
-      comments:
-        include === "comments"
-          ? {
-              select: {
-                id: true,
-                user: {
-                  select: {
-                    id: true,
-                    profileUrl: true,
-                    username: true,
-                  },
-                },
-                content: true,
-                createdAt: true,
-              },
-              orderBy: {
-                createdAt: "desc",
-              },
-              take: offset + COMMENTS_PAGE_SIZE + 1,
-            }
-          : false,
-    },
-    where: {
-      id: postId,
-    },
-  });
+  const post = await getPostDetail(
+    postId,
+    include === "comments" ? { comments: { offset } } : {},
+  );
 
   if (!post) {
     throw new AppError(ERROR_MESSAGES.postNotFound, 404);
@@ -240,19 +161,7 @@ async function deletePost(
 
   const { postId } = req.params;
 
-  const post = await prisma.post.findUnique({
-    select: {
-      posterId: true,
-      images: {
-        select: {
-          url: true,
-        },
-      },
-    },
-    where: {
-      id: postId,
-    },
-  });
+  const post = await findPostWithImagesAndPosterId(postId);
 
   if (!post) {
     throw new AppError(ERROR_MESSAGES.postNotFound, 404);
@@ -262,11 +171,7 @@ async function deletePost(
     throw new AppError(ERROR_MESSAGES.forbidden, 403);
   }
 
-  await prisma.post.delete({
-    where: {
-      id: postId,
-    },
-  });
+  await deletePostById(postId);
 
   if (post.images.length > 0) {
     await deletePostImageUrls(post.images.map((image) => image.url));

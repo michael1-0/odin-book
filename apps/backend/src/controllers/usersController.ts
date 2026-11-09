@@ -1,6 +1,5 @@
 import type { Response } from "express";
 import type { ValidatedRequest } from "express-zod-safe";
-import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
 import { requireUser } from "../middlewares/authMiddleware.ts";
 import type {
@@ -11,6 +10,11 @@ import type {
 import { USERS_PAGE_SIZE } from "@repo/constants";
 import { ERROR_MESSAGES } from "../constants/errors.ts";
 import { uploadProfilePicture } from "../utils/cloudinary.ts";
+import {
+  getUsersExcept,
+  getUserProfile,
+  updateUser,
+} from "../db/queries/users.ts";
 
 async function getUsersWithoutCurrentUser(
   req: ValidatedRequest<UsersGetSpec>,
@@ -22,34 +26,9 @@ async function getUsersWithoutCurrentUser(
   const currentUserId = req.user.id;
   const limit = USERS_PAGE_SIZE;
 
-  const users = await prisma.user.findMany({
+  const users = await getUsersExcept(currentUserId, {
+    offset,
     take: limit + 1,
-    where: {
-      id: {
-        not: currentUserId,
-      },
-    },
-    select: {
-      id: true,
-      username: true,
-      createdAt: true,
-      profileUrl: true,
-      following: currentUserId
-        ? {
-            where: {
-              followedById: currentUserId, // Is the logged-in user the follower?
-            },
-            select: {
-              followedById: true,
-            },
-            take: 1,
-          }
-        : false,
-    },
-    orderBy: {
-      id: "asc",
-    },
-    skip: offset,
   });
 
   const hasNextPage = users.length > limit;
@@ -101,15 +80,10 @@ async function updateCurrentUser(
     }
   }
 
-  const updatedUser = await prisma.user.update({
-    where: {
-      id: req.user.id,
-    },
-    data: {
-      username,
-      noteToAll,
-      ...(profileUrl ? { profileUrl } : {}),
-    },
+  const updatedUser = await updateUser(req.user.id, {
+    username,
+    noteToAll,
+    ...(profileUrl ? { profileUrl } : {}),
   });
 
   return res.status(200).json({ data: updatedUser });
@@ -123,62 +97,9 @@ async function getUser(req: ValidatedRequest<UserGetSpec>, res: Response) {
 
   const currentUserId = req.user.id;
 
-  const user = await prisma.user.findUnique({
-    select: {
-      id: true,
-      username: true,
-      profileUrl: true,
-      noteToAll: true,
-      following: currentUserId
-        ? {
-            select: {
-              followedById: true,
-            },
-            where: {
-              followedById: currentUserId,
-            },
-            take: 1,
-          }
-        : false,
-      posts:
-        include === "posts"
-          ? {
-              select: {
-                id: true,
-                content: true,
-                createdAt: true,
-                _count: {
-                  select: {
-                    comments: true,
-                    likes: true,
-                  },
-                },
-                user: {
-                  select: {
-                    id: true,
-                    username: true,
-                    profileUrl: true,
-                  },
-                },
-                likes: {
-                  select: {
-                    userId: true,
-                  },
-                },
-                images: {
-                  select: {
-                    id: true,
-                    url: true,
-                  },
-                  orderBy: {
-                    position: "asc",
-                  },
-                },
-              },
-            }
-          : false,
-    },
-    where: { id: userId },
+  const user = await getUserProfile(userId, {
+    currentUserId,
+    includePosts: include === "posts",
   });
 
   if (!user) {

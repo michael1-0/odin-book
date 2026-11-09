@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import type { ValidatedRequest } from "express-zod-safe";
-import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
 import { requireUser } from "../middlewares/authMiddleware.ts";
 import type {
@@ -18,35 +17,28 @@ import {
   SOCKET_EVENTS,
 } from "@repo/constants";
 import { ERROR_MESSAGES } from "../constants/errors.ts";
-import type { Prisma } from "../db/generated/prisma/client.ts";
 import { getIo, userRoom } from "../socket/io.ts";
-
-const friendUserSelect = {
-  id: true,
-  username: true,
-  profileUrl: true,
-  createdAt: true,
-} satisfies Prisma.UserSelect;
-
-const friendRequestWithUsersInclude = {
-  sender: { select: friendUserSelect },
-  receiver: { select: friendUserSelect },
-} satisfies Prisma.FriendRequestInclude;
+import {
+  deleteFriendRequestById,
+  findFriendRequestBetweenUsers,
+  findFriendRequestById,
+  findFriendRequestsBetween,
+  findFriendUserById,
+  getUserFriendRequests,
+  getUsersNotFriendsWith,
+  updateFriendRequestStatus,
+  updateFriendRequestStatusWithUsers,
+  upsertFriendRequest,
+} from "../db/queries/friends.ts";
+import { findLastMessageBetween } from "../db/queries/messages.ts";
+import { findUserById } from "../db/queries/users.ts";
 
 async function getFriends(req: Request, res: Response) {
   requireUser(req);
 
   const currentUserId = req.user.id;
 
-  const requests = await prisma.friendRequest.findMany({
-    where: {
-      OR: [{ senderId: currentUserId }, { receiverId: currentUserId }],
-    },
-    include: friendRequestWithUsersInclude,
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const requests = await getUserFriendRequests(currentUserId);
 
   const friendsData: Omit<Friend, "lastMessage">[] = [];
   const incomingRequests: FriendRequestWithUsers[] = [];
@@ -68,22 +60,10 @@ async function getFriends(req: Request, res: Response) {
 
   const friends: Friend[] = await Promise.all(
     friendsData.map(async (friend) => {
-      const lastMessage = await prisma.message.findFirst({
-        where: {
-          OR: [
-            { senderId: currentUserId, recipientId: friend.id },
-            { senderId: friend.id, recipientId: currentUserId },
-          ],
-        },
-        orderBy: {
-          id: "desc",
-        },
-        select: {
-          content: true,
-          senderId: true,
-          createdAt: true,
-        },
-      });
+      const lastMessage = await findLastMessageBetween(
+        currentUserId,
+        friend.id,
+      );
 
       return { ...friend, lastMessage };
     }),
@@ -121,36 +101,9 @@ async function exploreFriends(
   const limit = FRIENDS_PAGE_SIZE;
   const query = req.query.query;
 
-  const users = await prisma.user.findMany({
-    where: {
-      id: {
-        not: currentUserId,
-      },
-      ...(query ? { username: { contains: query, mode: "insensitive" } } : {}),
-      AND: [
-        {
-          sentFriendRequests: {
-            none: {
-              receiverId: currentUserId,
-              status: FRIEND_REQUEST_STATUS.ACCEPTED,
-            },
-          },
-        },
-        {
-          receivedFriendRequests: {
-            none: {
-              senderId: currentUserId,
-              status: FRIEND_REQUEST_STATUS.ACCEPTED,
-            },
-          },
-        },
-      ],
-    },
-    select: friendUserSelect,
-    orderBy: {
-      username: "asc",
-    },
-    skip: offset,
+  const users = await getUsersNotFriendsWith(currentUserId, {
+    query,
+    offset,
     take: limit + 1,
   });
 
@@ -158,20 +111,10 @@ async function exploreFriends(
   const pagedUsers = hasNextPage ? users.slice(0, limit) : users;
   const nextCursor = hasNextPage ? offset + limit : null;
 
-  const requests = await prisma.friendRequest.findMany({
-    where: {
-      OR: [
-        {
-          senderId: currentUserId,
-          receiverId: { in: pagedUsers.map((user) => user.id) },
-        },
-        {
-          receiverId: currentUserId,
-          senderId: { in: pagedUsers.map((user) => user.id) },
-        },
-      ],
-    },
-  });
+  const requests = await findFriendRequestsBetween(
+    currentUserId,
+    pagedUsers.map((user) => user.id),
+  );
 
   const formattedUsers: FriendExploreItem[] = pagedUsers.map((user) => {
     const request = requests.find(
@@ -211,22 +154,16 @@ async function sendFriendRequest(
     throw new AppError("Can't add yourself as a friend", 400);
   }
 
-  const receiver = await prisma.user.findUnique({
-    where: { id: receiverId },
-  });
+  const receiver = await findUserById(receiverId);
 
   if (!receiver) {
     throw new AppError(ERROR_MESSAGES.userNotFound, 404);
   }
 
-  const existingRequest = await prisma.friendRequest.findUnique({
-    where: {
-      senderId_receiverId: {
-        senderId,
-        receiverId,
-      },
-    },
-  });
+  const existingRequest = await findFriendRequestBetweenUsers(
+    senderId,
+    receiverId,
+  );
 
   if (existingRequest?.status === FRIEND_REQUEST_STATUS.PENDING) {
     throw new AppError("Request already sent", 400);
@@ -236,14 +173,10 @@ async function sendFriendRequest(
     throw new AppError(ERROR_MESSAGES.alreadyFriends, 400);
   }
 
-  const reverseRequest = await prisma.friendRequest.findUnique({
-    where: {
-      senderId_receiverId: {
-        senderId: receiverId,
-        receiverId: senderId,
-      },
-    },
-  });
+  const reverseRequest = await findFriendRequestBetweenUsers(
+    receiverId,
+    senderId,
+  );
 
   if (reverseRequest?.status === FRIEND_REQUEST_STATUS.ACCEPTED) {
     throw new AppError(ERROR_MESSAGES.alreadyFriends, 400);
@@ -253,26 +186,13 @@ async function sendFriendRequest(
     throw new AppError("This user already sent you a request", 400);
   }
 
-  const request = await prisma.friendRequest.upsert({
-    where: {
-      senderId_receiverId: {
-        senderId,
-        receiverId,
-      },
-    },
-    update: {
-      status: FRIEND_REQUEST_STATUS.PENDING,
-    },
-    create: {
-      senderId,
-      receiverId,
-    },
-  });
+  const request = await upsertFriendRequest(
+    senderId,
+    receiverId,
+    FRIEND_REQUEST_STATUS.PENDING,
+  );
 
-  const sender = await prisma.user.findUnique({
-    where: { id: senderId },
-    select: friendUserSelect,
-  });
+  const sender = await findFriendUserById(senderId);
 
   if (sender) {
     const payload: FriendRequestWithUsers = {
@@ -303,24 +223,13 @@ async function cancelFriendRequest(
   const senderId = req.user.id;
   const receiverId = req.params.targetUserId;
 
-  const request = await prisma.friendRequest.findUnique({
-    where: {
-      senderId_receiverId: {
-        senderId,
-        receiverId,
-      },
-    },
-  });
+  const request = await findFriendRequestBetweenUsers(senderId, receiverId);
 
   if (!request || request.status !== FRIEND_REQUEST_STATUS.PENDING) {
     throw new AppError("No pending request found", 404);
   }
 
-  const deletedRequest = await prisma.friendRequest.delete({
-    where: {
-      id: request.id,
-    },
-  });
+  const deletedRequest = await deleteFriendRequestById(request.id);
 
   return res.status(200).json({ data: deletedRequest });
 }
@@ -334,9 +243,7 @@ async function acceptFriendRequest(
   const currentUserId = req.user.id;
   const { requestId } = req.params;
 
-  const request = await prisma.friendRequest.findUnique({
-    where: { id: requestId },
-  });
+  const request = await findFriendRequestById(requestId);
 
   if (!request) {
     throw new AppError(ERROR_MESSAGES.friendRequestNotFound, 404);
@@ -350,11 +257,10 @@ async function acceptFriendRequest(
     throw new AppError(ERROR_MESSAGES.friendRequestAlreadyHandled, 400);
   }
 
-  const updatedRequest = await prisma.friendRequest.update({
-    where: { id: requestId },
-    data: { status: FRIEND_REQUEST_STATUS.ACCEPTED },
-    include: friendRequestWithUsersInclude,
-  });
+  const updatedRequest = await updateFriendRequestStatusWithUsers(
+    requestId,
+    FRIEND_REQUEST_STATUS.ACCEPTED,
+  );
 
   const friendForSender: Friend = {
     ...updatedRequest.receiver,
@@ -378,9 +284,7 @@ async function declineFriendRequest(
   const currentUserId = req.user.id;
   const { requestId } = req.params;
 
-  const request = await prisma.friendRequest.findUnique({
-    where: { id: requestId },
-  });
+  const request = await findFriendRequestById(requestId);
 
   if (!request) {
     throw new AppError(ERROR_MESSAGES.friendRequestNotFound, 404);
@@ -394,10 +298,10 @@ async function declineFriendRequest(
     throw new AppError(ERROR_MESSAGES.friendRequestAlreadyHandled, 400);
   }
 
-  const updatedRequest = await prisma.friendRequest.update({
-    where: { id: requestId },
-    data: { status: FRIEND_REQUEST_STATUS.DECLINED },
-  });
+  const updatedRequest = await updateFriendRequestStatus(
+    requestId,
+    FRIEND_REQUEST_STATUS.DECLINED,
+  );
 
   getIo()
     .to(userRoom(updatedRequest.senderId))

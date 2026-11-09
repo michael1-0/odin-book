@@ -1,6 +1,5 @@
 import type { Response } from "express";
 import type { ValidatedRequest } from "express-zod-safe";
-import { prisma } from "../db/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
 import { requireUser } from "../middlewares/authMiddleware.ts";
 import type {
@@ -8,25 +7,18 @@ import type {
   MessagesGetResponse,
   MessagesGetSpec,
 } from "@repo/zod-validations";
-import {
-  FRIEND_REQUEST_STATUS,
-  MESSAGES_PAGE_SIZE,
-  SOCKET_EVENTS,
-} from "@repo/constants";
+import { MESSAGES_PAGE_SIZE, SOCKET_EVENTS } from "@repo/constants";
 import { getIo, userRoom } from "../socket/io.ts";
+import { findAcceptedFriendshipBetween } from "../db/queries/friends.ts";
+import {
+  getMessagesBetweenUsers,
+  saveMessage,
+} from "../db/queries/messages.ts";
 
 async function assertFriendship(userId: number, friendId: number) {
-  const request = await prisma.friendRequest.findFirst({
-    where: {
-      status: FRIEND_REQUEST_STATUS.ACCEPTED,
-      OR: [
-        { senderId: userId, receiverId: friendId },
-        { senderId: friendId, receiverId: userId },
-      ],
-    },
-  });
+  const friendship = await findAcceptedFriendshipBetween(userId, friendId);
 
-  if (!request) {
+  if (!friendship) {
     throw new AppError("You can only chat with friends", 403);
   }
 }
@@ -42,17 +34,8 @@ async function getMessages(
 
   await assertFriendship(currentUserId, friendId);
 
-  const messages = await prisma.message.findMany({
-    where: {
-      OR: [
-        { senderId: currentUserId, recipientId: friendId },
-        { senderId: friendId, recipientId: currentUserId },
-      ],
-      ...(req.query.beforeId ? { id: { lt: req.query.beforeId } } : {}),
-    },
-    orderBy: {
-      id: "desc",
-    },
+  const messages = await getMessagesBetweenUsers(currentUserId, friendId, {
+    beforeId: req.query.beforeId,
     take: MESSAGES_PAGE_SIZE + 1,
   });
 
@@ -82,13 +65,7 @@ async function createMessage(
 
   await assertFriendship(senderId, recipientId);
 
-  const message = await prisma.message.create({
-    data: {
-      senderId,
-      recipientId,
-      content: req.body.content,
-    },
-  });
+  const message = await saveMessage(senderId, recipientId, req.body.content);
 
   getIo()
     .to(userRoom(senderId))

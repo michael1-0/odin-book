@@ -3,11 +3,15 @@ import type { JwtPayload } from "jsonwebtoken";
 import type { Profile } from "passport-github2";
 import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
-import { prisma } from "../db/prisma.ts";
 import { Strategy as JwtStrategy } from "passport-jwt";
 import cookieExtractor from "../utils/cookieExtractor.ts";
 import createGravatarUrl from "../utils/createGravatarUrl.ts";
 import env from "../config/env.ts";
+import {
+  createUser,
+  findUserByGithubId,
+  findUserById,
+} from "../db/queries/users.ts";
 
 passport.use(
   new GitHubStrategy(
@@ -26,9 +30,7 @@ passport.use(
       let findUser;
 
       try {
-        findUser = await prisma.user.findUnique({
-          where: { githubId: profile.id },
-        });
+        findUser = await findUserByGithubId(profile.id);
       } catch (error) {
         return done(error, null);
       }
@@ -36,12 +38,10 @@ passport.use(
       try {
         if (!findUser) {
           const primaryEmail = profile.emails?.[0]?.value || "";
-          const newUser = await prisma.user.create({
-            data: {
-              githubId: profile.id,
-              username: profile.username ?? "user",
-              profileUrl: createGravatarUrl(primaryEmail),
-            },
+          const newUser = await createUser({
+            githubId: profile.id,
+            username: profile.username ?? "user",
+            profileUrl: createGravatarUrl(primaryEmail),
           });
           return done(null, newUser);
         }
@@ -60,9 +60,7 @@ passport.use(
     },
     async (jwtPayload: JwtPayload, done: DoneCallback) => {
       try {
-        const user = await prisma.user.findUnique({
-          where: { id: Number(jwtPayload.sub) },
-        });
+        const user = await findUserById(Number(jwtPayload.sub));
 
         if (user) {
           return done(null, user);

@@ -1,7 +1,8 @@
 import type { Response } from "express";
 import type { ValidatedRequest } from "express-zod-safe";
 import type { CommentCreateSpec } from "@repo/zod-validations";
-import { prisma } from "../db/prisma.ts";
+import { postExists } from "../db/queries/posts.ts";
+import { saveComment } from "../db/queries/comments.ts";
 import { AppError } from "../errors/AppError.ts";
 import { requireUser } from "../middlewares/authMiddleware.ts";
 import { ERROR_MESSAGES } from "../constants/errors.ts";
@@ -15,22 +16,11 @@ async function createComment(
   const userId = req.user.id;
   const { postId, content } = req.body;
 
-  const post = await prisma.post.findUnique({
-    where: { id: postId },
-    select: { id: true },
-  });
-
-  if (!post) {
+  if (!(await postExists(postId))) {
     throw new AppError(ERROR_MESSAGES.postNotFound, 404);
   }
 
-  const comment = await prisma.comment.create({
-    data: {
-      content,
-      userId,
-      postId,
-    },
-  });
+  const comment = await saveComment(userId, postId, content);
 
   return res.status(200).json({ data: comment });
 }

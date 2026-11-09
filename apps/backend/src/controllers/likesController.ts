@@ -1,10 +1,10 @@
 import type { Response } from "express";
 import type { ValidatedRequest } from "express-zod-safe";
 import type { PostIdParamsSpec } from "@repo/zod-validations";
-import { prisma } from "../db/prisma.ts";
+import { getPostDetail, postExists } from "../db/queries/posts.ts";
+import { createLike, deleteLike } from "../db/queries/likes.ts";
 import { AppError } from "../errors/AppError.ts";
 import { requireUser } from "../middlewares/authMiddleware.ts";
-import { getPostFeedItem } from "../utils/postFeed.ts";
 import { ERROR_MESSAGES } from "../constants/errors.ts";
 
 async function likePost(
@@ -16,20 +16,13 @@ async function likePost(
   const userId = req.user.id;
   const { postId } = req.params;
 
-  const post = await prisma.post.findUnique({
-    where: { id: postId },
-    select: { id: true },
-  });
-
-  if (!post) {
+  if (!(await postExists(postId))) {
     throw new AppError(ERROR_MESSAGES.postNotFound, 404);
   }
 
-  await prisma.like.create({
-    data: { userId, postId },
-  });
+  await createLike(userId, postId);
 
-  const feedPost = await getPostFeedItem(postId);
+  const feedPost = await getPostDetail(postId);
 
   return res.status(200).json({ data: feedPost });
 }
@@ -43,14 +36,9 @@ async function unlikePost(
   const userId = req.user.id;
   const { postId } = req.params;
 
-  await prisma.like.deleteMany({
-    where: {
-      userId,
-      postId,
-    },
-  });
+  await deleteLike(userId, postId);
 
-  const feedPost = await getPostFeedItem(postId);
+  const feedPost = await getPostDetail(postId);
 
   if (!feedPost) {
     throw new AppError(ERROR_MESSAGES.postNotFound, 404);

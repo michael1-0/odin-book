@@ -2,9 +2,9 @@ import type { Server as HttpServer } from "node:http";
 import { Server as SocketServer } from "socket.io";
 import { parseCookie } from "cookie";
 import jwt from "jsonwebtoken";
-import { prisma } from "../db/prisma.ts";
 import env from "../config/env.ts";
 import { AUTH_COOKIE_NAME } from "../constants/auth.ts";
+import { findUserById } from "../db/queries/users.ts";
 
 let io: SocketServer | null = null;
 
@@ -33,7 +33,7 @@ function initSocketServer(httpServer: HttpServer) {
         return next(new Error("Unauthorized"));
       }
 
-      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const user = await findUserById(userId);
 
       if (!user) {
         return next(new Error("Unauthorized"));
