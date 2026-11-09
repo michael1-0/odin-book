@@ -8,12 +8,13 @@ import type {
   MessagesGetSpec,
 } from "@repo/zod-validations";
 import { MESSAGES_PAGE_SIZE, SOCKET_EVENTS } from "@repo/constants";
-import { getIo, userRoom } from "../socket/io.ts";
+import { emitToUser } from "../socket/io.ts";
 import { findAcceptedFriendshipBetween } from "../db/queries/friends.ts";
 import {
   getMessagesBetweenUsers,
   saveMessage,
 } from "../db/queries/messages.ts";
+import { splitPage } from "../utils/pagination.ts";
 
 async function assertFriendship(userId: number, friendId: number) {
   const friendship = await findAcceptedFriendshipBetween(userId, friendId);
@@ -39,9 +40,8 @@ async function getMessages(
     take: MESSAGES_PAGE_SIZE + 1,
   });
 
-  const hasMore = messages.length > MESSAGES_PAGE_SIZE;
-  const page = hasMore ? messages.slice(0, MESSAGES_PAGE_SIZE) : messages;
-  page.reverse();
+  const { items: page, hasMore } = splitPage(messages, MESSAGES_PAGE_SIZE);
+  page.reverse(); // return oldest-first for the chat UI
 
   const response: MessagesGetResponse = {
     data: page,
@@ -67,10 +67,10 @@ async function createMessage(
 
   const message = await saveMessage(senderId, recipientId, req.body.content);
 
-  getIo()
-    .to(userRoom(senderId))
-    .to(userRoom(recipientId))
-    .emit(SOCKET_EVENTS.messageNew, { message });
+  // Each user's room contains only that user's sockets, so emitting to both
+  // rooms individually delivers the message once per connection.
+  emitToUser(senderId, SOCKET_EVENTS.messageNew, { message });
+  emitToUser(recipientId, SOCKET_EVENTS.messageNew, { message });
 
   return res.status(201).json({ data: message });
 }

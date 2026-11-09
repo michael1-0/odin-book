@@ -1,17 +1,11 @@
 import { z } from "zod";
-import { coercedId, createdAt, MAX_MESSAGE_LENGTH } from "./common.js";
+import { coercedId, createdAt, messageContent } from "./common.js";
 
 export const MessageSchema = z.object({
   id: z.number().int().positive(),
   senderId: z.number().int().positive(),
   recipientId: z.number().int().positive(),
-  content: z
-    .string()
-    .min(1, "Message cannot be empty")
-    .max(
-      MAX_MESSAGE_LENGTH,
-      `Message cannot exceed ${MAX_MESSAGE_LENGTH} chars`,
-    ),
+  content: messageContent,
   createdAt,
 });
 export type Message = z.infer<typeof MessageSchema>;
@@ -36,13 +30,7 @@ export const MessagesGetResponseSchema = z.object({
 export type MessagesGetResponse = z.infer<typeof MessagesGetResponseSchema>;
 
 export const MessageCreateBodySchema = z.object({
-  content: z
-    .string()
-    .min(1, "Message cannot be empty")
-    .max(
-      MAX_MESSAGE_LENGTH,
-      `Message cannot exceed ${MAX_MESSAGE_LENGTH} chars`,
-    ),
+  content: messageContent,
 });
 export type MessageCreateBody = z.infer<typeof MessageCreateBodySchema>;
 

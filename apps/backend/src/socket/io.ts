@@ -4,7 +4,7 @@ import { parseCookie } from "cookie";
 import jwt from "jsonwebtoken";
 import env from "../config/env.ts";
 import { AUTH_COOKIE_NAME } from "../constants/auth.ts";
-import { findUserById } from "../db/queries/users.ts";
+import { findUserByJwtPayload } from "../utils/jwtUser.ts";
 
 let io: SocketServer | null = null;
 
@@ -27,13 +27,7 @@ function initSocketServer(httpServer: HttpServer) {
       }
 
       const payload = jwt.verify(token, env.jwtSecret) as jwt.JwtPayload;
-      const userId = Number(payload.sub);
-
-      if (!Number.isInteger(userId)) {
-        return next(new Error("Unauthorized"));
-      }
-
-      const user = await findUserById(userId);
+      const user = await findUserByJwtPayload(payload);
 
       if (!user) {
         return next(new Error("Unauthorized"));
@@ -61,4 +55,8 @@ function getIo() {
   return io;
 }
 
-export { initSocketServer, getIo, userRoom };
+function emitToUser(userId: number, event: string, payload: unknown) {
+  getIo().to(userRoom(userId)).emit(event, payload);
+}
+
+export { initSocketServer, getIo, userRoom, emitToUser };

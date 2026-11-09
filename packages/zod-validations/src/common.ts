@@ -7,3 +7,8 @@ export const MAX_MESSAGE_LENGTH = 1000;
 
 export const createdAt = z.date().default(() => new Date());
 export const coercedId = z.coerce.number().int().positive();
+
+export const messageContent = z
+  .string()
+  .min(1, "Message cannot be empty")
+  .max(MAX_MESSAGE_LENGTH, `Message cannot exceed ${MAX_MESSAGE_LENGTH} chars`);

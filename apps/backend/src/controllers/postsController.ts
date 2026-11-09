@@ -2,7 +2,6 @@ import type { Response } from "express";
 import type { ValidatedRequest } from "express-zod-safe";
 import type {
   PostCreateSpec,
-  PostFeedItem,
   PostGetSpec,
   PostIdParamsSpec,
   PostsGetResponse,
@@ -26,6 +25,7 @@ import {
 import { COMMENTS_PAGE_SIZE, FEED_PAGE_SIZE } from "@repo/constants";
 import { TRENDING_WINDOW_MS } from "../constants/feed.ts";
 import { ERROR_MESSAGES } from "../constants/errors.ts";
+import { splitPage } from "../utils/pagination.ts";
 
 async function getPosts(req: ValidatedRequest<PostsGetSpec>, res: Response) {
   requireUser(req);
@@ -53,12 +53,12 @@ async function getPosts(req: ValidatedRequest<PostsGetSpec>, res: Response) {
     };
   }
 
-  const posts = await getFeedPosts(where, req.query.cursor);
+  const fetchedPosts = await getFeedPosts(where, req.query.cursor);
 
-  const hasMore = posts.length > FEED_PAGE_SIZE;
-  const pagedPosts: PostFeedItem[] = hasMore
-    ? posts.slice(0, FEED_PAGE_SIZE)
-    : posts;
+  const { items: pagedPosts, hasMore } = splitPage(
+    fetchedPosts,
+    FEED_PAGE_SIZE,
+  );
 
   const response: PostsGetResponse = {
     data: pagedPosts,
@@ -119,7 +119,7 @@ async function createPost(
 
   const feedPost = await getPostDetail(newPost.id);
 
-  res.status(200).json({ data: feedPost });
+  res.status(201).json({ data: feedPost });
 }
 
 async function getPost(req: ValidatedRequest<PostGetSpec>, res: Response) {
@@ -137,18 +137,17 @@ async function getPost(req: ValidatedRequest<PostGetSpec>, res: Response) {
     throw new AppError(ERROR_MESSAGES.postNotFound, 404);
   }
 
-  const comments = post.comments;
+  // The query fetches one comment beyond the page (`offset + pageSize + 1`)
+  // so the split can report whether a next cursor exists.
+  const page = Array.isArray(post.comments)
+    ? splitPage(post.comments, offset + COMMENTS_PAGE_SIZE)
+    : undefined;
 
-  const hasNextPage =
-    Array.isArray(comments) && comments.length > offset + COMMENTS_PAGE_SIZE;
-  if (hasNextPage) {
-    comments.pop();
-  }
-
+  const hasNextPage = page?.hasMore ?? false;
   const nextCursor = hasNextPage ? offset + COMMENTS_PAGE_SIZE : null;
 
   return res.status(200).json({
-    data: post,
+    data: page ? { ...post, comments: page.items } : post,
     meta: { nextCursor, hasNextPage },
   });
 }

@@ -17,7 +17,8 @@ import {
   SOCKET_EVENTS,
 } from "@repo/constants";
 import { ERROR_MESSAGES } from "../constants/errors.ts";
-import { getIo, userRoom } from "../socket/io.ts";
+import { emitToUser } from "../socket/io.ts";
+import { splitPage } from "../utils/pagination.ts";
 import {
   deleteFriendRequestById,
   findFriendRequestBetweenUsers,
@@ -107,8 +108,7 @@ async function exploreFriends(
     take: limit + 1,
   });
 
-  const hasNextPage = users.length > limit;
-  const pagedUsers = hasNextPage ? users.slice(0, limit) : users;
+  const { items: pagedUsers, hasMore: hasNextPage } = splitPage(users, limit);
   const nextCursor = hasNextPage ? offset + limit : null;
 
   const requests = await findFriendRequestsBetween(
@@ -206,12 +206,12 @@ async function sendFriendRequest(
       },
     };
 
-    getIo()
-      .to(userRoom(receiverId))
-      .emit(SOCKET_EVENTS.friendRequestNew, { request: payload });
+    emitToUser(receiverId, SOCKET_EVENTS.friendRequestNew, {
+      request: payload,
+    });
   }
 
-  return res.status(200).json({ data: request });
+  return res.status(201).json({ data: request });
 }
 
 async function cancelFriendRequest(
@@ -243,19 +243,7 @@ async function acceptFriendRequest(
   const currentUserId = req.user.id;
   const { requestId } = req.params;
 
-  const request = await findFriendRequestById(requestId);
-
-  if (!request) {
-    throw new AppError(ERROR_MESSAGES.friendRequestNotFound, 404);
-  }
-
-  if (request.receiverId !== currentUserId) {
-    throw new AppError(ERROR_MESSAGES.forbidden, 403);
-  }
-
-  if (request.status !== FRIEND_REQUEST_STATUS.PENDING) {
-    throw new AppError(ERROR_MESSAGES.friendRequestAlreadyHandled, 400);
-  }
+  await getPendingRequestForReceiver(requestId, currentUserId);
 
   const updatedRequest = await updateFriendRequestStatusWithUsers(
     requestId,
@@ -268,9 +256,9 @@ async function acceptFriendRequest(
     lastMessage: null,
   };
 
-  getIo()
-    .to(userRoom(updatedRequest.senderId))
-    .emit(SOCKET_EVENTS.friendRequestAccepted, { friend: friendForSender });
+  emitToUser(updatedRequest.senderId, SOCKET_EVENTS.friendRequestAccepted, {
+    friend: friendForSender,
+  });
 
   return res.status(200).json({ data: updatedRequest });
 }
@@ -284,13 +272,34 @@ async function declineFriendRequest(
   const currentUserId = req.user.id;
   const { requestId } = req.params;
 
+  await getPendingRequestForReceiver(requestId, currentUserId);
+
+  const updatedRequest = await updateFriendRequestStatus(
+    requestId,
+    FRIEND_REQUEST_STATUS.DECLINED,
+  );
+
+  emitToUser(updatedRequest.senderId, SOCKET_EVENTS.friendRequestDeclined, {
+    requestId: updatedRequest.id,
+  });
+
+  return res.status(200).json({ data: updatedRequest });
+}
+
+// Loads the request addressed to `receiverId` or throws the appropriate
+// error when it is missing, not addressed to the caller, or already handled.
+// Shared by accept and decline.
+async function getPendingRequestForReceiver(
+  requestId: number,
+  receiverId: number,
+) {
   const request = await findFriendRequestById(requestId);
 
   if (!request) {
     throw new AppError(ERROR_MESSAGES.friendRequestNotFound, 404);
   }
 
-  if (request.receiverId !== currentUserId) {
+  if (request.receiverId !== receiverId) {
     throw new AppError(ERROR_MESSAGES.forbidden, 403);
   }
 
@@ -298,18 +307,7 @@ async function declineFriendRequest(
     throw new AppError(ERROR_MESSAGES.friendRequestAlreadyHandled, 400);
   }
 
-  const updatedRequest = await updateFriendRequestStatus(
-    requestId,
-    FRIEND_REQUEST_STATUS.DECLINED,
-  );
-
-  getIo()
-    .to(userRoom(updatedRequest.senderId))
-    .emit(SOCKET_EVENTS.friendRequestDeclined, {
-      requestId: updatedRequest.id,
-    });
-
-  return res.status(200).json({ data: updatedRequest });
+  return request;
 }
 
 export {

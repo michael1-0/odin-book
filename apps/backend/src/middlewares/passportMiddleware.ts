@@ -7,11 +7,8 @@ import { Strategy as JwtStrategy } from "passport-jwt";
 import cookieExtractor from "../utils/cookieExtractor.ts";
 import createGravatarUrl from "../utils/createGravatarUrl.ts";
 import env from "../config/env.ts";
-import {
-  createUser,
-  findUserByGithubId,
-  findUserById,
-} from "../db/queries/users.ts";
+import { createUser, findUserByGithubId } from "../db/queries/users.ts";
+import { findUserByJwtPayload } from "../utils/jwtUser.ts";
 
 passport.use(
   new GitHubStrategy(
@@ -60,13 +57,13 @@ passport.use(
     },
     async (jwtPayload: JwtPayload, done: DoneCallback) => {
       try {
-        const user = await findUserById(Number(jwtPayload.sub));
+        const user = await findUserByJwtPayload(jwtPayload);
 
         if (user) {
           return done(null, user);
-        } else {
-          return done(null, false);
         }
+
+        return done(null, false);
       } catch (error) {
         return done(error, false);
       }

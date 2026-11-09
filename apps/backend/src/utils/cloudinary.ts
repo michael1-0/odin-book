@@ -6,17 +6,27 @@ import {
   UPLOAD_ALLOWED_FORMATS,
 } from "../constants/images.ts";
 
-function uploadProfilePicture(buffer: Buffer, userId: number) {
-  cloudinary.config();
+cloudinary.config();
 
+type ImageUploadParams = {
+  folder: string;
+  publicId: string;
+  overwrite: boolean;
+  invalidate: boolean;
+};
+
+function uploadBufferAsImage(
+  buffer: Buffer,
+  params: ImageUploadParams,
+): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: PROFILE_PICTURE_FOLDER,
-        public_id: `user-${userId}`,
+        folder: params.folder,
+        public_id: params.publicId,
         resource_type: "image",
-        overwrite: true,
-        invalidate: true,
+        ...(params.overwrite ? { overwrite: true } : {}),
+        ...(params.invalidate ? { invalidate: true } : {}),
         allowed_formats: UPLOAD_ALLOWED_FORMATS,
       },
       (error, result) => {
@@ -30,37 +40,28 @@ function uploadProfilePicture(buffer: Buffer, userId: number) {
     );
 
     uploadStream.end(buffer);
+  });
+}
+
+function uploadProfilePicture(buffer: Buffer, userId: number) {
+  return uploadBufferAsImage(buffer, {
+    folder: PROFILE_PICTURE_FOLDER,
+    publicId: `user-${userId}`,
+    overwrite: true,
+    invalidate: true,
   });
 }
 
 function uploadPostImage(buffer: Buffer, publicId: string) {
-  cloudinary.config();
-
-  return new Promise<string>((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: POST_IMAGES_FOLDER,
-        public_id: publicId,
-        resource_type: "image",
-        allowed_formats: UPLOAD_ALLOWED_FORMATS,
-      },
-      (error, result) => {
-        if (error || !result) {
-          reject(error ?? new Error("Cloudinary returned no upload result"));
-          return;
-        }
-
-        resolve(result.secure_url);
-      },
-    );
-
-    uploadStream.end(buffer);
+  return uploadBufferAsImage(buffer, {
+    folder: POST_IMAGES_FOLDER,
+    publicId,
+    overwrite: false,
+    invalidate: false,
   });
 }
 
 async function deleteUploadedPostImages(publicIds: string[]) {
-  cloudinary.config();
-
   await Promise.allSettled(
     publicIds.map((publicId) =>
       cloudinary.uploader.destroy(`${POST_IMAGES_FOLDER}/${publicId}`, {
@@ -71,8 +72,6 @@ async function deleteUploadedPostImages(publicIds: string[]) {
 }
 
 async function deletePostImageUrls(urls: string[]) {
-  cloudinary.config();
-
   await Promise.allSettled(
     urls.map((url) => {
       const publicId = url.split(`${POST_IMAGES_FOLDER}/`)[1];

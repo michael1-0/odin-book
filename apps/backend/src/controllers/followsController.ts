@@ -26,7 +26,7 @@ async function followUser(
 
   const newFollow = await upsertFollow(followedById, followingId);
 
-  return res.status(200).json({
+  return res.status(201).json({
     data: newFollow,
   });
 }

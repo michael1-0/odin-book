@@ -22,7 +22,7 @@ async function createComment(
 
   const comment = await saveComment(userId, postId, content);
 
-  return res.status(200).json({ data: comment });
+  return res.status(201).json({ data: comment });
 }
 
 export { createComment };

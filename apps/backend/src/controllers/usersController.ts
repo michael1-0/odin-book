@@ -15,6 +15,20 @@ import {
   getUserProfile,
   updateUser,
 } from "../db/queries/users.ts";
+import { splitPage } from "../utils/pagination.ts";
+
+// Users fetched with a `following` row filtered to the current user's own
+// follow surface as an `isFollowing` flag instead of the raw relation.
+function formatUserWithFollowStatus<
+  T extends { following: unknown[] | undefined },
+>(user: T) {
+  const { following, ...userData } = user;
+
+  return {
+    ...userData,
+    isFollowing: Array.isArray(following) && following.length > 0,
+  };
+}
 
 async function getUsersWithoutCurrentUser(
   req: ValidatedRequest<UsersGetSpec>,
@@ -31,21 +45,10 @@ async function getUsersWithoutCurrentUser(
     take: limit + 1,
   });
 
-  const hasNextPage = users.length > limit;
-  if (hasNextPage) {
-    users.pop();
-  }
-
+  const { items, hasMore: hasNextPage } = splitPage(users, limit);
   const nextCursor = hasNextPage ? offset + limit : null;
 
-  const formattedUsers = users.map((user) => {
-    const { following, ...userData } = user;
-
-    return {
-      ...userData,
-      isFollowing: Array.isArray(following) && following.length > 0,
-    };
-  });
+  const formattedUsers = items.map(formatUserWithFollowStatus);
 
   return res.status(200).json({
     data: formattedUsers,
@@ -106,12 +109,7 @@ async function getUser(req: ValidatedRequest<UserGetSpec>, res: Response) {
     throw new AppError(ERROR_MESSAGES.userNotFound, 404);
   }
 
-  const { following, ...userData } = user;
-
-  const formattedUser = {
-    ...userData,
-    isFollowing: Array.isArray(following) && following.length > 0,
-  };
+  const formattedUser = formatUserWithFollowStatus(user);
 
   return res.status(200).json({ data: formattedUser });
 }

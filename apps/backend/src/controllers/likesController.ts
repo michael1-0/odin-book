@@ -24,7 +24,7 @@ async function likePost(
 
   const feedPost = await getPostDetail(postId);
 
-  return res.status(200).json({ data: feedPost });
+  return res.status(201).json({ data: feedPost });
 }
 
 async function unlikePost(
