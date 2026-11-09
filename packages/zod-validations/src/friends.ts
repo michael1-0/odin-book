@@ -1,11 +1,8 @@
 import { z } from "zod";
-import { coercedId } from "./common.js";
-import {
-  FriendRequestSchema,
-  FriendRequestStatusSchema,
-  MessageSchema,
-  UserSchema,
-} from "./entities.js";
+import { coercedId, createdAt } from "./common.js";
+import { UserSchema } from "./entities.js";
+import { MessageSchema } from "./messages.js";
+import { FRIEND_REQUEST_STATUS } from "@repo/constants";
 
 export const FriendUserSchema = UserSchema.pick({
   id: true,
@@ -15,7 +12,20 @@ export const FriendUserSchema = UserSchema.pick({
 });
 export type FriendUser = z.infer<typeof FriendUserSchema>;
 
+export const FriendRequestStatusSchema = z.enum([
+  FRIEND_REQUEST_STATUS.PENDING,
+  FRIEND_REQUEST_STATUS.ACCEPTED,
+  FRIEND_REQUEST_STATUS.DECLINED,
+]);
 export type FriendRequestStatus = z.infer<typeof FriendRequestStatusSchema>;
+
+export const FriendRequestSchema = z.object({
+  id: z.number().int().positive(),
+  senderId: z.number().int().positive(),
+  receiverId: z.number().int().positive(),
+  status: FriendRequestStatusSchema,
+  createdAt,
+});
 export type FriendRequest = z.infer<typeof FriendRequestSchema>;
 
 export const FriendRequestWithUsersSchema = FriendRequestSchema.extend({

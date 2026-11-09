@@ -1,7 +1,13 @@
 import { z } from "zod";
-import { coercedId, messageContent } from "./common.js";
-import { MessageSchema } from "./entities.js";
+import { coercedId, createdAt, messageContent } from "./common.js";
 
+export const MessageSchema = z.object({
+  id: z.number().int().positive(),
+  senderId: z.number().int().positive(),
+  recipientId: z.number().int().positive(),
+  content: messageContent,
+  createdAt,
+});
 export type Message = z.infer<typeof MessageSchema>;
 
 export const FriendIdParamsSchema = z.object({

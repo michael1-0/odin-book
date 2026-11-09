@@ -4,9 +4,7 @@ import {
   MAX_NOTE_LENGTH,
   MAX_USERNAME_LENGTH,
   createdAt,
-  messageContent,
 } from "./common.js";
-import { FRIEND_REQUEST_STATUS } from "@repo/constants";
 
 export const UserSchema = z.object({
   id: z.number().int().positive(),
@@ -67,26 +65,4 @@ export const PostSchema = z.object({
 export const PostImageSchema = z.object({
   id: z.number().int().positive(),
   url: z.string(),
-});
-
-export const MessageSchema = z.object({
-  id: z.number().int().positive(),
-  senderId: z.number().int().positive(),
-  recipientId: z.number().int().positive(),
-  content: messageContent,
-  createdAt,
-});
-
-export const FriendRequestStatusSchema = z.enum([
-  FRIEND_REQUEST_STATUS.PENDING,
-  FRIEND_REQUEST_STATUS.ACCEPTED,
-  FRIEND_REQUEST_STATUS.DECLINED,
-]);
-
-export const FriendRequestSchema = z.object({
-  id: z.number().int().positive(),
-  senderId: z.number().int().positive(),
-  receiverId: z.number().int().positive(),
-  status: FriendRequestStatusSchema,
-  createdAt,
 });
