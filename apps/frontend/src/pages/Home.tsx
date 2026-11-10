@@ -11,7 +11,7 @@ import {
 } from "@repo/zod-validations";
 import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
 import { LOAD_MORE_ERROR_TEXT, LOAD_MORE_ERROR_TOAST } from "../constants/ui";
-import { createPost, loadPosts } from "../services/posts";
+import { createPost, getLatestPosts } from "../services/posts";
 import { likePost, unlikePost } from "../services/likes";
 import useInfiniteFeed from "../hooks/useInfiniteFeed";
 import PostComposer from "../components/PostComposer";
@@ -21,13 +21,7 @@ import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 
 async function loader() {
-  return await loadPosts();
-}
-
-// Cursor-paginated default feed page (module-level so its identity stays
-// stable across renders; see useInfiniteFeed).
-async function loadFeedPage(cursor: number) {
-  return await loadPosts({ cursor });
+  return await getLatestPosts();
 }
 
 async function action({ request }: ActionFunctionArgs) {
@@ -72,7 +66,7 @@ function Home() {
   } = useInfiniteFeed({
     initialPage,
     loadMoreRef,
-    loadPage: loadFeedPage,
+    loadPage: getLatestPosts,
     loadErrorText: LOAD_MORE_ERROR_TEXT,
     failureToast: LOAD_MORE_ERROR_TOAST,
   });

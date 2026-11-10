@@ -6,7 +6,7 @@ import {
   type ActionFunctionArgs,
 } from "react-router";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { deletePost, getCurrentUserPosts, loadPosts } from "../services/posts";
+import { deletePost, getCurrentUserPosts } from "../services/posts";
 import {
   MAX_NOTE_LENGTH,
   UserUpdateBodySchema,
@@ -34,12 +34,6 @@ import LoadMoreStatus from "../components/LoadMoreStatus";
 
 async function loader() {
   return await getCurrentUserPosts();
-}
-
-// Module-level so its identity stays stable across renders (the feed hook's
-// observer effect keys off it).
-async function loadMyPostsPage(cursor: number) {
-  return await loadPosts({ cursor, scope: "me" });
 }
 
 async function action({ request }: ActionFunctionArgs) {
@@ -98,7 +92,7 @@ function Profile() {
   } = useInfiniteFeed({
     initialPage,
     loadMoreRef,
-    loadPage: loadMyPostsPage,
+    loadPage: getCurrentUserPosts,
     loadErrorText: LOAD_MORE_ERROR_TEXT,
     failureToast: LOAD_MORE_ERROR_TOAST,
   });

@@ -6,7 +6,7 @@ import {
 } from "react-router";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
-import { getFollowingPostsFromLastMonth, loadPosts } from "../services/posts";
+import { getFollowingPostsFromLastMonth } from "../services/posts";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 import useInfiniteFeed from "../hooks/useInfiniteFeed";
@@ -17,12 +17,6 @@ import { LOAD_MORE_ERROR_TEXT, LOAD_MORE_ERROR_TOAST } from "../constants/ui";
 
 async function loader() {
   return await getFollowingPostsFromLastMonth();
-}
-
-// Module-level so its identity stays stable across renders (the feed hook's
-// observer effect keys off it).
-async function loadFollowingPostsPage(cursor: number) {
-  return await loadPosts({ cursor, scope: "following", period: "month" });
 }
 
 async function action({ request }: ActionFunctionArgs) {
@@ -52,7 +46,7 @@ function Updates() {
   } = useInfiniteFeed({
     initialPage,
     loadMoreRef,
-    loadPage: loadFollowingPostsPage,
+    loadPage: getFollowingPostsFromLastMonth,
     loadErrorText: LOAD_MORE_ERROR_TEXT,
     failureToast: LOAD_MORE_ERROR_TOAST,
   });

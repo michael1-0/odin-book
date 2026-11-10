@@ -107,19 +107,27 @@ async function getPostWithComments(
   return result;
 }
 
-async function getCurrentUserPosts() {
-  return await loadPosts({ scope: "me" });
+// Named domain wrappers are the single home of a page's query options. They
+// thread an optional cursor so the route loader (no cursor) and the
+// cursor-paginated feed hook (with cursor) share one function.
+async function getCurrentUserPosts(cursor?: number) {
+  return await loadPosts({ cursor, scope: "me" });
 }
 
-async function getFollowingPostsFromLastMonth() {
-  return await loadPosts({ scope: "following", period: "month" });
+async function getFollowingPostsFromLastMonth(cursor?: number) {
+  return await loadPosts({ cursor, scope: "following", period: "month" });
+}
+
+// Default feed page: all users, newest first (see loadPosts).
+async function getLatestPosts(cursor?: number) {
+  return await loadPosts({ cursor });
 }
 
 export {
-  loadPosts,
   createPost,
   deletePost,
   getPostWithComments,
+  getLatestPosts,
   getCurrentUserPosts,
   getFollowingPostsFromLastMonth,
 };
