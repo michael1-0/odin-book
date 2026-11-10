@@ -10,16 +10,24 @@ import {
   type PostsGetResponse,
 } from "@repo/zod-validations";
 import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
+import { LOAD_MORE_ERROR_TEXT, LOAD_MORE_ERROR_TOAST } from "../constants/ui";
 import { createPost, loadPosts } from "../services/posts";
 import { likePost, unlikePost } from "../services/likes";
 import useInfiniteFeed from "../hooks/useInfiniteFeed";
 import PostComposer from "../components/PostComposer";
+import LoadMoreStatus from "../components/LoadMoreStatus";
 import PostItem from "../components/PostItem";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 
 async function loader() {
   return await loadPosts();
+}
+
+// Cursor-paginated default feed page (module-level so its identity stays
+// stable across renders; see useInfiniteFeed).
+async function loadFeedPage(cursor: number) {
+  return await loadPosts({ cursor });
 }
 
 async function action({ request }: ActionFunctionArgs) {
@@ -54,7 +62,20 @@ function Home() {
   const { user } = useRouteLoaderData(ROUTE_ID);
   const initialPage = useLoaderData() as PostsGetResponse;
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const feed = useInfiniteFeed(initialPage, loadMoreRef);
+  const {
+    items: posts,
+    hasMore,
+    isLoadingMore,
+    loadError,
+    loadNextPage,
+    insertItem,
+  } = useInfiniteFeed({
+    initialPage,
+    loadMoreRef,
+    loadPage: loadFeedPage,
+    loadErrorText: LOAD_MORE_ERROR_TEXT,
+    failureToast: LOAD_MORE_ERROR_TOAST,
+  });
 
   return (
     <PageContainer>
@@ -62,30 +83,19 @@ function Home() {
         title="Home"
         content="You can post here, and look at the latest posts."
       />
-      <PostComposer onCreated={feed.insertPost} />
+      <PostComposer onCreated={insertItem} />
       <section className="flex flex-col gap-4 w-full">
-        {feed.posts.map((post) => (
+        {posts.map((post) => (
           <PostItem key={post.id} post={post} userId={user.id} />
         ))}
       </section>
-      <section
-        ref={loadMoreRef}
-        className="flex w-full items-center justify-center text-sm text-neutral-500"
-      >
-        {feed.loadError ? (
-          <button
-            type="button"
-            onClick={() => void feed.loadNextPage(true)}
-            className="rounded-sm bg-neutral-100 px-4 py-2 text-black transition-colors hover:bg-neutral-200"
-          >
-            Retry loading more
-          </button>
-        ) : feed.isLoadingMore ? (
-          "Loading more posts..."
-        ) : (
-          feed.hasMore && "Scroll to load more"
-        )}
-      </section>
+      <LoadMoreStatus
+        loadMoreRef={loadMoreRef}
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        loadError={loadError}
+        onRetry={() => loadNextPage(true)}
+      />
     </PageContainer>
   );
 }

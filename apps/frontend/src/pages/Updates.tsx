@@ -1,18 +1,28 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useLoaderData, useRouteLoaderData } from "react-router";
-import type { ActionFunctionArgs } from "react-router";
+import { useRef } from "react";
+import {
+  useLoaderData,
+  useRouteLoaderData,
+  type ActionFunctionArgs,
+} from "react-router";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
 import { getFollowingPostsFromLastMonth, loadPosts } from "../services/posts";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
+import useInfiniteFeed from "../hooks/useInfiniteFeed";
+import LoadMoreStatus from "../components/LoadMoreStatus";
 import type { PostsGetResponse } from "@repo/zod-validations";
 import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
-import { LOAD_MORE_ROOT_MARGIN } from "../constants/ui";
-import toast from "react-hot-toast";
+import { LOAD_MORE_ERROR_TEXT, LOAD_MORE_ERROR_TOAST } from "../constants/ui";
 
 async function loader() {
   return await getFollowingPostsFromLastMonth();
+}
+
+// Module-level so its identity stays stable across renders (the feed hook's
+// observer effect keys off it).
+async function loadFollowingPostsPage(cursor: number) {
+  return await loadPosts({ cursor, scope: "following", period: "month" });
 }
 
 async function action({ request }: ActionFunctionArgs) {
@@ -32,63 +42,20 @@ async function action({ request }: ActionFunctionArgs) {
 function Updates() {
   const { user } = useRouteLoaderData(ROUTE_ID);
   const initialPage = useLoaderData() as PostsGetResponse;
-  const [pages, setPages] = useState<PostsGetResponse[]>(() => [initialPage]);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const posts = pages.flatMap((page) => page.data);
-  const nextCursor = pages[pages.length - 1]?.nextCursor ?? null;
-
-  // Cursor pagination
-  const loadNextPage = useCallback(
-    async (force = false) => {
-      if (nextCursor === null || isLoadingMore || (loadError && !force)) {
-        return;
-      }
-
-      setIsLoadingMore(true);
-
-      try {
-        const page = await loadPosts({
-          cursor: nextCursor,
-          scope: "following",
-          period: "month",
-        });
-        setPages((currentPages) => [...currentPages, page]);
-        setLoadError(null);
-      } catch {
-        setLoadError("Couldn't load more posts.");
-        toast.error("Failed to load more posts");
-      } finally {
-        setIsLoadingMore(false);
-      }
-    },
-    [loadError, nextCursor, isLoadingMore],
-  );
-  useEffect(() => {
-    const sentinel = loadMoreRef.current;
-
-    if (!sentinel || nextCursor === null || isLoadingMore || loadError) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) {
-          return;
-        }
-
-        void loadNextPage();
-      },
-      {
-        rootMargin: LOAD_MORE_ROOT_MARGIN,
-      },
-    );
-
-    observer.observe(sentinel);
-
-    return () => observer.disconnect();
-  }, [loadNextPage, nextCursor, isLoadingMore, loadError]);
+  const {
+    items: posts,
+    hasMore,
+    isLoadingMore,
+    loadError,
+    loadNextPage,
+  } = useInfiniteFeed({
+    initialPage,
+    loadMoreRef,
+    loadPage: loadFollowingPostsPage,
+    loadErrorText: LOAD_MORE_ERROR_TEXT,
+    failureToast: LOAD_MORE_ERROR_TOAST,
+  });
 
   return (
     <PageContainer>
@@ -101,24 +68,13 @@ function Updates() {
           <PostItem key={post.id} post={post} userId={user.id} />
         ))}
       </section>
-      <section
-        ref={loadMoreRef}
-        className="flex w-full items-center justify-center text-sm text-neutral-500"
-      >
-        {loadError ? (
-          <button
-            type="button"
-            onClick={() => void loadNextPage(true)}
-            className="rounded-sm bg-neutral-100 px-4 py-2 text-black transition-colors hover:bg-neutral-200"
-          >
-            Retry loading more
-          </button>
-        ) : isLoadingMore ? (
-          "Loading more posts..."
-        ) : (
-          nextCursor && "Scroll to load more"
-        )}
-      </section>
+      <LoadMoreStatus
+        loadMoreRef={loadMoreRef}
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        loadError={loadError}
+        onRetry={() => loadNextPage(true)}
+      />
     </PageContainer>
   );
 }

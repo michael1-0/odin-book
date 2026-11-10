@@ -5,13 +5,7 @@ import {
   useRouteLoaderData,
   type ActionFunctionArgs,
 } from "react-router";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ChangeEvent,
-} from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { deletePost, getCurrentUserPosts, loadPosts } from "../services/posts";
 import {
   MAX_NOTE_LENGTH,
@@ -25,7 +19,7 @@ import {
   PROFILE_PICTURE_FIELD,
 } from "@repo/constants";
 import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
-import { LOAD_MORE_ROOT_MARGIN } from "../constants/ui";
+import { LOAD_MORE_ERROR_TEXT, LOAD_MORE_ERROR_TOAST } from "../constants/ui";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
 import { updateUser } from "../services/users";
@@ -35,9 +29,17 @@ import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 import ProfilePictureCropModal from "../components/ProfilePictureCropModal";
+import useInfiniteFeed from "../hooks/useInfiniteFeed";
+import LoadMoreStatus from "../components/LoadMoreStatus";
 
 async function loader() {
   return await getCurrentUserPosts();
+}
+
+// Module-level so its identity stays stable across renders (the feed hook's
+// observer effect keys off it).
+async function loadMyPostsPage(cursor: number) {
+  return await loadPosts({ cursor, scope: "me" });
 }
 
 async function action({ request }: ActionFunctionArgs) {
@@ -79,17 +81,27 @@ function Profile() {
   const initialPage = useLoaderData() as PostsGetResponse;
   const profileUrlRef = useRef<string | null>(user.profileUrl);
   const [profilePreviewUrl, setProfilePreviewUrl] = useState(user.profileUrl);
-  const [pages, setPages] = useState<PostsGetResponse[]>(() => [initialPage]);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [postToDeleteId, setPostToDeleteId] = useState<number | null>(null);
   const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
   const profilePictureInputRef = useRef<HTMLInputElement | null>(null);
   const profileObjectUrlRef = useRef<string | null>(null);
   const cropObjectUrlRef = useRef<string | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const posts = pages.flatMap((page) => page.data);
-  const nextCursor = pages[pages.length - 1]?.nextCursor ?? null;
+  // Cursor-paginated list of the user's own posts (see useInfiniteFeed).
+  const {
+    items: posts,
+    hasMore,
+    isLoadingMore,
+    loadError,
+    loadNextPage,
+    removeItem,
+  } = useInfiniteFeed({
+    initialPage,
+    loadMoreRef,
+    loadPage: loadMyPostsPage,
+    loadErrorText: LOAD_MORE_ERROR_TEXT,
+    failureToast: LOAD_MORE_ERROR_TOAST,
+  });
 
   const isUpdating = fetcher.state === "submitting";
   const hasError = fetcher.data?.error;
@@ -212,64 +224,11 @@ function Profile() {
       if (deleteFetcher.data.error) {
         toast.error(deleteFetcher.data.message ?? "Failed to delete post");
       } else if (deleteFetcher.data.id) {
-        const deletedPostId = deleteFetcher.data.id;
-        setPages((currentPages) =>
-          currentPages.map((page) => ({
-            ...page,
-            data: page.data.filter((post) => post.id !== deletedPostId),
-          })),
-        );
+        removeItem(deleteFetcher.data.id);
         toast.success("Post deleted");
       }
     }
-  }, [deleteFetcher.data, deleteFetcher.state]);
-
-  // Cursor pagination
-  const loadNextPage = useCallback(
-    async (force = false) => {
-      if (nextCursor === null || isLoadingMore || (loadError && !force)) {
-        return;
-      }
-
-      setIsLoadingMore(true);
-
-      try {
-        const page = await loadPosts({ cursor: nextCursor, scope: "me" });
-        setPages((currentPages) => [...currentPages, page]);
-        setLoadError(null);
-      } catch {
-        setLoadError("Couldn't load more posts.");
-        toast.error("Failed to load more posts");
-      } finally {
-        setIsLoadingMore(false);
-      }
-    },
-    [loadError, nextCursor, isLoadingMore],
-  );
-  useEffect(() => {
-    const sentinel = loadMoreRef.current;
-
-    if (!sentinel || nextCursor === null || isLoadingMore || loadError) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) {
-          return;
-        }
-
-        void loadNextPage();
-      },
-      {
-        rootMargin: LOAD_MORE_ROOT_MARGIN,
-      },
-    );
-
-    observer.observe(sentinel);
-
-    return () => observer.disconnect();
-  }, [loadNextPage, nextCursor, isLoadingMore, loadError]);
+  }, [deleteFetcher.data, deleteFetcher.state, removeItem]);
 
   const errors = fetcher.data?.errors;
   const usernameErrors = errors?.username;
@@ -403,24 +362,13 @@ function Profile() {
           onConfirm={handleCropConfirm}
         />
       )}
-      <section
-        ref={loadMoreRef}
-        className="flex w-full items-center justify-center text-sm text-neutral-500"
-      >
-        {loadError ? (
-          <button
-            type="button"
-            onClick={() => void loadNextPage(true)}
-            className="rounded-sm bg-neutral-100 px-4 py-2 text-black transition-colors hover:bg-neutral-200"
-          >
-            Retry loading more
-          </button>
-        ) : isLoadingMore ? (
-          "Loading more posts..."
-        ) : (
-          nextCursor && "Scroll to load more"
-        )}
-      </section>
+      <LoadMoreStatus
+        loadMoreRef={loadMoreRef}
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        loadError={loadError}
+        onRetry={() => loadNextPage(true)}
+      />
     </PageContainer>
   );
 }

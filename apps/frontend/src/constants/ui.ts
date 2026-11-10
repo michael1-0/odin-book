@@ -2,6 +2,12 @@
 // starts fetching the next page before it scrolls into view.
 export const LOAD_MORE_ROOT_MARGIN = "200px";
 
+// Copy for the feed hook's failed page fetches — shared by every page that
+// renders <LoadMoreStatus/>. Pages that silence the toast belong in the
+// hook's optional `failureToast` contract, not in new literals.
+export const LOAD_MORE_ERROR_TEXT = "Couldn't load more posts.";
+export const LOAD_MORE_ERROR_TOAST = "Failed to load more posts";
+
 export const FRIEND_SEARCH_DEBOUNCE_MS = 300;
 
 // Messages from the same sender within this window are grouped.
