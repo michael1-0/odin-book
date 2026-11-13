@@ -1,30 +1,27 @@
 import {
-  Link,
-  useFetcher,
   useLoaderData,
-  useNavigation,
   useRouteLoaderData,
-  useSearchParams,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "react-router";
-import { getPostWithComments } from "../services/posts";
 import {
   CommentCreateBodySchema,
   type PostFeedItemWithComments,
 } from "@repo/zod-validations";
-import PostItem from "../components/PostItem";
-import { createComment } from "../services/comments";
-import { likePost, unlikePost } from "../services/likes";
-import Back from "../components/Back";
-import PageContainer from "../components/PageContainer";
-import { useEffect } from "react";
-import toast from "react-hot-toast";
-import { FORM_INTENTS, ROUTE_ID, userPath } from "../constants/routes";
-import { FORM_FIELDS, QUERY_PARAMS } from "../constants/fields";
+import { FORM_FIELDS } from "../constants/fields";
+import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
 import { readIntent, unknownIntent } from "../utils/intent";
 import { submitForm } from "../utils/formValidation";
-import { formatShortDate } from "../utils/formatDate";
+import { readOffsetParam } from "../utils/queryParams";
+import { createComment } from "../services/comments";
+import { likePost, unlikePost } from "../services/likes";
+import { getPostWithComments } from "../services/posts";
+import PostItem from "../components/PostItem";
+import Back from "../components/Back";
+import CommentComposer from "../components/CommentComposer";
+import CommentItem from "../components/CommentItem";
+import LoadMoreComments from "../components/LoadMoreComments";
+import PageContainer from "../components/PageContainer";
 
 type PostDetailLoaderData = {
   post: PostFeedItemWithComments;
@@ -32,11 +29,10 @@ type PostDetailLoaderData = {
 };
 
 async function loader({ request, params }: LoaderFunctionArgs) {
-  const url = new URL(request.url);
-  const offsetParam = url.searchParams.get(QUERY_PARAMS.offset);
-  const offset = offsetParam ? Number(offsetParam) : undefined;
-
-  const page = await getPostWithComments(params.postId, offset);
+  const page = await getPostWithComments(
+    params.postId,
+    readOffsetParam(request),
+  );
 
   return {
     post: page.data,
@@ -67,111 +63,25 @@ async function action({ request }: ActionFunctionArgs) {
   }
 }
 
+// A single post and its paginated comments. The composer owns the comment
+// form (toasts, resets, validation); route revalidation refreshes the list
+// after each successful comment, and LoadMoreComments pages through older
+// ones via the offset query param.
 function PostDetail() {
   const { user } = useRouteLoaderData(ROUTE_ID);
   const { post, nextCursor } = useLoaderData() as PostDetailLoaderData;
-  const commentFetcher = useFetcher();
-  const [searchParams] = useSearchParams();
-  const navigation = useNavigation();
-
-  const isPosting = commentFetcher.state === "submitting";
-  const hasError = commentFetcher.data?.error;
-
-  const submissionId =
-    commentFetcher.data && !hasError ? commentFetcher.data.id : "initial";
-
-  const loadMoreSearchParams = new URLSearchParams(searchParams);
-
-  if (nextCursor !== null) {
-    loadMoreSearchParams.set(QUERY_PARAMS.offset, String(nextCursor));
-  }
-
-  const isLoadMorePending =
-    navigation.state === "loading" &&
-    navigation.location?.search.includes(QUERY_PARAMS.offset);
-
-  useEffect(() => {
-    if (commentFetcher.state === "idle" && commentFetcher.data) {
-      if (hasError) {
-        toast.error("Failed to create comment");
-      } else {
-        toast.success("Comment posted");
-      }
-    }
-  }, [commentFetcher.data, commentFetcher.state, hasError]);
-
-  const errors = commentFetcher.data?.errors;
-  const contentErrors = errors?.content;
 
   return (
     <PageContainer>
       <Back />
       <PostItem post={post} userId={user.id} />
-      <section>
-        <commentFetcher.Form
-          className=" flex flex-col items-stretch gap-4"
-          method="POST"
-          key={submissionId}
-        >
-          <div className="mb-2 text-sm text-red-600 min-h-8">
-            {contentErrors && contentErrors[0]}
-          </div>
-          <input type="hidden" name={FORM_FIELDS.postId} value={post.id} />
-          <textarea
-            id="content"
-            name={FORM_FIELDS.content}
-            className="rounded-sm shadow-sm p-2"
-            placeholder="Share your thoughts..."
-          ></textarea>
-          <button
-            type="submit"
-            name={FORM_FIELDS.intent}
-            value={FORM_INTENTS.createComment}
-            className="bg-black text-white rounded-sm p-2"
-            disabled={isPosting}
-          >
-            {" "}
-            Post comment
-          </button>
-        </commentFetcher.Form>
-      </section>
+      <CommentComposer postId={post.id} />
       <section className="flex flex-col gap-4">
-        {post.comments.map((comment) => {
-          return (
-            <div
-              key={comment.id}
-              className="flex flex-col gap-3 rounded-sm bg-neutral-100 p-4"
-            >
-              <Link
-                to={userPath(comment.user.id)}
-                className="flex items-center gap-3"
-              >
-                <img
-                  src={comment.user.profileUrl ?? undefined}
-                  className="max-w-8 max-h-8 rounded-full"
-                  alt={`${comment.user.username} profile picture`}
-                />
-                <div>{comment.user.username}</div>
-              </Link>
-              <div>{comment.content}</div>
-              <div className="text-sm ml-auto">
-                {formatShortDate(comment.createdAt)}
-              </div>
-            </div>
-          );
-        })}
+        {post.comments.map((comment) => (
+          <CommentItem key={comment.id} comment={comment} />
+        ))}
       </section>
-      {nextCursor !== null && (
-        <section className="flex justify-center">
-          <Link
-            to={`?${loadMoreSearchParams.toString()}`}
-            preventScrollReset
-            className="bg-black text-white p-2 rounded-sm"
-          >
-            {isLoadMorePending ? "Loading more..." : "Load more"}
-          </Link>
-        </section>
-      )}
+      <LoadMoreComments nextCursor={nextCursor} />
     </PageContainer>
   );
 }

@@ -6,8 +6,9 @@ import toast from "react-hot-toast";
 import { followUser, unfollowUser } from "../services/follows";
 import { getUsers } from "../services/users";
 import { APP_ROUTES, FORM_INTENTS, userPath } from "../constants/routes";
-import { FORM_FIELDS, QUERY_PARAMS } from "../constants/fields";
+import { FORM_FIELDS } from "../constants/fields";
 import { readIntent, unknownIntent } from "../utils/intent";
+import { readOffsetParam } from "../utils/queryParams";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 
@@ -17,11 +18,7 @@ type UsersLoaderData = {
 };
 
 async function loader({ request }: LoaderFunctionArgs) {
-  const url = new URL(request.url);
-  const offsetParam = url.searchParams.get(QUERY_PARAMS.offset);
-  const offset = offsetParam ? Number(offsetParam) : undefined;
-
-  const page = await getUsers(offset);
+  const page = await getUsers(readOffsetParam(request));
 
   return {
     users: page.data,

@@ -46,6 +46,7 @@ export const PostFeedItemWithCommentsSchema = PostFeedItemSchema.extend({
 export type PostFeedItemWithComments = z.infer<
   typeof PostFeedItemWithCommentsSchema
 >;
+export type PostComment = z.infer<typeof PostCommentSchema>;
 
 export const PostCreateBodySchema = PostSchema.omit({
   id: true,
