@@ -29,6 +29,7 @@ import { disconnectSocket, getSocket } from "../services/socket";
 import { formatFriendTime } from "../utils/formatDate";
 import { SOCKET_EVENTS } from "@repo/constants";
 import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
+import { readIntent, unknownIntent } from "../utils/intent";
 
 type FriendsLoaderData = FriendsGetResponse["data"];
 type UserData = { user: { id: number } };
@@ -39,9 +40,8 @@ async function loader() {
 
 async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const intent = formData.get("intent");
 
-  switch (intent) {
+  switch (readIntent(formData)) {
     case FORM_INTENTS.sendRequest:
       return await sendFriendRequest(formData);
     case FORM_INTENTS.cancelRequest:
@@ -51,7 +51,7 @@ async function action({ request }: ActionFunctionArgs) {
     case FORM_INTENTS.declineRequest:
       return await declineFriendRequest(formData);
     default:
-      throw new Response("Unknown intent", { status: 400 });
+      throw unknownIntent();
   }
 }
 

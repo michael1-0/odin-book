@@ -16,6 +16,8 @@ import Back from "../components/Back";
 import PageContainer from "../components/PageContainer";
 import { followUser, unfollowUser } from "../services/follows";
 import { APP_ROUTES, FORM_INTENTS, ROUTE_ID } from "../constants/routes";
+import { FORM_FIELDS } from "../constants/fields";
+import { readIntent, unknownIntent } from "../utils/intent";
 import { API_PATHS } from "../constants/api";
 
 async function loader({ params }: LoaderFunctionArgs) {
@@ -34,9 +36,8 @@ async function loader({ params }: LoaderFunctionArgs) {
 
 async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const intent = formData.get("intent");
 
-  switch (intent) {
+  switch (readIntent(formData)) {
     case FORM_INTENTS.likePost:
       return await likePost(formData);
     case FORM_INTENTS.unlikePost:
@@ -46,7 +47,7 @@ async function action({ request }: ActionFunctionArgs) {
     case FORM_INTENTS.unfollowUser:
       return await unfollowUser(formData);
     default:
-      throw new Response("Unknown intent", { status: 400 });
+      throw unknownIntent();
   }
 }
 
@@ -78,10 +79,14 @@ function UserDetail() {
         />
         <div className="text-xl">{userWithPosts.username}</div>
         <fetcher.Form method="POST">
-          <input type="hidden" name="targetUserId" value={userWithPosts.id} />
           <input
             type="hidden"
-            name="intent"
+            name={FORM_FIELDS.targetUserId}
+            value={userWithPosts.id}
+          />
+          <input
+            type="hidden"
+            name={FORM_FIELDS.intent}
             value={
               userWithPosts.isFollowing
                 ? FORM_INTENTS.unfollowUser

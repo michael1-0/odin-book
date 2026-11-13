@@ -1,7 +1,8 @@
 import { API_PATHS } from "../constants/api";
+import { FORM_FIELDS } from "../constants/fields";
 
 async function followUser(formData: FormData) {
-  const targetUserId = formData.get("targetUserId");
+  const targetUserId = formData.get(FORM_FIELDS.targetUserId);
 
   if (typeof targetUserId !== "string") {
     return { error: true, message: "Missing target user ID" };
@@ -23,7 +24,7 @@ async function followUser(formData: FormData) {
 }
 
 async function unfollowUser(formData: FormData) {
-  const targetUserId = formData.get("targetUserId");
+  const targetUserId = formData.get(FORM_FIELDS.targetUserId);
 
   if (typeof targetUserId !== "string") {
     return { error: true, message: "Missing target user ID" };

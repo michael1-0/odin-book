@@ -5,6 +5,7 @@ import type {
   MessagesGetResponse,
 } from "@repo/zod-validations";
 import { API_PATHS } from "../constants/api";
+import { FORM_FIELDS, QUERY_PARAMS } from "../constants/fields";
 
 async function getFriends(): Promise<FriendsGetResponse["data"]> {
   const response = await fetch(API_PATHS.friends);
@@ -31,11 +32,11 @@ async function exploreFriends(
   const searchParams = new URLSearchParams();
 
   if (query) {
-    searchParams.set("query", query);
+    searchParams.set(QUERY_PARAMS.query, query);
   }
 
   if (offset !== undefined) {
-    searchParams.set("offset", String(offset));
+    searchParams.set(QUERY_PARAMS.offset, String(offset));
   }
 
   const queryString = searchParams.toString();
@@ -56,7 +57,7 @@ async function exploreFriends(
 }
 
 async function sendFriendRequest(formData: FormData) {
-  const targetUserId = formData.get("targetUserId");
+  const targetUserId = formData.get(FORM_FIELDS.targetUserId);
 
   if (typeof targetUserId !== "string") {
     return { error: true, message: "Missing target user ID" };
@@ -78,7 +79,7 @@ async function sendFriendRequest(formData: FormData) {
 }
 
 async function cancelFriendRequest(formData: FormData) {
-  const targetUserId = formData.get("targetUserId");
+  const targetUserId = formData.get(FORM_FIELDS.targetUserId);
 
   if (typeof targetUserId !== "string") {
     return { error: true, message: "Missing target user ID" };
@@ -100,7 +101,7 @@ async function cancelFriendRequest(formData: FormData) {
 }
 
 async function acceptFriendRequest(formData: FormData) {
-  const requestId = formData.get("requestId");
+  const requestId = formData.get(FORM_FIELDS.requestId);
 
   if (typeof requestId !== "string") {
     return { error: true, message: "Missing request ID" };
@@ -122,7 +123,7 @@ async function acceptFriendRequest(formData: FormData) {
 }
 
 async function declineFriendRequest(formData: FormData) {
-  const requestId = formData.get("requestId");
+  const requestId = formData.get(FORM_FIELDS.requestId);
 
   if (typeof requestId !== "string") {
     return { error: true, message: "Missing request ID" };
@@ -150,7 +151,7 @@ async function getMessages(
   const searchParams = new URLSearchParams();
 
   if (beforeId !== undefined) {
-    searchParams.set("beforeId", String(beforeId));
+    searchParams.set(QUERY_PARAMS.beforeId, String(beforeId));
   }
 
   const queryString = searchParams.toString();

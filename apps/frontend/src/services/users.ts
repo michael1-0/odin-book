@@ -1,10 +1,11 @@
 import { API_PATHS } from "../constants/api";
+import { FORM_FIELDS, QUERY_PARAMS } from "../constants/fields";
 
 async function getUsers(offset?: number) {
   const searchParams = new URLSearchParams();
 
   if (offset !== undefined) {
-    searchParams.set("offset", String(offset));
+    searchParams.set(QUERY_PARAMS.offset, String(offset));
   }
 
   const queryString = searchParams.toString();
@@ -23,7 +24,7 @@ async function getUsers(offset?: number) {
 }
 
 async function updateUser(formData: FormData) {
-  const userId = formData.get("userId");
+  const userId = formData.get(FORM_FIELDS.userId);
 
   if (typeof userId !== "string") {
     return { error: true, message: "Missing user ID" };
@@ -51,7 +52,10 @@ async function getUserProfile(userId: string | undefined) {
     throw new Response("Missing user ID", { status: 400 });
   }
 
-  const response = await fetch(`${API_PATHS.user(userId)}?include=posts`);
+  const searchParams = new URLSearchParams({
+    [QUERY_PARAMS.include]: "posts",
+  });
+  const response = await fetch(`${API_PATHS.user(userId)}?${searchParams}`);
   const result = await response.json();
 
   if (!response.ok) {

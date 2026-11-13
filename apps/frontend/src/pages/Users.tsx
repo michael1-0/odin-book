@@ -6,6 +6,8 @@ import toast from "react-hot-toast";
 import { followUser, unfollowUser } from "../services/follows";
 import { getUsers } from "../services/users";
 import { APP_ROUTES, FORM_INTENTS, userPath } from "../constants/routes";
+import { FORM_FIELDS, QUERY_PARAMS } from "../constants/fields";
+import { readIntent, unknownIntent } from "../utils/intent";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 
@@ -16,7 +18,7 @@ type UsersLoaderData = {
 
 async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
-  const offsetParam = url.searchParams.get("offset");
+  const offsetParam = url.searchParams.get(QUERY_PARAMS.offset);
   const offset = offsetParam ? Number(offsetParam) : undefined;
 
   const page = await getUsers(offset);
@@ -29,15 +31,14 @@ async function loader({ request }: LoaderFunctionArgs) {
 
 async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const intent = formData.get("intent");
 
-  switch (intent) {
+  switch (readIntent(formData)) {
     case FORM_INTENTS.followUser:
       return await followUser(formData);
     case FORM_INTENTS.unfollowUser:
       return await unfollowUser(formData);
     default:
-      throw new Response("Unknown intent", { status: 400 });
+      throw unknownIntent();
   }
 }
 
@@ -132,7 +133,7 @@ function Users() {
         {users.map((user) => {
           const isSubmittingThisUser =
             fetcherState !== "idle" &&
-            fetcher.formData?.get("targetUserId") === String(user.id);
+            fetcher.formData?.get(FORM_FIELDS.targetUserId) === String(user.id);
 
           return (
             <Link
@@ -158,14 +159,20 @@ function Users() {
                   const formData = new FormData(event.currentTarget);
                   followIntentRef.current = {
                     userId: user.id,
-                    follow: formData.get("intent") === FORM_INTENTS.followUser,
+                    follow:
+                      formData.get(FORM_FIELDS.intent) ===
+                      FORM_INTENTS.followUser,
                   };
                 }}
               >
-                <input type="hidden" name="targetUserId" value={user.id} />
                 <input
                   type="hidden"
-                  name="intent"
+                  name={FORM_FIELDS.targetUserId}
+                  value={user.id}
+                />
+                <input
+                  type="hidden"
+                  name={FORM_FIELDS.intent}
                   value={
                     user.isFollowing
                       ? FORM_INTENTS.unfollowUser

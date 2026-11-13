@@ -1,4 +1,5 @@
 import { API_PATHS } from "../constants/api";
+import { FORM_FIELDS, QUERY_PARAMS } from "../constants/fields";
 
 type LoadPostsOptions = {
   cursor?: number;
@@ -10,15 +11,15 @@ async function loadPosts({ cursor, scope, period }: LoadPostsOptions = {}) {
   const searchParams = new URLSearchParams();
 
   if (cursor !== undefined) {
-    searchParams.set("cursor", String(cursor));
+    searchParams.set(QUERY_PARAMS.cursor, String(cursor));
   }
 
   if (scope) {
-    searchParams.set("scope", scope);
+    searchParams.set(QUERY_PARAMS.scope, scope);
   }
 
   if (period) {
-    searchParams.set("period", period);
+    searchParams.set(QUERY_PARAMS.period, period);
   }
 
   const queryString = searchParams.toString();
@@ -57,7 +58,7 @@ async function createPost(formData: FormData) {
 }
 
 async function deletePost(formData: FormData) {
-  const postId = formData.get("postId");
+  const postId = formData.get(FORM_FIELDS.postId);
 
   if (typeof postId !== "string") {
     return { error: true, message: "Missing post ID" };
@@ -89,10 +90,10 @@ async function getPostWithComments(
 
   const searchParams = new URLSearchParams();
 
-  searchParams.set("include", "comments");
+  searchParams.set(QUERY_PARAMS.include, "comments");
 
   if (offset !== undefined) {
-    searchParams.set("offset", String(offset));
+    searchParams.set(QUERY_PARAMS.offset, String(offset));
   }
 
   const response = await fetch(`${API_PATHS.post(postId)}?${searchParams}`);

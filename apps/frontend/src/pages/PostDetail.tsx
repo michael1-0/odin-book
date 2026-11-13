@@ -22,7 +22,10 @@ import PageContainer from "../components/PageContainer";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { FORM_INTENTS, ROUTE_ID, userPath } from "../constants/routes";
+import { FORM_FIELDS, QUERY_PARAMS } from "../constants/fields";
+import { readIntent, unknownIntent } from "../utils/intent";
 import { formatShortDate } from "../utils/formatDate";
+
 type PostDetailLoaderData = {
   post: PostFeedItemWithComments;
   nextCursor: number | null;
@@ -30,7 +33,7 @@ type PostDetailLoaderData = {
 
 async function loader({ request, params }: LoaderFunctionArgs) {
   const url = new URL(request.url);
-  const offsetParam = url.searchParams.get("offset");
+  const offsetParam = url.searchParams.get(QUERY_PARAMS.offset);
   const offset = offsetParam ? Number(offsetParam) : undefined;
 
   const page = await getPostWithComments(params.postId, offset);
@@ -43,13 +46,12 @@ async function loader({ request, params }: LoaderFunctionArgs) {
 
 async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const intent = formData.get("intent");
 
-  switch (intent) {
-    case "create-comment": {
+  switch (readIntent(formData)) {
+    case FORM_INTENTS.createComment: {
       const parsedComment = CommentCreateBodySchema.safeParse({
-        content: formData.get("content"),
-        postId: formData.get("postId"),
+        content: formData.get(FORM_FIELDS.content),
+        postId: formData.get(FORM_FIELDS.postId),
       });
 
       if (!parsedComment.success) {
@@ -69,7 +71,7 @@ async function action({ request }: ActionFunctionArgs) {
     case FORM_INTENTS.unlikePost:
       return await unlikePost(formData);
     default:
-      throw new Response("Unknown intent", { status: 400 });
+      throw unknownIntent();
   }
 }
 
@@ -89,12 +91,12 @@ function PostDetail() {
   const loadMoreSearchParams = new URLSearchParams(searchParams);
 
   if (nextCursor !== null) {
-    loadMoreSearchParams.set("offset", String(nextCursor));
+    loadMoreSearchParams.set(QUERY_PARAMS.offset, String(nextCursor));
   }
 
   const isLoadMorePending =
     navigation.state === "loading" &&
-    navigation.location?.search.includes("offset");
+    navigation.location?.search.includes(QUERY_PARAMS.offset);
 
   useEffect(() => {
     if (commentFetcher.state === "idle" && commentFetcher.data) {
@@ -122,17 +124,17 @@ function PostDetail() {
           <div className="mb-2 text-sm text-red-600 min-h-8">
             {contentErrors && contentErrors[0]}
           </div>
-          <input type="hidden" name="postId" value={post.id} />
+          <input type="hidden" name={FORM_FIELDS.postId} value={post.id} />
           <textarea
             id="content"
-            name="content"
+            name={FORM_FIELDS.content}
             className="rounded-sm shadow-sm p-2"
             placeholder="Share your thoughts..."
           ></textarea>
           <button
             type="submit"
-            name="intent"
-            value="create-comment"
+            name={FORM_FIELDS.intent}
+            value={FORM_INTENTS.createComment}
             className="bg-black text-white rounded-sm p-2"
             disabled={isPosting}
           >

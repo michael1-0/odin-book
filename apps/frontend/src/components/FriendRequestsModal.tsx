@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { X } from "lucide-react";
 import type { FriendRequestWithUsers } from "@repo/zod-validations";
 import { FORM_INTENTS, userPath, APP_ROUTES } from "../constants/routes";
+import { FORM_FIELDS } from "../constants/fields";
 import Avatar from "./Avatar";
 
 type RequestItemProps = {
@@ -48,10 +49,14 @@ function IncomingRequestItem({ request, onNavigate }: RequestItemProps) {
       </Link>
       <div className="flex shrink-0 gap-2">
         <acceptFetcher.Form method="POST" action={APP_ROUTES.friends}>
-          <input type="hidden" name="requestId" value={request.id} />
+          <input
+            type="hidden"
+            name={FORM_FIELDS.requestId}
+            value={request.id}
+          />
           <button
             type="submit"
-            name="intent"
+            name={FORM_FIELDS.intent}
             value={FORM_INTENTS.acceptRequest}
             disabled={isPending}
             className="rounded-sm bg-black p-2 text-xs text-white transition-colors hover:bg-neutral-700 disabled:opacity-50"
@@ -60,10 +65,14 @@ function IncomingRequestItem({ request, onNavigate }: RequestItemProps) {
           </button>
         </acceptFetcher.Form>
         <declineFetcher.Form method="POST" action={APP_ROUTES.friends}>
-          <input type="hidden" name="requestId" value={request.id} />
+          <input
+            type="hidden"
+            name={FORM_FIELDS.requestId}
+            value={request.id}
+          />
           <button
             type="submit"
-            name="intent"
+            name={FORM_FIELDS.intent}
             value={FORM_INTENTS.declineRequest}
             disabled={isPending}
             className="rounded-sm bg-neutral-200 p-2 text-xs text-black transition-colors hover:bg-neutral-300 disabled:opacity-50"
@@ -99,10 +108,14 @@ function OutgoingRequestItem({ request, onNavigate }: RequestItemProps) {
         </span>
       </Link>
       <fetcher.Form method="POST" action={APP_ROUTES.friends}>
-        <input type="hidden" name="targetUserId" value={request.receiverId} />
+        <input
+          type="hidden"
+          name={FORM_FIELDS.targetUserId}
+          value={request.receiverId}
+        />
         <button
           type="submit"
-          name="intent"
+          name={FORM_FIELDS.intent}
           value={FORM_INTENTS.cancelRequest}
           disabled={isPending}
           className="rounded-sm bg-neutral-200 p-2 text-xs text-black transition-colors hover:bg-neutral-300 disabled:opacity-50"

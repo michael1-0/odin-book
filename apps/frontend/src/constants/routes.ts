@@ -25,11 +25,16 @@ export function postPath(postId: number) {
 // Id of the root loader in router.tsx that provides the current user.
 export const ROUTE_ID = "user-data";
 
-// Form action identifiers shared between page actions and the buttons
-// that submit them ("create-post", "update-user", ... are file-local).
+// Form action identifiers shared between page actions and the forms that
+// submit them. Every intent lives here — single- or multi-consumer alike —
+// so this file is the full registry of the app's form verbs.
 export const FORM_INTENTS = {
+  createPost: "create-post",
   likePost: "like-post",
   unlikePost: "unlike-post",
+  deletePost: "delete-post",
+  createComment: "create-comment",
+  updateUser: "update-user",
   followUser: "follow-user",
   unfollowUser: "unfollow-user",
   sendRequest: "send-request",

@@ -4,6 +4,7 @@ import { Link, useFetcher, useNavigate } from "react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import toast from "react-hot-toast";
 import { postPath, userPath, FORM_INTENTS } from "../constants/routes";
+import { FORM_FIELDS } from "../constants/fields";
 import PostImageModal from "./PostImageModal";
 import getOptimizedImageUrl from "../utils/cloudinaryUrl";
 import { formatShortDate } from "../utils/formatDate";
@@ -122,10 +123,10 @@ function PostItem({
       )}
       <div className="flex items-center gap-4 w-full">
         <likeFetcher.Form className="flex gap-1" method="POST">
-          <input type="hidden" name="postId" value={post.id} />
+          <input type="hidden" name={FORM_FIELDS.postId} value={post.id} />
           <button
             type="submit"
-            name="intent"
+            name={FORM_FIELDS.intent}
             value={
               isLikedByMe ? FORM_INTENTS.unlikePost : FORM_INTENTS.likePost
             }

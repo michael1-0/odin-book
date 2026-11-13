@@ -6,6 +6,8 @@ import {
   POST_IMAGES_FIELD,
 } from "@repo/constants";
 import { type PostFeedItem } from "@repo/zod-validations";
+import { FORM_FIELDS } from "../constants/fields";
+import { FORM_INTENTS } from "../constants/routes";
 import useImagePicker from "../hooks/useImagePicker";
 import toast from "react-hot-toast";
 import { ImagePlus, X } from "lucide-react";
@@ -74,7 +76,7 @@ function PostComposer({ onCreated }: PostComposerProps) {
         </label>
         <textarea
           id="content"
-          name="content"
+          name={FORM_FIELDS.content}
           rows={4}
           required
           placeholder="Share something interesting..."
@@ -145,8 +147,8 @@ function PostComposer({ onCreated }: PostComposerProps) {
           type="submit"
           disabled={isPosting}
           className="px-4 py-2 w-full bg-black text-white font-medium rounded-sm focus:outline-none focus:ring-2 disabled:opacity-50 transition-colors"
-          name="intent"
-          value="create-post"
+          name={FORM_FIELDS.intent}
+          value={FORM_INTENTS.createPost}
         >
           {isPosting ? "Posting..." : "Post"}
         </button>

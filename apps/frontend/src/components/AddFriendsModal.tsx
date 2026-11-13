@@ -7,6 +7,7 @@ import type { FriendExploreItem } from "@repo/zod-validations";
 import { FRIEND_REQUEST_STATUS } from "@repo/constants";
 import { exploreFriends } from "../services/friends";
 import { APP_ROUTES, FORM_INTENTS, userPath } from "../constants/routes";
+import { FORM_FIELDS } from "../constants/fields";
 import { FRIEND_SEARCH_DEBOUNCE_MS } from "../constants/ui";
 import Avatar from "./Avatar";
 
@@ -53,10 +54,14 @@ function ExploreItem({
         </span>
       ) : (
         <fetcher.Form method="POST" action={APP_ROUTES.friends}>
-          <input type="hidden" name="targetUserId" value={item.id} />
+          <input
+            type="hidden"
+            name={FORM_FIELDS.targetUserId}
+            value={item.id}
+          />
           <button
             type="submit"
-            name="intent"
+            name={FORM_FIELDS.intent}
             value={FORM_INTENTS.sendRequest}
             disabled={isPending}
             className="rounded-sm bg-black p-2 text-xs text-white transition-colors hover:bg-neutral-700 disabled:opacity-50"

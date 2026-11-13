@@ -19,7 +19,9 @@ import {
   PROFILE_PICTURE_FIELD,
 } from "@repo/constants";
 import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
+import { FORM_FIELDS } from "../constants/fields";
 import { LOAD_MORE_ERROR_TEXT, LOAD_MORE_ERROR_TOAST } from "../constants/ui";
+import { readIntent, unknownIntent } from "../utils/intent";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
 import { updateUser } from "../services/users";
@@ -38,13 +40,12 @@ async function loader() {
 
 async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const intent = formData.get("intent");
 
-  switch (intent) {
-    case "update-user": {
+  switch (readIntent(formData)) {
+    case FORM_INTENTS.updateUser: {
       const parsedUser = UserUpdateBodySchema.safeParse({
-        username: formData.get("username"),
-        noteToAll: formData.get("noteToAll"),
+        username: formData.get(FORM_FIELDS.username),
+        noteToAll: formData.get(FORM_FIELDS.noteToAll),
       });
 
       if (!parsedUser.success) {
@@ -60,10 +61,10 @@ async function action({ request }: ActionFunctionArgs) {
       return await likePost(formData);
     case FORM_INTENTS.unlikePost:
       return await unlikePost(formData);
-    case "delete-post":
+    case FORM_INTENTS.deletePost:
       return await deletePost(formData);
     default:
-      throw new Response("Unknown intent", { status: 400 });
+      throw unknownIntent();
   }
 }
 
@@ -240,7 +241,7 @@ function Profile() {
           method="POST"
           encType="multipart/form-data"
         >
-          <input type="hidden" name="userId" value={user.id} />
+          <input type="hidden" name={FORM_FIELDS.userId} value={user.id} />
           <div className="flex flex-col items-center gap-2">
             <img
               src={profilePreviewUrl}
@@ -269,7 +270,7 @@ function Profile() {
             </label>
             <input
               type="text"
-              name="username"
+              name={FORM_FIELDS.username}
               id="username"
               defaultValue={user.username}
               className="shadow-sm rounded-sm p-3 bg-white"
@@ -284,7 +285,7 @@ function Profile() {
             </label>
             <textarea
               id="noteToAll"
-              name="noteToAll"
+              name={FORM_FIELDS.noteToAll}
               rows={4}
               required
               maxLength={MAX_NOTE_LENGTH}
@@ -297,8 +298,8 @@ function Profile() {
           </div>
           <button
             type="submit"
-            name="intent"
-            value="update-user"
+            name={FORM_FIELDS.intent}
+            value={FORM_INTENTS.updateUser}
             className="p-2 bg-black text-white rounded-sm  disabled:opacity-50 transition-colors"
             disabled={isUpdating}
           >
@@ -343,7 +344,10 @@ function Profile() {
             const postId = postToDeleteId;
             setPostToDeleteId(null);
             void deleteFetcher.submit(
-              { intent: "delete-post", postId: String(postId) },
+              {
+                [FORM_FIELDS.intent]: FORM_INTENTS.deletePost,
+                [FORM_FIELDS.postId]: String(postId),
+              },
               { method: "POST" },
             );
           }}

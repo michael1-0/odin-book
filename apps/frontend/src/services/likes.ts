@@ -1,7 +1,8 @@
 import { API_PATHS } from "../constants/api";
+import { FORM_FIELDS } from "../constants/fields";
 
 async function likePost(formData: FormData) {
-  const postId = formData.get("postId");
+  const postId = formData.get(FORM_FIELDS.postId);
 
   if (typeof postId !== "string") {
     return { error: true, message: "Missing post ID" };
@@ -23,7 +24,7 @@ async function likePost(formData: FormData) {
 }
 
 async function unlikePost(formData: FormData) {
-  const postId = formData.get("postId");
+  const postId = formData.get(FORM_FIELDS.postId);
 
   if (typeof postId !== "string") {
     return { error: true, message: "Missing post ID" };

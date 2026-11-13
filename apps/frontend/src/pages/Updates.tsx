@@ -14,6 +14,7 @@ import LoadMoreStatus from "../components/LoadMoreStatus";
 import type { PostsGetResponse } from "@repo/zod-validations";
 import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
 import { LOAD_MORE_ERROR_TEXT, LOAD_MORE_ERROR_TOAST } from "../constants/ui";
+import { readIntent, unknownIntent } from "../utils/intent";
 
 async function loader() {
   return await getFollowingPostsFromLastMonth();
@@ -21,15 +22,14 @@ async function loader() {
 
 async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const intent = formData.get("intent");
 
-  switch (intent) {
+  switch (readIntent(formData)) {
     case FORM_INTENTS.likePost:
       return await likePost(formData);
     case FORM_INTENTS.unlikePost:
       return await unlikePost(formData);
     default:
-      throw new Response("Unknown intent", { status: 400 });
+      throw unknownIntent();
   }
 }
 
