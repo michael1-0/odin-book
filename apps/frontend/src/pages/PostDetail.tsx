@@ -11,7 +11,6 @@ import {
 import { getPostWithComments } from "../services/posts";
 import {
   CommentCreateBodySchema,
-  z,
   type PostFeedItemWithComments,
 } from "@repo/zod-validations";
 import PostItem from "../components/PostItem";
@@ -24,6 +23,7 @@ import toast from "react-hot-toast";
 import { FORM_INTENTS, ROUTE_ID, userPath } from "../constants/routes";
 import { FORM_FIELDS, QUERY_PARAMS } from "../constants/fields";
 import { readIntent, unknownIntent } from "../utils/intent";
+import { submitForm } from "../utils/formValidation";
 import { formatShortDate } from "../utils/formatDate";
 
 type PostDetailLoaderData = {
@@ -48,24 +48,16 @@ async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
 
   switch (readIntent(formData)) {
-    case FORM_INTENTS.createComment: {
-      const parsedComment = CommentCreateBodySchema.safeParse({
-        content: formData.get(FORM_FIELDS.content),
-        postId: formData.get(FORM_FIELDS.postId),
-      });
-
-      if (!parsedComment.success) {
-        return {
-          error: true,
-          errors: z.flattenError(parsedComment.error).fieldErrors,
-        };
-      }
-
-      return await createComment(
-        parsedComment.data.content,
-        parsedComment.data.postId,
+    case FORM_INTENTS.createComment:
+      return await submitForm(
+        CommentCreateBodySchema,
+        formData,
+        {
+          content: FORM_FIELDS.content,
+          postId: FORM_FIELDS.postId,
+        },
+        (_, { content, postId }) => createComment(content, postId),
       );
-    }
     case FORM_INTENTS.likePost:
       return await likePost(formData);
     case FORM_INTENTS.unlikePost:

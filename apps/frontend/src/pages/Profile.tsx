@@ -10,7 +10,6 @@ import { deletePost, getCurrentUserPosts } from "../services/posts";
 import {
   MAX_NOTE_LENGTH,
   UserUpdateBodySchema,
-  z,
   type PostsGetResponse,
 } from "@repo/zod-validations";
 import {
@@ -22,6 +21,7 @@ import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
 import { LOAD_MORE_ERROR_TEXT, LOAD_MORE_ERROR_TOAST } from "../constants/ui";
 import { readIntent, unknownIntent } from "../utils/intent";
+import { submitForm } from "../utils/formValidation";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
 import { updateUser } from "../services/users";
@@ -42,21 +42,16 @@ async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
 
   switch (readIntent(formData)) {
-    case FORM_INTENTS.updateUser: {
-      const parsedUser = UserUpdateBodySchema.safeParse({
-        username: formData.get(FORM_FIELDS.username),
-        noteToAll: formData.get(FORM_FIELDS.noteToAll),
-      });
-
-      if (!parsedUser.success) {
-        return {
-          error: true,
-          errors: z.flattenError(parsedUser.error).fieldErrors,
-        };
-      }
-
-      return await updateUser(formData);
-    }
+    case FORM_INTENTS.updateUser:
+      return await submitForm(
+        UserUpdateBodySchema,
+        formData,
+        {
+          username: FORM_FIELDS.username,
+          noteToAll: FORM_FIELDS.noteToAll,
+        },
+        updateUser,
+      );
     case FORM_INTENTS.likePost:
       return await likePost(formData);
     case FORM_INTENTS.unlikePost:

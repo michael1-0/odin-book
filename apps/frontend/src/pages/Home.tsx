@@ -6,13 +6,13 @@ import {
 } from "react-router";
 import {
   PostCreateBodySchema,
-  z,
   type PostsGetResponse,
 } from "@repo/zod-validations";
 import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
 import { LOAD_MORE_ERROR_TEXT, LOAD_MORE_ERROR_TOAST } from "../constants/ui";
 import { readIntent, unknownIntent } from "../utils/intent";
+import { submitForm } from "../utils/formValidation";
 import { createPost, getLatestPosts } from "../services/posts";
 import { likePost, unlikePost } from "../services/likes";
 import useInfiniteFeed from "../hooks/useInfiniteFeed";
@@ -30,20 +30,13 @@ async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
 
   switch (readIntent(formData)) {
-    case FORM_INTENTS.createPost: {
-      const parsedPost = PostCreateBodySchema.safeParse({
-        content: formData.get(FORM_FIELDS.content),
-      });
-
-      if (!parsedPost.success) {
-        return {
-          error: true,
-          errors: z.flattenError(parsedPost.error).fieldErrors,
-        };
-      }
-
-      return await createPost(formData);
-    }
+    case FORM_INTENTS.createPost:
+      return await submitForm(
+        PostCreateBodySchema,
+        formData,
+        { content: FORM_FIELDS.content },
+        createPost,
+      );
     case FORM_INTENTS.likePost:
       return await likePost(formData);
     case FORM_INTENTS.unlikePost:
