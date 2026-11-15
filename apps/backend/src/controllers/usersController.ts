@@ -4,6 +4,7 @@ import { AppError } from "../errors/AppError.ts";
 import { requireUser } from "../middlewares/authMiddleware.ts";
 import type {
   UserGetSpec,
+  UsersGetResponse,
   UsersGetSpec,
   UserUpdateSpec,
 } from "@repo/zod-validations";
@@ -50,13 +51,12 @@ async function getUsersWithoutCurrentUser(
 
   const formattedUsers = items.map(formatUserWithFollowStatus);
 
-  return res.status(200).json({
+  const response: UsersGetResponse = {
     data: formattedUsers,
-    meta: {
-      nextCursor,
-      hasNextPage,
-    },
-  });
+    nextCursor,
+  };
+
+  return res.status(200).json(response);
 }
 
 async function updateCurrentUser(

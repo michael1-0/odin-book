@@ -33,7 +33,7 @@ function LoadMoreStatus({
           Retry loading more
         </button>
       ) : isLoadingMore ? (
-        "Loading more posts..."
+        "Loading more..."
       ) : (
         hasMore && "Scroll to load more"
       )}

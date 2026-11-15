@@ -8,7 +8,12 @@ export const UserIdParamsSchema = z.object({
 });
 export type UserIdParams = z.infer<typeof UserIdParamsSchema>;
 
-export const UserWithFollowStatusSchema = UserSchema.extend({
+export const UserWithFollowStatusSchema = UserSchema.pick({
+  id: true,
+  username: true,
+  createdAt: true,
+  profileUrl: true,
+}).extend({
   isFollowing: z.boolean(),
 });
 export type UserWithFollowStatus = z.infer<typeof UserWithFollowStatusSchema>;
@@ -37,6 +42,15 @@ export type UsersGetQuery = z.infer<typeof UsersGetQuerySchema>;
 
 export const usersGetSpec = { query: UsersGetQuerySchema };
 export type UsersGetSpec = typeof usersGetSpec;
+
+// Cursor is the next offset into the id-ordered user list (see
+// usersGetSpec), so it is nonnegative rather than a row id like the posts
+// feed cursor.
+export const UsersGetResponseSchema = z.object({
+  data: z.array(UserWithFollowStatusSchema),
+  nextCursor: z.number().int().nonnegative().nullable(),
+});
+export type UsersGetResponse = z.infer<typeof UsersGetResponseSchema>;
 
 export const userGetSpec = {
   params: UserIdParamsSchema,

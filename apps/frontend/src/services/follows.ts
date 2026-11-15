@@ -1,6 +1,10 @@
 import { API_PATHS } from "../constants/api";
 import { FORM_FIELDS } from "../constants/fields";
 
+// Success responses report the resulting follow state (`{ isFollowing }`)
+// instead of the raw follow row, so FollowButton can render its toggle
+// straight from fetcher.data — the same contract as the like flow's
+// updated-post response in PostItem.
 async function followUser(formData: FormData) {
   const targetUserId = formData.get(FORM_FIELDS.targetUserId);
 
@@ -20,7 +24,7 @@ async function followUser(formData: FormData) {
     };
   }
 
-  return result.data;
+  return { isFollowing: true };
 }
 
 async function unfollowUser(formData: FormData) {
@@ -42,7 +46,7 @@ async function unfollowUser(formData: FormData) {
     };
   }
 
-  return result.data;
+  return { isFollowing: false };
 }
 
 export { followUser, unfollowUser };

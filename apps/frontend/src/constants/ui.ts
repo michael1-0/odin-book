@@ -7,6 +7,7 @@ export const LOAD_MORE_ROOT_MARGIN = "200px";
 // hook's optional `failureToast` contract, not in new literals.
 export const LOAD_MORE_ERROR_TEXT = "Couldn't load more posts.";
 export const LOAD_MORE_ERROR_TOAST = "Failed to load more posts";
+export const LOAD_MORE_USERS_ERROR_TEXT = "Couldn't load more users.";
 
 export const FRIEND_SEARCH_DEBOUNCE_MS = 300;
 
