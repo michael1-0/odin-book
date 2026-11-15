@@ -1,37 +1,26 @@
+import { useRef } from "react";
 import {
-  useFetcher,
   useLoaderData,
-  useRevalidator,
   useRouteLoaderData,
   type ActionFunctionArgs,
 } from "react-router";
-import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { deletePost, getCurrentUserPosts } from "../services/posts";
 import {
-  MAX_NOTE_LENGTH,
   UserUpdateBodySchema,
   type PostsGetResponse,
 } from "@repo/zod-validations";
-import {
-  ACCEPTED_IMAGE_MIME_TYPES,
-  MAX_PROFILE_PICTURE_SIZE,
-  PROFILE_PICTURE_FIELD,
-} from "@repo/constants";
 import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
 import { LOAD_MORE_ERROR_TEXT, LOAD_MORE_ERROR_TOAST } from "../constants/ui";
 import { readIntent, unknownIntent } from "../utils/intent";
 import { submitForm } from "../utils/formValidation";
-import PostItem from "../components/PostItem";
+import { deletePost, getCurrentUserPosts } from "../services/posts";
 import { likePost, unlikePost } from "../services/likes";
 import { updateUser } from "../services/users";
-import toast from "react-hot-toast";
-import { LucideTrash2 } from "lucide-react";
-import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
+import useInfiniteFeed from "../hooks/useInfiniteFeed";
+import ProfileForm from "../components/ProfileForm";
+import YourPosts from "../components/YourPosts";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
-import ProfilePictureCropModal from "../components/ProfilePictureCropModal";
-import useInfiniteFeed from "../hooks/useInfiniteFeed";
 import LoadMoreStatus from "../components/LoadMoreStatus";
 
 async function loader() {
@@ -65,17 +54,7 @@ async function action({ request }: ActionFunctionArgs) {
 
 function Profile() {
   const { user } = useRouteLoaderData(ROUTE_ID);
-  const { revalidate } = useRevalidator();
-  const fetcher = useFetcher();
-  const deleteFetcher = useFetcher();
   const initialPage = useLoaderData() as PostsGetResponse;
-  const profileUrlRef = useRef<string | null>(user.profileUrl);
-  const [profilePreviewUrl, setProfilePreviewUrl] = useState(user.profileUrl);
-  const [postToDeleteId, setPostToDeleteId] = useState<number | null>(null);
-  const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
-  const profilePictureInputRef = useRef<HTMLInputElement | null>(null);
-  const profileObjectUrlRef = useRef<string | null>(null);
-  const cropObjectUrlRef = useRef<string | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   // Cursor-paginated list of the user's own posts (see useInfiniteFeed).
   const {
@@ -93,268 +72,14 @@ function Profile() {
     failureToast: LOAD_MORE_ERROR_TOAST,
   });
 
-  const isUpdating = fetcher.state === "submitting";
-  const hasError = fetcher.data?.error;
-
-  function handleProfilePictureChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.currentTarget.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    const isAllowedType = (
-      ACCEPTED_IMAGE_MIME_TYPES as readonly string[]
-    ).includes(file.type);
-
-    if (!isAllowedType || file.size > MAX_PROFILE_PICTURE_SIZE) {
-      toast.error(
-        `Choose a JPEG, PNG, or WebP image up to ${
-          MAX_PROFILE_PICTURE_SIZE / 1024 / 1024
-        } MB`,
-      );
-      event.currentTarget.value = "";
-      return;
-    }
-
-    if (cropObjectUrlRef.current) {
-      URL.revokeObjectURL(cropObjectUrlRef.current);
-    }
-
-    const objectUrl = URL.createObjectURL(file);
-    cropObjectUrlRef.current = objectUrl;
-    setCropImageUrl(objectUrl);
-  }
-
-  function handleCropCancel() {
-    setCropImageUrl(null);
-
-    if (cropObjectUrlRef.current) {
-      URL.revokeObjectURL(cropObjectUrlRef.current);
-      cropObjectUrlRef.current = null;
-    }
-
-    if (profilePictureInputRef.current) {
-      profilePictureInputRef.current.value = "";
-    }
-  }
-
-  function handleCropConfirm(blob: Blob) {
-    setCropImageUrl(null);
-
-    if (cropObjectUrlRef.current) {
-      URL.revokeObjectURL(cropObjectUrlRef.current);
-      cropObjectUrlRef.current = null;
-    }
-
-    const croppedFile = new File([blob], "profile.png", {
-      type: "image/png",
-    });
-    const dataTransfer = new DataTransfer();
-    dataTransfer.items.add(croppedFile);
-
-    if (profilePictureInputRef.current) {
-      profilePictureInputRef.current.files = dataTransfer.files;
-    }
-
-    if (profileObjectUrlRef.current) {
-      URL.revokeObjectURL(profileObjectUrlRef.current);
-    }
-
-    const objectUrl = URL.createObjectURL(croppedFile);
-    profileObjectUrlRef.current = objectUrl;
-    setProfilePreviewUrl(objectUrl);
-  }
-
-  // Toasts
-  useEffect(() => {
-    if (fetcher.state === "idle" && fetcher.data) {
-      if (hasError) {
-        if (!fetcher.data.errors && profileObjectUrlRef.current) {
-          URL.revokeObjectURL(profileObjectUrlRef.current);
-          profileObjectUrlRef.current = null;
-          setProfilePreviewUrl(profileUrlRef.current);
-          if (profilePictureInputRef.current) {
-            profilePictureInputRef.current.value = "";
-          }
-        }
-        toast.error(fetcher.data.message ?? "Failed to update profile");
-      } else {
-        if (fetcher.data.profileUrl) {
-          profileUrlRef.current = fetcher.data.profileUrl;
-          setProfilePreviewUrl(fetcher.data.profileUrl);
-          if (profileObjectUrlRef.current) {
-            URL.revokeObjectURL(profileObjectUrlRef.current);
-            profileObjectUrlRef.current = null;
-          }
-          if (profilePictureInputRef.current) {
-            profilePictureInputRef.current.value = "";
-          }
-        }
-        toast.success("Profile updated");
-        void revalidate();
-      }
-    }
-  }, [fetcher.data, fetcher.state, hasError, revalidate]);
-
-  useEffect(() => {
-    return () => {
-      if (profileObjectUrlRef.current) {
-        URL.revokeObjectURL(profileObjectUrlRef.current);
-      }
-      if (cropObjectUrlRef.current) {
-        URL.revokeObjectURL(cropObjectUrlRef.current);
-      }
-    };
-  }, []);
-
-  // Post deletion
-  useEffect(() => {
-    if (deleteFetcher.state === "idle" && deleteFetcher.data) {
-      if (deleteFetcher.data.error) {
-        toast.error(deleteFetcher.data.message ?? "Failed to delete post");
-      } else if (deleteFetcher.data.id) {
-        removeItem(deleteFetcher.data.id);
-        toast.success("Post deleted");
-      }
-    }
-  }, [deleteFetcher.data, deleteFetcher.state, removeItem]);
-
-  const errors = fetcher.data?.errors;
-  const usernameErrors = errors?.username;
-  const noteToAllErrors = errors?.noteToAll;
-
   return (
     <PageContainer>
       <PageHead
         title="Profile"
         content="Update your profile, and look at your posts."
       />
-      <section className="flex flex-col items-center gap-4 bg-neutral-100 rounded-sm p-4">
-        <fetcher.Form
-          className="flex flex-col w-full gap-4"
-          method="POST"
-          encType="multipart/form-data"
-        >
-          <input type="hidden" name={FORM_FIELDS.userId} value={user.id} />
-          <div className="flex flex-col items-center gap-2">
-            <img
-              src={profilePreviewUrl}
-              alt={`${user.username} profile image`}
-              className="h-24 w-24 rounded-full object-cover"
-            />
-            <label
-              htmlFor="profilePicture"
-              className="cursor-pointer text-sm font-semibold underline underline-offset-4 transition-colors hover:text-neutral-500"
-            >
-              Change picture
-            </label>
-            <input
-              type="file"
-              name={PROFILE_PICTURE_FIELD}
-              id="profilePicture"
-              ref={profilePictureInputRef}
-              accept={ACCEPTED_IMAGE_MIME_TYPES.join(",")}
-              onChange={handleProfilePictureChange}
-              className="sr-only"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="username" className="text-xs mb-1">
-              Username
-            </label>
-            <input
-              type="text"
-              name={FORM_FIELDS.username}
-              id="username"
-              defaultValue={user.username}
-              className="shadow-sm rounded-sm p-3 bg-white"
-            />
-            <div className="mt-2 text-xs text-red-600 min-h-4">
-              {usernameErrors && usernameErrors[0]}
-            </div>
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="noteToAll" className="text-xs mb-1">
-              Note to all
-            </label>
-            <textarea
-              id="noteToAll"
-              name={FORM_FIELDS.noteToAll}
-              rows={4}
-              required
-              maxLength={MAX_NOTE_LENGTH}
-              className="w-full p-3 shadow-sm rounded-sm resize-none focus:outline-none focus:ring-2 bg-white"
-              defaultValue={user.noteToAll}
-            />
-            <div className="mt-2 text-xs text-red-600 min-h-8">
-              {noteToAllErrors && noteToAllErrors[0]}
-            </div>
-          </div>
-          <button
-            type="submit"
-            name={FORM_FIELDS.intent}
-            value={FORM_INTENTS.updateUser}
-            className="p-2 bg-black text-white rounded-sm  disabled:opacity-50 transition-colors"
-            disabled={isUpdating}
-          >
-            {isUpdating ? "Updating..." : "Update"}
-          </button>
-        </fetcher.Form>
-      </section>
-      <section>
-        <div className="font-semibold text-xl">Your Posts</div>
-        {posts.length === 0 && (
-          <div className="mt-2 text-sm text-neutral-500">
-            You haven't posted anything yet.
-          </div>
-        )}
-        {posts.map((post) => (
-          <PostItem
-            key={post.id}
-            post={post}
-            userId={user.id}
-            includeHeader={false}
-            deleteButton={
-              <button
-                type="button"
-                disabled={deleteFetcher.state !== "idle"}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setPostToDeleteId(post.id);
-                }}
-                aria-label="Delete post"
-                className=" disabled:opacity-50"
-              >
-                <LucideTrash2 size={16} />
-              </button>
-            }
-          />
-        ))}
-      </section>
-      {postToDeleteId !== null && (
-        <ConfirmDeleteModal
-          onCancel={() => setPostToDeleteId(null)}
-          onConfirm={() => {
-            const postId = postToDeleteId;
-            setPostToDeleteId(null);
-            void deleteFetcher.submit(
-              {
-                [FORM_FIELDS.intent]: FORM_INTENTS.deletePost,
-                [FORM_FIELDS.postId]: String(postId),
-              },
-              { method: "POST" },
-            );
-          }}
-        />
-      )}
-      {cropImageUrl !== null && (
-        <ProfilePictureCropModal
-          imageUrl={cropImageUrl}
-          onCancel={handleCropCancel}
-          onConfirm={handleCropConfirm}
-        />
-      )}
+      <ProfileForm user={user} />
+      <YourPosts posts={posts} userId={user.id} removeItem={removeItem} />
       <LoadMoreStatus
         loadMoreRef={loadMoreRef}
         hasMore={hasMore}

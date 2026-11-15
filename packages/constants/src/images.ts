@@ -4,11 +4,13 @@ export const MAX_POST_IMAGE_SIZE = 5 * 1024 * 1024;
 export const MAX_POST_IMAGES = 3;
 export const MAX_PROFILE_PICTURE_SIZE = 5 * 1024 * 1024;
 
-export const ACCEPTED_IMAGE_MIME_TYPES = [
+// Typed as readonly string[] (not `as const`) so consumers can call
+// .includes/.join directly, without a cast at every call site.
+export const ACCEPTED_IMAGE_MIME_TYPES: readonly string[] = [
   "image/jpeg",
   "image/png",
   "image/webp",
-] as const;
+];
 
 // Multer field names the frontend must upload with.
 export const POST_IMAGES_FIELD = "images";
