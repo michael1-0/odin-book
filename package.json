@@ -20,7 +20,12 @@
     "prepare": "husky"
   },
   "packageManager": "pnpm@10.28.2",
+  "engines": {
+    "node": ">=22.22.1"
+  },
   "devDependencies": {
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.1",
+    "prettier": "3.8.1"
   }
 }
