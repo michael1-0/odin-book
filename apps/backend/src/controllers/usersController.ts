@@ -46,8 +46,8 @@ async function getUsersWithoutCurrentUser(
     take: limit + 1,
   });
 
-  const { items, hasMore: hasNextPage } = splitPage(users, limit);
-  const nextCursor = hasNextPage ? offset + limit : null;
+  const { items, hasMore } = splitPage(users, limit);
+  const nextCursor = hasMore ? offset + limit : null;
 
   const formattedUsers = items.map(formatUserWithFollowStatus);
 

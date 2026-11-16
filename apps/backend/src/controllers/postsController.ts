@@ -2,6 +2,7 @@ import type { Response } from "express";
 import type { ValidatedRequest } from "express-zod-safe";
 import type {
   PostCreateSpec,
+  PostGetResponse,
   PostGetSpec,
   PostIdParamsSpec,
   PostsGetResponse,
@@ -138,18 +139,19 @@ async function getPost(req: ValidatedRequest<PostGetSpec>, res: Response) {
   }
 
   // The query fetches one comment beyond the page (`offset + pageSize + 1`)
-  // so the split can report whether a next cursor exists.
-  const page = Array.isArray(post.comments)
-    ? splitPage(post.comments, offset + COMMENTS_PAGE_SIZE)
-    : undefined;
+  // so the split can report whether a next cursor exists. The cursor
+  // belongs to the embedded comments, not to the post itself; callers that
+  // did not request comments get an empty list and a null cursor.
+  const page = splitPage(post.comments, offset + COMMENTS_PAGE_SIZE);
 
-  const hasNextPage = page?.hasMore ?? false;
-  const nextCursor = hasNextPage ? offset + COMMENTS_PAGE_SIZE : null;
+  const nextCursor = page.hasMore ? offset + COMMENTS_PAGE_SIZE : null;
 
-  return res.status(200).json({
-    data: page ? { ...post, comments: page.items } : post,
-    meta: { nextCursor, hasNextPage },
-  });
+  const response: PostGetResponse = {
+    data: { ...post, comments: page.items },
+    nextCursor,
+  };
+
+  return res.status(200).json(response);
 }
 
 async function deletePost(

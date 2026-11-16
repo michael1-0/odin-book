@@ -1,3 +1,4 @@
+import type { PostGetResponse } from "@repo/zod-validations";
 import { API_PATHS } from "../constants/api";
 import { FORM_FIELDS, QUERY_PARAMS } from "../constants/fields";
 
@@ -83,7 +84,7 @@ async function deletePost(formData: FormData) {
 async function getPostWithComments(
   postId: string | undefined,
   offset?: number,
-) {
+): Promise<PostGetResponse> {
   if (!postId) {
     throw new Response("Missing post ID", { status: 400 });
   }

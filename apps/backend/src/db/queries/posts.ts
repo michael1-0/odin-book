@@ -100,29 +100,35 @@ function getPostDetail(
   options: { comments?: { offset: number } } = {},
   client: Prisma.TransactionClient = prisma,
 ) {
+  // Comments are always selected so the payload has one static shape —
+  // Prisma derives it per select, and a runtime-conditional select value
+  // (`comments: options.comments ? {...} : false`) makes the generated
+  // type fall back to the default comment shape, dropping the selected
+  // author. When the caller did not request comments the take is 0, which
+  // returns an empty list.
   return client.post.findUnique({
     select: {
       ...postFeedSelect,
-      comments: options.comments
-        ? {
+      comments: {
+        select: {
+          id: true,
+          user: {
             select: {
               id: true,
-              user: {
-                select: {
-                  id: true,
-                  profileUrl: true,
-                  username: true,
-                },
-              },
-              content: true,
-              createdAt: true,
+              profileUrl: true,
+              username: true,
             },
-            orderBy: {
-              createdAt: "desc",
-            },
-            take: options.comments.offset + COMMENTS_PAGE_SIZE + 1,
-          }
-        : false,
+          },
+          content: true,
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: options.comments
+          ? options.comments.offset + COMMENTS_PAGE_SIZE + 1
+          : 0,
+      },
     },
     where: {
       id: postId,

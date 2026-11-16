@@ -106,7 +106,7 @@ function AddFriendsModal({ onClose }: AddFriendsModalProps) {
         setResults((current) =>
           reset ? page.data : [...current, ...page.data],
         );
-        setNextCursor(page.meta.nextCursor);
+        setNextCursor(page.nextCursor);
         setSearchedQuery(search.trim());
       } catch {
         if (requestId === searchIdRef.current) {

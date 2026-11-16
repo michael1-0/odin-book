@@ -6,7 +6,7 @@ import {
 } from "react-router";
 import {
   CommentCreateBodySchema,
-  type PostFeedItemWithComments,
+  type PostGetResponse,
 } from "@repo/zod-validations";
 import { FORM_FIELDS } from "../constants/fields";
 import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
@@ -23,21 +23,8 @@ import CommentItem from "../components/CommentItem";
 import LoadMoreComments from "../components/LoadMoreComments";
 import PageContainer from "../components/PageContainer";
 
-type PostDetailLoaderData = {
-  post: PostFeedItemWithComments;
-  nextCursor: number | null;
-};
-
 async function loader({ request, params }: LoaderFunctionArgs) {
-  const page = await getPostWithComments(
-    params.postId,
-    readOffsetParam(request),
-  );
-
-  return {
-    post: page.data,
-    nextCursor: page.meta.nextCursor,
-  } satisfies PostDetailLoaderData;
+  return await getPostWithComments(params.postId, readOffsetParam(request));
 }
 
 async function action({ request }: ActionFunctionArgs) {
@@ -69,7 +56,7 @@ async function action({ request }: ActionFunctionArgs) {
 // ones via the offset query param.
 function PostDetail() {
   const { user } = useRouteLoaderData(ROUTE_ID);
-  const { post, nextCursor } = useLoaderData() as PostDetailLoaderData;
+  const { data: post, nextCursor } = useLoaderData() as PostGetResponse;
 
   return (
     <PageContainer>

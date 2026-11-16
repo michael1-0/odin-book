@@ -84,7 +84,7 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
 
         page.data.forEach((message) => messageIds.current.add(message.id));
         setMessages(page.data);
-        setNextCursor(page.meta.nextCursor);
+        setNextCursor(page.nextCursor);
       } catch {
         if (!isStale) {
           setError("Couldn't load messages.");
@@ -159,7 +159,7 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
 
       fresh.forEach((message) => messageIds.current.add(message.id));
       setMessages((current) => [...fresh, ...current]);
-      setNextCursor(page.meta.nextCursor);
+      setNextCursor(page.nextCursor);
 
       requestAnimationFrame(() => {
         if (container) {

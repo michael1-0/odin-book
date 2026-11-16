@@ -5,6 +5,7 @@ import { requireUser } from "../middlewares/authMiddleware.ts";
 import type {
   Friend,
   FriendExploreItem,
+  FriendExploreResponse,
   FriendExploreSpec,
   FriendRequestIdParamsSpec,
   FriendRequestWithUsers,
@@ -108,8 +109,8 @@ async function exploreFriends(
     take: limit + 1,
   });
 
-  const { items: pagedUsers, hasMore: hasNextPage } = splitPage(users, limit);
-  const nextCursor = hasNextPage ? offset + limit : null;
+  const { items: pagedUsers, hasMore } = splitPage(users, limit);
+  const nextCursor = hasMore ? offset + limit : null;
 
   const requests = await findFriendRequestsBetween(
     currentUserId,
@@ -132,13 +133,12 @@ async function exploreFriends(
     };
   });
 
-  return res.status(200).json({
+  const response: FriendExploreResponse = {
     data: formattedUsers,
-    meta: {
-      nextCursor,
-      hasNextPage,
-    },
-  });
+    nextCursor,
+  };
+
+  return res.status(200).json(response);
 }
 
 async function sendFriendRequest(

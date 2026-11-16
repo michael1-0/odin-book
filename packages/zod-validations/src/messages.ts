@@ -20,12 +20,11 @@ export const MessagesGetQuerySchema = z.object({
 });
 export type MessagesGetQuery = z.infer<typeof MessagesGetQuerySchema>;
 
+// Cursor is the id of the oldest returned message, passed back as `beforeId`
+// to fetch the page of older messages preceding it.
 export const MessagesGetResponseSchema = z.object({
   data: z.array(MessageSchema),
-  meta: z.object({
-    hasMore: z.boolean(),
-    nextCursor: z.number().int().positive().nullable(),
-  }),
+  nextCursor: z.number().int().positive().nullable(),
 });
 export type MessagesGetResponse = z.infer<typeof MessagesGetResponseSchema>;
 

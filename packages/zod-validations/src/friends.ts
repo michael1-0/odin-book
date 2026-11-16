@@ -80,6 +80,14 @@ export type FriendExploreItem = z.infer<typeof FriendExploreItemSchema>;
 export const friendExploreSpec = { query: FriendExploreQuerySchema };
 export type FriendExploreSpec = typeof friendExploreSpec;
 
+// Cursor is the next offset into the id-ordered user list (see
+// friendExploreSpec), so it is nonnegative rather than a row id.
+export const FriendExploreResponseSchema = z.object({
+  data: z.array(FriendExploreItemSchema),
+  nextCursor: z.number().int().nonnegative().nullable(),
+});
+export type FriendExploreResponse = z.infer<typeof FriendExploreResponseSchema>;
+
 export const targetUserIdParamsSpec = { params: TargetUserIdParamsSchema };
 export type TargetUserIdParamsSpec = typeof targetUserIdParamsSpec;
 

@@ -1,5 +1,5 @@
 import type {
-  FriendExploreItem,
+  FriendExploreResponse,
   FriendsGetResponse,
   Message,
   MessagesGetResponse,
@@ -25,10 +25,7 @@ async function getFriends(): Promise<FriendsGetResponse["data"]> {
 async function exploreFriends(
   query: string | null,
   offset?: number,
-): Promise<{
-  data: FriendExploreItem[];
-  meta: { nextCursor: number | null; hasNextPage: boolean };
-}> {
+): Promise<FriendExploreResponse> {
   const searchParams = new URLSearchParams();
 
   if (query) {

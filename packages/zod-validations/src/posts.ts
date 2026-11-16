@@ -79,6 +79,17 @@ export const PostGetQuerySchema = z.object({
 });
 export type PostGetQuery = z.infer<typeof PostGetQuerySchema>;
 
+// `nextCursor` belongs to the embedded comments (offset-based): each
+// response re-ships the newest `offset + COMMENTS_PAGE_SIZE` comments — a
+// cumulative prefix, not an appended slice — so the PostDetail loader
+// replaces the list wholesale on revalidation. The post itself is a single
+// entity, not a page.
+export const PostGetResponseSchema = z.object({
+  data: PostFeedItemWithCommentsSchema,
+  nextCursor: z.number().int().nonnegative().nullable(),
+});
+export type PostGetResponse = z.infer<typeof PostGetResponseSchema>;
+
 export const postIdParamsSpec = { params: PostIdParamsSchema };
 export type PostIdParamsSpec = typeof postIdParamsSpec;
 

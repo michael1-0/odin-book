@@ -45,10 +45,7 @@ async function getMessages(
 
   const response: MessagesGetResponse = {
     data: page,
-    meta: {
-      hasMore,
-      nextCursor: hasMore ? (page[0]?.id ?? null) : null,
-    },
+    nextCursor: hasMore ? (page[0]?.id ?? null) : null,
   };
 
   return res.status(200).json(response);
