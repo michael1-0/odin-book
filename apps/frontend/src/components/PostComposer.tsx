@@ -77,7 +77,7 @@ function PostComposer({ onCreated }: PostComposerProps) {
         className="space-y-4"
         key={submissionId}
       >
-        <div className="mb-2 text-sm text-red-600 min-h-8">
+        <div className="mb-2 min-h-8 text-sm text-red-600">
           {contentErrors && contentErrors[0]}
         </div>
         <label htmlFor="content" className="sr-only">
@@ -89,7 +89,7 @@ function PostComposer({ onCreated }: PostComposerProps) {
           rows={4}
           required
           placeholder="Share something interesting..."
-          className="w-full p-3 shadow-sm rounded-sm resize-none focus:outline-none focus:ring-2"
+          className="w-full resize-none rounded-sm p-3 shadow-sm focus:ring-2 focus:outline-none"
           disabled={isPosting}
         />
         {imagePreviewUrls.length > 0 && (
@@ -123,7 +123,7 @@ function PostComposer({ onCreated }: PostComposerProps) {
                   onClick={() => removeImage(index)}
                   disabled={isPosting}
                   aria-label={`Remove image ${index + 1}`}
-                  className="absolute right-1 top-1 rounded-full bg-black/60 p-0.5 text-white focus:outline-none focus:ring-2 disabled:opacity-50"
+                  className="absolute top-1 right-1 rounded-full bg-black/60 p-0.5 text-white focus:ring-2 focus:outline-none disabled:opacity-50"
                 >
                   <X size={14} />
                 </button>
@@ -131,7 +131,7 @@ function PostComposer({ onCreated }: PostComposerProps) {
             ))}
           </div>
         )}
-        <div className="mb-2 text-sm text-red-600 min-h-8">{imageError}</div>
+        <div className="mb-2 min-h-8 text-sm text-red-600">{imageError}</div>
         <label
           htmlFor="post-images"
           className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold underline underline-offset-4 transition-colors hover:text-neutral-500"
@@ -155,7 +155,7 @@ function PostComposer({ onCreated }: PostComposerProps) {
         <button
           type="submit"
           disabled={isPosting}
-          className="px-4 py-2 w-full bg-black text-white font-medium rounded-sm focus:outline-none focus:ring-2 disabled:opacity-50 transition-colors"
+          className="w-full rounded-sm bg-black px-4 py-2 font-medium text-white transition-colors focus:ring-2 focus:outline-none disabled:opacity-50"
           name={FORM_FIELDS.intent}
           value={FORM_INTENTS.createPost}
         >

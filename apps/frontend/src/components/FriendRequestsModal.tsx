@@ -195,7 +195,7 @@ function FriendRequestsModal({
             aria-label="Close friend requests"
             className="rounded-full p-1 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-black"
           >
-            <X className="h-5 w-5" aria-hidden="true" />
+            <X className="size-5" aria-hidden="true" />
           </button>
         </div>
         <div className="flex flex-col gap-4 overflow-y-auto">

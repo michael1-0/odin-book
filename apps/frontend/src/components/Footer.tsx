@@ -1,5 +1,5 @@
 function Footer() {
-  return <div className="text-center p-12">[E]nd</div>;
+  return <div className="p-12 text-center">[E]nd</div>;
 }
 
 export default Footer;

@@ -23,13 +23,13 @@ function ErrorBoundary() {
   }
 
   return (
-    <div className="font-ark flex items-center w-full flex-col justify-center min-h-dvh">
+    <div className="flex min-h-dvh w-full flex-col items-center justify-center font-ark">
       <Logo isBig={true} />
-      <div className="min-w-full text-lg text-center my-8">
+      <div className="my-8 min-w-full text-center text-lg">
         <div>{title}</div>
         {message && <div className="mt-2 text-sm">{message}</div>}
       </div>
-      <Link to={APP_ROUTES.home} className="underline font-bold">
+      <Link to={APP_ROUTES.home} className="font-bold underline">
         Go back home
       </Link>
     </div>

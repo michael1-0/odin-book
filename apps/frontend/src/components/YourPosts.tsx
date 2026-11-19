@@ -41,7 +41,7 @@ function YourPosts({ posts, userId, removeItem }: YourPostsProps) {
 
   return (
     <section>
-      <div className="font-semibold text-xl">Your Posts</div>
+      <div className="text-xl font-semibold">Your Posts</div>
       {posts.length === 0 && (
         <div className="mt-2 text-sm text-neutral-500">
           You haven't posted anything yet.

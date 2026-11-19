@@ -13,11 +13,11 @@ type NavProps = {
 
 function DesktopMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
   return (
-    <nav className="sticky top-0 z-50 flex justify-between items-center p-4 bg-white">
+    <nav className="sticky top-0 z-50 flex items-center justify-between bg-white p-4">
       <NavLink to={APP_ROUTES.home}>
         <Logo />
       </NavLink>
-      <div className="hidden md:flex gap-6 items-center font-semibold">
+      <div className="hidden items-center gap-6 font-semibold md:flex">
         <NavLink
           to={APP_ROUTES.home}
           className={({ isActive }) => (isActive ? "font-bold border-b-2" : "")}
@@ -49,7 +49,7 @@ function DesktopMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
           Profile
         </NavLink>
         <button
-          className="bg-black text-white text-sm border p-2 rounded-sm"
+          className="rounded-sm border bg-black p-2 text-sm text-white"
           onClick={handleLogout}
         >
           Log out
@@ -57,10 +57,10 @@ function DesktopMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
       </div>
       <button
         onClick={toggleSidebar}
-        className="md:hidden p-1.5 rounded-lg hover:bg-gray-100/80 text-gray-600 transition-colors"
+        className="rounded-lg p-1.5 text-gray-600 transition-colors hover:bg-gray-100/80 md:hidden"
         aria-label="Toggle Menu"
       >
-        {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        {isOpen ? <X className="size-6" /> : <Menu className="size-6" />}
       </button>
     </nav>
   );
@@ -69,21 +69,21 @@ function DesktopMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
 function MobileMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
   return (
     <div
-      className={`fixed inset-0 z-50 h-screen w-screen backdrop-blur-xl p-4 transform-gpu transition-all duration-150 ease-out md:hidden flex flex-col ${
+      className={`fixed inset-0 z-50 flex h-screen w-screen transform-gpu flex-col p-4 backdrop-blur-xl transition-all duration-150 ease-out md:hidden ${
         isOpen
-          ? "opacity-100 scale-100 pointer-events-auto"
-          : "opacity-0 scale-100 pointer-events-none"
+          ? "pointer-events-auto scale-100 opacity-100"
+          : "pointer-events-none scale-100 opacity-0"
       }`}
     >
-      <div className="absolute top-4 right-4 z-50 flex justify-end items-center h-12">
+      <div className="absolute top-4 right-4 z-50 flex h-12 items-center justify-end">
         <button
           onClick={toggleSidebar}
-          className="p-1.5 rounded-lg hover:bg-gray-100/80 text-gray-600"
+          className="rounded-lg p-1.5 text-gray-600 hover:bg-gray-100/80"
         >
-          <X className="h-6 w-6" />
+          <X className="size-6" />
         </button>
       </div>
-      <div className="flex flex-col gap-6 text-2xl font-semibold items-center justify-center flex-1 tracking-wide">
+      <div className="flex flex-1 flex-col items-center justify-center gap-6 text-2xl font-semibold tracking-wide">
         <NavLink
           to={APP_ROUTES.home}
           onClick={toggleSidebar}
@@ -120,7 +120,7 @@ function MobileMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
           Profile
         </NavLink>
         <button
-          className="text-sm bg-black text-white p-2 rounded-sm"
+          className="rounded-sm bg-black p-2 text-sm text-white"
           onClick={handleLogout}
         >
           Log out

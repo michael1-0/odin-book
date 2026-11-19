@@ -4,4 +4,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export default createFrontendConfig({ tsconfigRootDir: __dirname });
+export default createFrontendConfig({
+  tsconfigRootDir: __dirname,
+  tailwindCssPath: path.join(__dirname, "src", "index.css"),
+});

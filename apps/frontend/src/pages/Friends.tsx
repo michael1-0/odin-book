@@ -78,7 +78,7 @@ function Friends() {
             onClick={() => setActiveModal("requests")}
             className="flex items-center gap-2 rounded-sm bg-black px-4 py-2 text-sm text-white transition-colors hover:bg-neutral-700"
           >
-            <Users className="h-4 w-4" aria-hidden="true" />
+            <Users className="size-4" aria-hidden="true" />
             Requests
             {incomingRequests.length > 0 && (
               <span className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-black">
@@ -91,7 +91,7 @@ function Friends() {
             onClick={() => setActiveModal("add")}
             className="flex items-center gap-2 rounded-sm bg-neutral-100 px-4 py-2 text-sm text-black transition-colors hover:bg-neutral-200"
           >
-            <UserPlus className="h-4 w-4" aria-hidden="true" />
+            <UserPlus className="size-4" aria-hidden="true" />
             Add
           </button>
         </div>

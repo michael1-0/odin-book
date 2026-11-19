@@ -72,7 +72,7 @@ function Home() {
         content="You can post here, and look at the latest posts."
       />
       <PostComposer onCreated={insertItem} />
-      <section className="flex flex-col gap-4 w-full">
+      <section className="flex w-full flex-col gap-4">
         {posts.map((post) => (
           <PostItem key={post.id} post={post} userId={user.id} />
         ))}

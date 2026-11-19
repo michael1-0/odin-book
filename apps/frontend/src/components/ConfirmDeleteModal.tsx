@@ -54,7 +54,7 @@ function ConfirmDeleteModal({ onCancel, onConfirm }: ConfirmDeleteModalProps) {
             type="button"
             autoFocus
             onClick={onConfirm}
-            className="rounded-sm px-4 py-2 bg-black text-white transition-colors"
+            className="rounded-sm bg-black px-4 py-2 text-white transition-colors"
           >
             Delete
           </button>

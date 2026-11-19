@@ -84,9 +84,9 @@ function ProfileForm({ user }: ProfileFormProps) {
 
   return (
     <>
-      <section className="flex flex-col items-center gap-4 bg-neutral-100 rounded-sm p-4">
+      <section className="flex flex-col items-center gap-4 rounded-sm bg-neutral-100 p-4">
         <fetcher.Form
-          className="flex flex-col w-full gap-4"
+          className="flex w-full flex-col gap-4"
           method="POST"
           encType="multipart/form-data"
         >
@@ -95,7 +95,7 @@ function ProfileForm({ user }: ProfileFormProps) {
             <img
               src={profilePreviewUrl ?? undefined}
               alt={`${user.username} profile image`}
-              className="h-24 w-24 rounded-full object-cover"
+              className="size-24 rounded-full object-cover"
             />
             <label
               htmlFor="profilePicture"
@@ -114,7 +114,7 @@ function ProfileForm({ user }: ProfileFormProps) {
             />
           </div>
           <div className="flex flex-col">
-            <label htmlFor="username" className="text-xs mb-1">
+            <label htmlFor="username" className="mb-1 text-xs">
               Username
             </label>
             <input
@@ -122,14 +122,14 @@ function ProfileForm({ user }: ProfileFormProps) {
               name={FORM_FIELDS.username}
               id="username"
               defaultValue={user.username}
-              className="shadow-sm rounded-sm p-3 bg-white"
+              className="rounded-sm bg-white p-3 shadow-sm"
             />
-            <div className="mt-2 text-xs text-red-600 min-h-4">
+            <div className="mt-2 min-h-4 text-xs text-red-600">
               {usernameErrors && usernameErrors[0]}
             </div>
           </div>
           <div className="flex flex-col">
-            <label htmlFor="noteToAll" className="text-xs mb-1">
+            <label htmlFor="noteToAll" className="mb-1 text-xs">
               Note to all
             </label>
             <textarea
@@ -138,10 +138,10 @@ function ProfileForm({ user }: ProfileFormProps) {
               rows={4}
               required
               maxLength={MAX_NOTE_LENGTH}
-              className="w-full p-3 shadow-sm rounded-sm resize-none focus:outline-none focus:ring-2 bg-white"
+              className="w-full resize-none rounded-sm bg-white p-3 shadow-sm focus:ring-2 focus:outline-none"
               defaultValue={user.noteToAll}
             />
-            <div className="mt-2 text-xs text-red-600 min-h-8">
+            <div className="mt-2 min-h-8 text-xs text-red-600">
               {noteToAllErrors && noteToAllErrors[0]}
             </div>
           </div>
@@ -149,7 +149,7 @@ function ProfileForm({ user }: ProfileFormProps) {
             type="submit"
             name={FORM_FIELDS.intent}
             value={FORM_INTENTS.updateUser}
-            className="p-2 bg-black text-white rounded-sm disabled:opacity-50 transition-colors"
+            className="rounded-sm bg-black p-2 text-white transition-colors disabled:opacity-50"
             disabled={isUpdating}
           >
             {isUpdating ? "Updating..." : "Update"}

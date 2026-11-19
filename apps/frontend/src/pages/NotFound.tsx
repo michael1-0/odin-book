@@ -3,10 +3,10 @@ import Logo from "../components/Logo";
 
 function NotFound() {
   return (
-    <div className="flex items-center w-full flex-col justify-center min-h-dvh">
+    <div className="flex min-h-dvh w-full flex-col items-center justify-center">
       <Logo isBig={true} />
-      <div className="min-w-full text-center my-8">Page Not Found</div>
-      <Link to={"/"} className="underline font-bold">
+      <div className="my-8 min-w-full text-center">Page Not Found</div>
+      <Link to={"/"} className="font-bold underline">
         Go back home
       </Link>
     </div>

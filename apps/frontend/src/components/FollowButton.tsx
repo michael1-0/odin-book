@@ -57,7 +57,7 @@ function FollowButton({
       />
       <button
         disabled={followFetcher.state !== "idle"}
-        className={`bg-black text-white rounded-sm p-2 text-xs w-20 ${
+        className={`w-20 rounded-sm bg-black p-2 text-xs text-white ${
           followFetcher.state !== "idle" ? "opacity-50" : ""
         }`}
         onClick={(e) => e.stopPropagation()}

@@ -5,7 +5,7 @@ type PageHeadProps = {
 
 function PageHead({ title, content }: PageHeadProps) {
   return (
-    <div className="flex flex-col gap-2 mb-4">
+    <div className="mb-4 flex flex-col gap-2">
       <h2 className="text-3xl font-semibold ">{title}</h2>
       <p className="text-sm opacity-70">{content}</p>
     </div>

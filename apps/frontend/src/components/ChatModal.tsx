@@ -210,7 +210,7 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
       className="fixed inset-0 z-50 flex flex-col bg-white"
     >
       <header className="p-4">
-        <div className="mx-auto flex w-full max-w-165 items-center gap-3">
+        <div className="mx-auto flex w-full max-w-app items-center gap-3">
           <Link
             to={userPath(friend.id)}
             aria-label={`View ${friend.username}'s profile`}
@@ -219,7 +219,7 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
             <img
               src={friend.profileUrl ?? undefined}
               alt={`${friend.username} profile image`}
-              className="h-10 w-10 shrink-0 rounded-full object-cover"
+              className="size-10 shrink-0 rounded-full object-cover"
             />
           </Link>
           <Link
@@ -236,13 +236,13 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
             aria-label="Close chat"
             className="ml-auto rounded-full p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-black"
           >
-            <X className="h-6 w-6" aria-hidden="true" />
+            <X className="size-6" aria-hidden="true" />
           </button>
         </div>
       </header>
       {isLoading ? (
         <div className="flex flex-1 flex-col gap-3 p-4">
-          <div className="mx-auto flex w-full max-w-165 flex-col gap-3">
+          <div className="mx-auto flex w-full max-w-app flex-col gap-3">
             {["w-2/3 self-start", "w-1/2 self-end", "w-3/5 self-start"].map(
               (width, index) => (
                 <div
@@ -255,14 +255,14 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
         </div>
       ) : error ? (
         <div className="flex flex-1 items-center justify-center p-4 text-sm text-red-600">
-          <div className="mx-auto w-full max-w-165">{error}</div>
+          <div className="mx-auto w-full max-w-app">{error}</div>
         </div>
       ) : (
         <div
           ref={scrollContainerRef}
           className="flex flex-1 flex-col gap-2 overflow-y-auto p-4"
         >
-          <div className="mx-auto flex w-full max-w-165 flex-col gap-2">
+          <div className="mx-auto flex w-full max-w-app flex-col gap-2">
             {nextCursor !== null && (
               <button
                 type="button"
@@ -275,7 +275,7 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
             )}
             {messages.length === 0 && (
               <div className="my-auto flex flex-col items-center gap-3 py-16 text-neutral-400">
-                <MessageCircle className="h-12 w-12" aria-hidden="true" />
+                <MessageCircle className="size-12" aria-hidden="true" />
                 <p className="text-sm">No messages yet. Say hi!</p>
               </div>
             )}
@@ -305,7 +305,7 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
                         : "self-start bg-neutral-100 text-black"
                     } ${groupedWithPrevious ? "" : "mt-2"}`}
                   >
-                    <p className="whitespace-pre-wrap break-words">
+                    <p className="wrap-break-word whitespace-pre-wrap">
                       {message.content}
                     </p>
                     <span
@@ -324,7 +324,7 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
         </div>
       )}
       <form onSubmit={(event) => void handleSend(event)} className="p-4">
-        <div className="mx-auto flex w-full max-w-165 gap-2">
+        <div className="mx-auto flex w-full max-w-app gap-2">
           <input
             type="text"
             value={draft}

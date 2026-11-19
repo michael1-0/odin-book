@@ -15,10 +15,10 @@ function UserCard({ user }: UserCardProps) {
   return (
     <Link
       to={userPath(user.id)}
-      className="rounded-sm flex flex-col items-center justify-center gap-3 min-w-0 bg-neutral-100 p-4 hover:bg-neutral-200 cursor-pointer"
+      className="flex min-w-0 cursor-pointer flex-col items-center justify-center gap-3 rounded-sm bg-neutral-100 p-4 hover:bg-neutral-200"
     >
-      <Avatar user={user} className="max-w-24 max-h-24" />
-      <div className="w-full text-center truncate px-2" title={user.username}>
+      <Avatar user={user} className="max-h-24 max-w-24" />
+      <div className="w-full truncate px-2 text-center" title={user.username}>
         {user.username}
       </div>
       <FollowButton targetUserId={user.id} isFollowing={user.isFollowing} />

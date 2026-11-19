@@ -74,11 +74,11 @@ function FriendList({
     <div className="flex flex-col gap-3">
       {friends.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-sm bg-neutral-100 p-8 text-neutral-400">
-          <MessageCircle className="h-12 w-12" aria-hidden="true" />
+          <MessageCircle className="size-12" aria-hidden="true" />
           <p className="text-sm">No friends to chat yet.</p>
         </div>
       ) : visibleFriends.length === 0 ? (
-        <p className="text-sm mt-2 text-neutral-500">
+        <p className="mt-2 text-sm text-neutral-500">
           No friends match "{trimmedQuery}".
         </p>
       ) : (

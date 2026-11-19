@@ -64,7 +64,7 @@ function UserDetail() {
         <img
           src={userWithPosts.profileUrl ?? undefined}
           alt={`${userWithPosts.username} profile image`}
-          className="max-w-40 max-h-30 rounded-full"
+          className="max-h-30 max-w-40 rounded-full"
         />
         <div className="text-xl">{userWithPosts.username}</div>
         <FollowButton

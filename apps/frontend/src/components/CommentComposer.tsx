@@ -52,7 +52,7 @@ function CommentComposer({ postId }: CommentComposerProps) {
         className="flex flex-col items-stretch gap-4"
         key={submissionId}
       >
-        <div className="mb-2 text-sm text-red-600 min-h-8">
+        <div className="mb-2 min-h-8 text-sm text-red-600">
           {contentErrors && contentErrors[0]}
         </div>
         <input type="hidden" name={FORM_FIELDS.postId} value={postId} />
@@ -64,13 +64,13 @@ function CommentComposer({ postId }: CommentComposerProps) {
           name={FORM_FIELDS.content}
           required
           placeholder="Share your thoughts..."
-          className="rounded-sm shadow-sm p-2"
+          className="rounded-sm p-2 shadow-sm"
         />
         <button
           type="submit"
           name={FORM_FIELDS.intent}
           value={FORM_INTENTS.createComment}
-          className="bg-black text-white rounded-sm p-2"
+          className="rounded-sm bg-black p-2 text-white"
           disabled={isPosting}
         >
           Post comment

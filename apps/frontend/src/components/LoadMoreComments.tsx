@@ -29,7 +29,7 @@ function LoadMoreComments({ nextCursor }: LoadMoreCommentsProps) {
       <Link
         to={`?${loadMoreSearchParams.toString()}`}
         preventScrollReset
-        className="bg-black text-white p-2 rounded-sm"
+        className="rounded-sm bg-black p-2 text-white"
       >
         {isLoadMorePending ? "Loading more..." : "Load more"}
       </Link>

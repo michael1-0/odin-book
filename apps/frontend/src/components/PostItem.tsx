@@ -56,17 +56,17 @@ function PostItem({
   return (
     <div
       onClick={handleCardClick}
-      className="rounded-sm flex flex-col gap-5 py-4 items-start cursor-pointer"
+      className="flex cursor-pointer flex-col items-start gap-5 rounded-sm py-4"
     >
       {includeHeader && (
         <Link
           to={userPath(post.user.id)}
           onClick={(e) => e.stopPropagation()}
-          className="flex gap-5 items-center"
+          className="flex items-center gap-5"
         >
           <img
             src={post.user.profileUrl ?? undefined}
-            className="object-cover w-10 h-10 rounded-full"
+            className="size-10 rounded-full object-cover"
             alt={`${post.user.username} profile`}
           />
           <div>{post.user.username}</div>
@@ -82,7 +82,7 @@ function PostItem({
             e.stopPropagation();
             setSelectedImageUrl(images[0].url);
           }}
-          className="w-full max-h-80 rounded-sm object-cover"
+          className="max-h-80 w-full rounded-sm object-cover"
         />
       )}
       {images.length === 2 && (
@@ -117,12 +117,12 @@ function PostItem({
                 e.stopPropagation();
                 setSelectedImageUrl(image.url);
               }}
-              className={`h-full w-full rounded-sm object-cover ${index === 0 ? "row-span-2" : ""}`}
+              className={`size-full rounded-sm object-cover ${index === 0 ? "row-span-2" : ""}`}
             />
           ))}
         </div>
       )}
-      <div className="flex items-center gap-4 w-full">
+      <div className="flex w-full items-center gap-4">
         <likeFetcher.Form className="flex gap-1" method="POST">
           <input type="hidden" name={FORM_FIELDS.postId} value={post.id} />
           <button
@@ -144,7 +144,7 @@ function PostItem({
           <MessageSquare />
           <div>{post._count.comments}</div>
         </div>
-        <div className="text-sm ml-auto">{formatShortDate(post.createdAt)}</div>
+        <div className="ml-auto text-sm">{formatShortDate(post.createdAt)}</div>
         {deleteButton}
       </div>
       {selectedImageUrl && (

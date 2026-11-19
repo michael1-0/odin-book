@@ -13,11 +13,11 @@ function CommentItem({ comment }: CommentItemProps) {
   return (
     <div className="flex flex-col gap-3 rounded-sm bg-neutral-100 p-4">
       <Link to={userPath(comment.user.id)} className="flex items-center gap-3">
-        <Avatar user={comment.user} className="h-8 w-8" />
+        <Avatar user={comment.user} className="size-8" />
         <div>{comment.user.username}</div>
       </Link>
       <div>{comment.content}</div>
-      <div className="text-sm ml-auto">
+      <div className="ml-auto text-sm">
         {formatShortDate(comment.createdAt)}
       </div>
     </div>

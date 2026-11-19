@@ -56,7 +56,7 @@ function Users() {
   return (
     <PageContainer>
       <PageHead title="Users" content="Explore Ark users." />
-      <section className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 min-w-0">
+      <section className="grid min-w-0 grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {users.map((user) => (
           <UserCard key={user.id} user={user} />
         ))}

@@ -51,7 +51,7 @@ function ExploreItem({
       </Link>
       {hasPendingRequest ? (
         <span className="flex shrink-0 items-center gap-1 text-xs text-green-700">
-          <Check className="h-3.5 w-3.5" aria-hidden="true" />
+          <Check className="size-3.5" aria-hidden="true" />
           Request sent
         </span>
       ) : (
@@ -189,12 +189,12 @@ function AddFriendsModal({ onClose }: AddFriendsModalProps) {
             aria-label="Close add friends"
             className="rounded-full p-1 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-black"
           >
-            <X className="h-5 w-5" aria-hidden="true" />
+            <X className="size-5" aria-hidden="true" />
           </button>
         </div>
         <div className="relative">
           <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400"
             aria-hidden="true"
           />
           <input
@@ -204,16 +204,16 @@ function AddFriendsModal({ onClose }: AddFriendsModalProps) {
             placeholder="Search users by username..."
             aria-label="Search users by username"
             autoFocus
-            className="w-full rounded-sm bg-neutral-100 py-3 pl-10 pr-10 text-sm outline-none placeholder:text-neutral-400 focus:ring-2 focus:ring-black"
+            className="w-full rounded-sm bg-neutral-100 px-10 py-3 text-sm outline-none placeholder:text-neutral-400 focus:ring-2 focus:ring-black"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery("")}
               aria-label="Clear search"
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-black"
+              className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-black"
             >
-              <X className="h-4 w-4" aria-hidden="true" />
+              <X className="size-4" aria-hidden="true" />
             </button>
           )}
         </div>
