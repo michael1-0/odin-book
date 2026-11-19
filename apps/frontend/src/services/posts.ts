@@ -1,6 +1,14 @@
-import type { PostGetResponse } from "@repo/zod-validations";
+import type { ActionResult } from "./actionResult";
+import type {
+  PostFeedItemWithComments,
+  PostGetResponse,
+  PostsGetResponse,
+} from "@repo/zod-validations";
+import { serverFailure } from "./actionResult";
 import { API_PATHS } from "../constants/api";
 import { FORM_FIELDS, QUERY_PARAMS } from "../constants/fields";
+import { readFormField } from "../utils/formData";
+import { apiFetch, apiMutation } from "./http";
 
 type LoadPostsOptions = {
   cursor?: number;
@@ -8,77 +16,44 @@ type LoadPostsOptions = {
   period?: "month";
 };
 
-async function loadPosts({ cursor, scope, period }: LoadPostsOptions = {}) {
-  const searchParams = new URLSearchParams();
-
-  if (cursor !== undefined) {
-    searchParams.set(QUERY_PARAMS.cursor, String(cursor));
-  }
-
-  if (scope) {
-    searchParams.set(QUERY_PARAMS.scope, scope);
-  }
-
-  if (period) {
-    searchParams.set(QUERY_PARAMS.period, period);
-  }
-
-  const queryString = searchParams.toString();
-  const response = await fetch(
-    queryString ? `${API_PATHS.posts}?${queryString}` : API_PATHS.posts,
-  );
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Response(result.error?.message ?? "Failed to load posts", {
-      status: response.status,
-    });
-  }
-
-  return result;
+async function loadPosts({
+  cursor,
+  scope,
+  period,
+}: LoadPostsOptions = {}): Promise<PostsGetResponse> {
+  return await apiFetch<PostsGetResponse>(API_PATHS.posts, {
+    query: {
+      [QUERY_PARAMS.cursor]: cursor,
+      [QUERY_PARAMS.scope]: scope,
+      [QUERY_PARAMS.period]: period,
+    },
+    failureMessage: "Failed to load posts",
+  });
 }
 
-async function createPost(formData: FormData) {
-  const response = await fetch(API_PATHS.posts, {
+async function createPost(
+  formData: FormData,
+): Promise<ActionResult<PostFeedItemWithComments>> {
+  return await apiMutation<PostFeedItemWithComments>(API_PATHS.posts, {
     method: "POST",
-    credentials: "include",
-    body: formData,
+    body: { formData },
+    failureMessage: "Failed to create post",
   });
-
-  const result = await response.json();
-
-  if (!response.ok) {
-    return {
-      error: true,
-      errors: result,
-      message: result.error?.message,
-    };
-  }
-
-  return result.data;
 }
 
-async function deletePost(formData: FormData) {
-  const postId = formData.get(FORM_FIELDS.postId);
+async function deletePost(
+  formData: FormData,
+): Promise<ActionResult<{ id: number }>> {
+  const postId = readFormField(formData, FORM_FIELDS.postId);
 
-  if (typeof postId !== "string") {
-    return { error: true, message: "Missing post ID" };
+  if (postId === undefined) {
+    return serverFailure("Missing post ID");
   }
 
-  const response = await fetch(API_PATHS.post(postId), {
+  return await apiMutation<{ id: number }>(API_PATHS.post(postId), {
     method: "DELETE",
+    failureMessage: "Failed to delete post",
   });
-
-  const result = await response.json();
-
-  if (!response.ok) {
-    return {
-      error: true,
-      message: result.error?.message,
-    };
-  }
-
-  return result.data;
 }
 
 async function getPostWithComments(
@@ -89,24 +64,13 @@ async function getPostWithComments(
     throw new Response("Missing post ID", { status: 400 });
   }
 
-  const searchParams = new URLSearchParams();
-
-  searchParams.set(QUERY_PARAMS.include, "comments");
-
-  if (offset !== undefined) {
-    searchParams.set(QUERY_PARAMS.offset, String(offset));
-  }
-
-  const response = await fetch(`${API_PATHS.post(postId)}?${searchParams}`);
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Response(result.error?.message ?? "Failed to load post", {
-      status: response.status,
-    });
-  }
-
-  return result;
+  return await apiFetch<PostGetResponse>(API_PATHS.post(postId), {
+    query: {
+      [QUERY_PARAMS.include]: "comments",
+      [QUERY_PARAMS.offset]: offset,
+    },
+    failureMessage: "Failed to load post",
+  });
 }
 
 // Named domain wrappers are the single home of a page's query options. They

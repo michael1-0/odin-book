@@ -3,7 +3,7 @@ import { Menu, X } from "lucide-react";
 import Logo from "./Logo";
 import { NavLink, useNavigate } from "react-router";
 import { APP_ROUTES } from "../constants/routes";
-import { API_PATHS } from "../constants/api";
+import { logout } from "../services/auth";
 
 type NavProps = {
   isOpen: boolean;
@@ -140,10 +140,7 @@ function Navbar() {
 
   async function handleLogout() {
     try {
-      await fetch(API_PATHS.authLogout, {
-        method: "POST",
-        credentials: "include",
-      });
+      await logout();
 
       navigate(APP_ROUTES.login);
     } catch {

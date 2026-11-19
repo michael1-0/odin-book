@@ -7,6 +7,8 @@ import {
 } from "@repo/constants";
 import { FORM_INTENTS } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
+import type { ActionResult } from "../services/actionResult";
+import type { AuthUser } from "../services/auth";
 import useProfilePicture from "../hooks/useProfilePicture";
 import ProfilePictureCropModal from "./ProfilePictureCropModal";
 import toast from "react-hot-toast";
@@ -26,11 +28,11 @@ type ProfileFormProps = {
 // cropped file — to updateUser.
 //
 // The fetcher effect only reacts to outcomes; the picture hook owns every
-// blob-URL transition. Validation failures carry an errors key and keep the
-// cropped preview so the user can fix fields without re-picking the
-// picture; server failures roll it back to the last confirmed picture.
+// blob-URL transition. Validation failures keep the cropped preview so
+// the user can fix fields without re-picking the picture; server failures
+// roll it back to the last confirmed picture.
 function ProfileForm({ user }: ProfileFormProps) {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<ActionResult<AuthUser>>();
   const { revalidate } = useRevalidator();
   const {
     profilePictureInputRef,
@@ -44,31 +46,41 @@ function ProfileForm({ user }: ProfileFormProps) {
   } = useProfilePicture(user.profileUrl);
 
   const isUpdating = fetcher.state === "submitting";
-  const hasError = fetcher.data?.error;
+  const result = fetcher.data;
 
   useEffect(() => {
-    if (fetcher.state !== "idle" || !fetcher.data) {
+    if (fetcher.state !== "idle" || !result) {
       return;
     }
 
-    if (hasError) {
-      if (!fetcher.data.errors) {
+    if (!result.ok) {
+      if (result.kind === "server") {
+        // Server failures roll the preview back to the last confirmed
+        // picture; validation failures keep the cropped preview so the
+        // user can fix fields without re-picking it.
         reset();
+        toast.error(result.message);
+      } else {
+        toast.error("Failed to update profile");
       }
-      toast.error(fetcher.data.message ?? "Failed to update profile");
       return;
     }
 
-    if (fetcher.data.profileUrl) {
-      persist(fetcher.data.profileUrl);
+    if (result.data.profileUrl) {
+      persist(result.data.profileUrl);
     }
     toast.success("Profile updated");
     void revalidate();
-  }, [fetcher.data, fetcher.state, hasError, reset, persist, revalidate]);
+  }, [result, fetcher.state, reset, persist, revalidate]);
 
-  const errors = fetcher.data?.errors;
-  const usernameErrors = errors?.username;
-  const noteToAllErrors = errors?.noteToAll;
+  const usernameErrors =
+    result?.ok === false && result.kind === "validation"
+      ? result.fieldErrors.username
+      : undefined;
+  const noteToAllErrors =
+    result?.ok === false && result.kind === "validation"
+      ? result.fieldErrors.noteToAll
+      : undefined;
 
   return (
     <>

@@ -1,24 +1,29 @@
+import type { ActionResult } from "./actionResult";
 import { API_PATHS } from "../constants/api";
+import { apiMutation } from "./http";
 
-async function createComment(content: string, postId: number) {
-  const response = await fetch(API_PATHS.comments, {
+// The raw comment row POST /api/comments returns. `CommentSchema` in
+// @repo/zod-validations matches this row but types `createdAt` as a
+// Date; over the wire it is an ISO string, so this type is hand-rolled
+// to stay wire-accurate.
+type CommentRow = {
+  id: number;
+  userId: number;
+  postId: number;
+  content: string;
+  createdAt: string;
+};
+
+async function createComment(
+  content: string,
+  postId: number,
+): Promise<ActionResult<CommentRow>> {
+  return await apiMutation<CommentRow>(API_PATHS.comments, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ content, postId }),
+    body: { json: { content, postId } },
+    failureMessage: "Failed to create comment",
   });
-  const result = await response.json();
-
-  if (!response.ok) {
-    return {
-      error: true,
-      errors: result,
-      message: result.error?.message,
-    };
-  }
-
-  return result.data;
 }
 
+export type { CommentRow };
 export { createComment };

@@ -1,52 +1,50 @@
+import type { ActionResult } from "./actionResult";
+import { serverFailure } from "./actionResult";
 import { API_PATHS } from "../constants/api";
 import { FORM_FIELDS } from "../constants/fields";
+import { readFormField } from "../utils/formData";
+import { apiMutation } from "./http";
 
-// Success responses report the resulting follow state (`{ isFollowing }`)
-// instead of the raw follow row, so FollowButton can render its toggle
-// straight from fetcher.data — the same contract as the like flow's
-// updated-post response in PostItem.
-async function followUser(formData: FormData) {
-  const targetUserId = formData.get(FORM_FIELDS.targetUserId);
+// Success reports the resulting follow state rather than the backend's
+// follow row, so FollowButton renders its toggle straight from the
+// result data — the same contract as the like flow's updated post.
+type FollowState = {
+  isFollowing: boolean;
+};
 
-  if (typeof targetUserId !== "string") {
-    return { error: true, message: "Missing target user ID" };
+async function followUser(
+  formData: FormData,
+): Promise<ActionResult<FollowState>> {
+  const targetUserId = readFormField(formData, FORM_FIELDS.targetUserId);
+
+  if (targetUserId === undefined) {
+    return serverFailure("Missing target user ID");
   }
 
-  const response = await fetch(API_PATHS.follows(targetUserId), {
+  await apiMutation(API_PATHS.follows(targetUserId), {
     method: "POST",
+    failureMessage: "Failed to follow user",
   });
-  const result = await response.json();
 
-  if (!response.ok) {
-    return {
-      error: true,
-      message: result.error?.message ?? "Failed to follow user",
-    };
-  }
-
-  return { isFollowing: true };
+  return { ok: true, data: { isFollowing: true } };
 }
 
-async function unfollowUser(formData: FormData) {
-  const targetUserId = formData.get(FORM_FIELDS.targetUserId);
+async function unfollowUser(
+  formData: FormData,
+): Promise<ActionResult<FollowState>> {
+  const targetUserId = readFormField(formData, FORM_FIELDS.targetUserId);
 
-  if (typeof targetUserId !== "string") {
-    return { error: true, message: "Missing target user ID" };
+  if (targetUserId === undefined) {
+    return serverFailure("Missing target user ID");
   }
 
-  const response = await fetch(API_PATHS.follows(targetUserId), {
+  await apiMutation(API_PATHS.follows(targetUserId), {
     method: "DELETE",
+    failureMessage: "Failed to unfollow user",
   });
-  const result = await response.json();
 
-  if (!response.ok) {
-    return {
-      error: true,
-      message: result.error?.message ?? "Failed to unfollow user",
-    };
-  }
-
-  return { isFollowing: false };
+  return { ok: true, data: { isFollowing: false } };
 }
 
+export type { FollowState };
 export { followUser, unfollowUser };

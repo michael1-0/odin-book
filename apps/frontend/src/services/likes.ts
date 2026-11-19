@@ -1,48 +1,41 @@
+import type { ActionResult } from "./actionResult";
+import type { PostFeedItem } from "@repo/zod-validations";
+import { serverFailure } from "./actionResult";
 import { API_PATHS } from "../constants/api";
 import { FORM_FIELDS } from "../constants/fields";
+import { readFormField } from "../utils/formData";
+import { apiMutation } from "./http";
 
-async function likePost(formData: FormData) {
-  const postId = formData.get(FORM_FIELDS.postId);
+// Both return the updated post detail, so PostItem renders the new
+// like state straight from the result data.
+async function likePost(
+  formData: FormData,
+): Promise<ActionResult<PostFeedItem>> {
+  const postId = readFormField(formData, FORM_FIELDS.postId);
 
-  if (typeof postId !== "string") {
-    return { error: true, message: "Missing post ID" };
+  if (postId === undefined) {
+    return serverFailure("Missing post ID");
   }
 
-  const response = await fetch(API_PATHS.likes(postId), {
+  return await apiMutation<PostFeedItem>(API_PATHS.likes(postId), {
     method: "POST",
+    failureMessage: "Failed to like post",
   });
-  const result = await response.json();
-
-  if (!response.ok) {
-    return {
-      error: true,
-      message: result.error?.message ?? "Failed to like post",
-    };
-  }
-
-  return result.data;
 }
 
-async function unlikePost(formData: FormData) {
-  const postId = formData.get(FORM_FIELDS.postId);
+async function unlikePost(
+  formData: FormData,
+): Promise<ActionResult<PostFeedItem>> {
+  const postId = readFormField(formData, FORM_FIELDS.postId);
 
-  if (typeof postId !== "string") {
-    return { error: true, message: "Missing post ID" };
+  if (postId === undefined) {
+    return serverFailure("Missing post ID");
   }
 
-  const response = await fetch(API_PATHS.likes(postId), {
+  return await apiMutation<PostFeedItem>(API_PATHS.likes(postId), {
     method: "DELETE",
+    failureMessage: "Failed to unlike post",
   });
-  const result = await response.json();
-
-  if (!response.ok) {
-    return {
-      error: true,
-      message: result.error?.message ?? "Failed to unlike post",
-    };
-  }
-
-  return result.data;
 }
 
 export { likePost, unlikePost };

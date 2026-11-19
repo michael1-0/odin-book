@@ -5,9 +5,13 @@ import {
   MAX_POST_IMAGES,
   POST_IMAGES_FIELD,
 } from "@repo/constants";
-import { type PostFeedItem } from "@repo/zod-validations";
+import {
+  type PostFeedItem,
+  type PostFeedItemWithComments,
+} from "@repo/zod-validations";
 import { FORM_FIELDS } from "../constants/fields";
 import { FORM_INTENTS } from "../constants/routes";
+import type { ActionResult } from "../services/actionResult";
 import useImagePicker from "../hooks/useImagePicker";
 import toast from "react-hot-toast";
 import { ImagePlus, X } from "lucide-react";
@@ -22,7 +26,7 @@ type PostComposerProps = {
 // successful post — clearing native inputs React can't control — while
 // validation errors keep the form intact.
 function PostComposer({ onCreated }: PostComposerProps) {
-  const postFetcher = useFetcher();
+  const postFetcher = useFetcher<ActionResult<PostFeedItemWithComments>>();
   const {
     imagesInputRef,
     selectedImages,
@@ -33,32 +37,37 @@ function PostComposer({ onCreated }: PostComposerProps) {
     reset,
   } = useImagePicker();
 
-  const { data: postFetcherData, state: postFetcherState } = postFetcher;
+  const { state: postFetcherState } = postFetcher;
+  const postResult = postFetcher.data;
 
   const isPosting = postFetcherState === "submitting";
-  const hasError = postFetcherData?.error;
 
   // Form resets
-  const submissionId =
-    postFetcherData && !hasError ? postFetcherData.id : "initial";
+  const submissionId = postResult?.ok ? postResult.data.id : "initial";
 
   useEffect(() => {
-    if (postFetcherState !== "idle" || !postFetcherData) {
+    if (postFetcherState !== "idle" || !postResult) {
       return;
     }
 
-    if (hasError) {
-      toast.error(postFetcherData.message ?? "Failed to create post");
+    if (!postResult.ok) {
+      toast.error(
+        postResult.kind === "server"
+          ? postResult.message
+          : "Failed to create post",
+      );
       return;
     }
 
     reset();
     toast.success("Post posted");
-    onCreated(postFetcherData as PostFeedItem);
-  }, [postFetcherData, postFetcherState, hasError, reset, onCreated]);
+    onCreated(postResult.data);
+  }, [postResult, postFetcherState, reset, onCreated]);
 
-  const errors = postFetcherData?.errors;
-  const contentErrors = errors?.content;
+  const contentErrors =
+    postResult?.ok === false && postResult.kind === "validation"
+      ? postResult.fieldErrors.content
+      : undefined;
 
   return (
     <section className="w-full rounded-lg bg-white text-left">

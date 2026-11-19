@@ -6,26 +6,31 @@ import {
   useRouteLoaderData,
 } from "react-router";
 import { getUserProfile } from "../services/users";
+import type { UserProfile } from "../services/users";
+import { getMe } from "../services/auth";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
-import type { UserWithPosts } from "@repo/zod-validations";
 import Back from "../components/Back";
 import FollowButton from "../components/FollowButton";
 import PageContainer from "../components/PageContainer";
 import { followUser, unfollowUser } from "../services/follows";
 import { APP_ROUTES, FORM_INTENTS, ROUTE_ID } from "../constants/routes";
 import { readIntent, unknownIntent } from "../utils/intent";
-import { API_PATHS } from "../constants/api";
 
 async function loader({ params }: LoaderFunctionArgs) {
-  const response = await fetch(API_PATHS.authMe);
-
-  if (response.ok) {
-    const currentUser = await response.json();
-
-    if (currentUser.id === Number(params.userId)) {
-      throw redirect(APP_ROUTES.profile);
+  // A 401 from /auth/me (session expired mid-navigation) just skips the
+  // self-profile redirect and renders the public profile below; network
+  // errors still fail the loader.
+  const currentUser = await getMe().catch((error: unknown) => {
+    if (error instanceof Response) {
+      return null;
     }
+
+    throw error;
+  });
+
+  if (currentUser && currentUser.id === Number(params.userId)) {
+    throw redirect(APP_ROUTES.profile);
   }
 
   return await getUserProfile(params.userId);
@@ -50,7 +55,7 @@ async function action({ request }: ActionFunctionArgs) {
 
 function UserDetail() {
   const { user } = useRouteLoaderData(ROUTE_ID);
-  const userWithPosts: UserWithPosts = useLoaderData();
+  const userWithPosts: UserProfile = useLoaderData();
 
   return (
     <PageContainer>

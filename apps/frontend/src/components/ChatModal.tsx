@@ -186,15 +186,17 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
     setIsSending(true);
 
     try {
-      const message = await sendMessage(friendId, content);
-      addMessage(message);
-      setDraft("");
-    } catch (sendError) {
-      toast.error(
-        sendError instanceof Error
-          ? sendError.message
-          : "Failed to send message",
-      );
+      const result = await sendMessage(friendId, content);
+
+      if (result.ok) {
+        addMessage(result.data);
+        setDraft("");
+      } else if (result.kind === "server") {
+        toast.error(result.message);
+      }
+    } catch {
+      // Network failure — not a server response.
+      toast.error("Failed to send message");
     } finally {
       setIsSending(false);
     }

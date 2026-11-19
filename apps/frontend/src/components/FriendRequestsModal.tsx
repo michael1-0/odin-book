@@ -4,9 +4,13 @@ import { Link } from "react-router";
 import { useFetcher } from "react-router";
 import toast from "react-hot-toast";
 import { X } from "lucide-react";
-import type { FriendRequestWithUsers } from "@repo/zod-validations";
+import type {
+  FriendRequest,
+  FriendRequestWithUsers,
+} from "@repo/zod-validations";
 import { FORM_INTENTS, userPath, APP_ROUTES } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
+import type { ActionResult } from "../services/actionResult";
 import Avatar from "./Avatar";
 
 type RequestItemProps = {
@@ -15,25 +19,31 @@ type RequestItemProps = {
 };
 
 function IncomingRequestItem({ request, onNavigate }: RequestItemProps) {
-  const acceptFetcher = useFetcher();
-  const declineFetcher = useFetcher();
+  const acceptFetcher = useFetcher<ActionResult<FriendRequestWithUsers>>();
+  const declineFetcher = useFetcher<ActionResult<FriendRequest>>();
   const isPending =
     acceptFetcher.state !== "idle" || declineFetcher.state !== "idle";
+  const acceptResult = acceptFetcher.data;
+  const declineResult = declineFetcher.data;
 
   useEffect(() => {
-    if (acceptFetcher.data?.error) {
-      toast.error(acceptFetcher.data.message);
-    } else if (acceptFetcher.data && !acceptFetcher.data.error) {
+    if (acceptResult?.ok) {
       toast.success(`You and ${request.sender.username} are now friends`);
+    } else if (
+      acceptResult &&
+      !acceptResult.ok &&
+      acceptResult.kind === "server"
+    ) {
+      toast.error(acceptResult.message);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [acceptFetcher.data]);
+  }, [acceptResult]);
 
   useEffect(() => {
-    if (declineFetcher.data?.error) {
-      toast.error(declineFetcher.data.message);
+    if (declineResult && !declineResult.ok && declineResult.kind === "server") {
+      toast.error(declineResult.message);
     }
-  }, [declineFetcher.data]);
+  }, [declineResult]);
 
   return (
     <li className="flex items-center justify-between gap-2 rounded-sm bg-neutral-100 p-3">
@@ -86,14 +96,15 @@ function IncomingRequestItem({ request, onNavigate }: RequestItemProps) {
 }
 
 function OutgoingRequestItem({ request, onNavigate }: RequestItemProps) {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<ActionResult<FriendRequest>>();
   const isPending = fetcher.state !== "idle";
+  const cancelResult = fetcher.data;
 
   useEffect(() => {
-    if (fetcher.data?.error) {
-      toast.error(fetcher.data.message);
+    if (cancelResult && !cancelResult.ok && cancelResult.kind === "server") {
+      toast.error(cancelResult.message);
     }
-  }, [fetcher.data]);
+  }, [cancelResult]);
 
   return (
     <li className="flex items-center justify-between gap-2 rounded-sm bg-neutral-100 p-3">

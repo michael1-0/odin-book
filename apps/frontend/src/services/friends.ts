@@ -1,189 +1,130 @@
+import type { ActionResult } from "./actionResult";
 import type {
   FriendExploreResponse,
+  FriendRequest,
+  FriendRequestWithUsers,
   FriendsGetResponse,
   Message,
   MessagesGetResponse,
 } from "@repo/zod-validations";
+import { serverFailure } from "./actionResult";
 import { API_PATHS } from "../constants/api";
 import { FORM_FIELDS, QUERY_PARAMS } from "../constants/fields";
+import { readFormField } from "../utils/formData";
+import { apiFetch, apiMutation } from "./http";
 
 async function getFriends(): Promise<FriendsGetResponse["data"]> {
-  const response = await fetch(API_PATHS.friends);
-  const result = (await response.json()) as FriendsGetResponse & {
-    error?: { message?: string };
-  };
+  const body = await apiFetch<FriendsGetResponse>(API_PATHS.friends, {
+    failureMessage: "Failed to load friends",
+  });
 
-  if (!response.ok) {
-    throw new Response(result.error?.message ?? "Failed to load friends", {
-      status: response.status,
-    });
-  }
-
-  return result.data;
+  return body.data;
 }
 
 async function exploreFriends(
   query: string | null,
   offset?: number,
 ): Promise<FriendExploreResponse> {
-  const searchParams = new URLSearchParams();
+  return await apiFetch<FriendExploreResponse>(API_PATHS.friendExplore, {
+    query: {
+      [QUERY_PARAMS.query]: query ?? undefined,
+      [QUERY_PARAMS.offset]: offset,
+    },
+    failureMessage: "Failed to search users",
+  });
+}
 
-  if (query) {
-    searchParams.set(QUERY_PARAMS.query, query);
+async function sendFriendRequest(
+  formData: FormData,
+): Promise<ActionResult<FriendRequest>> {
+  const targetUserId = readFormField(formData, FORM_FIELDS.targetUserId);
+
+  if (targetUserId === undefined) {
+    return serverFailure("Missing target user ID");
   }
 
-  if (offset !== undefined) {
-    searchParams.set(QUERY_PARAMS.offset, String(offset));
-  }
-
-  const queryString = searchParams.toString();
-  const response = await fetch(
-    queryString
-      ? `${API_PATHS.friendExplore}?${queryString}`
-      : API_PATHS.friendExplore,
+  return await apiMutation<FriendRequest>(
+    API_PATHS.friendRequest(targetUserId),
+    {
+      method: "POST",
+      failureMessage: "Failed to send friend request",
+    },
   );
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Response(result.error?.message ?? "Failed to search users", {
-      status: response.status,
-    });
-  }
-
-  return result;
 }
 
-async function sendFriendRequest(formData: FormData) {
-  const targetUserId = formData.get(FORM_FIELDS.targetUserId);
+async function cancelFriendRequest(
+  formData: FormData,
+): Promise<ActionResult<FriendRequest>> {
+  const targetUserId = readFormField(formData, FORM_FIELDS.targetUserId);
 
-  if (typeof targetUserId !== "string") {
-    return { error: true, message: "Missing target user ID" };
+  if (targetUserId === undefined) {
+    return serverFailure("Missing target user ID");
   }
 
-  const response = await fetch(API_PATHS.friendRequest(targetUserId), {
-    method: "POST",
-  });
-  const result = await response.json();
-
-  if (!response.ok) {
-    return {
-      error: true,
-      message: result.error?.message ?? "Failed to send friend request",
-    };
-  }
-
-  return result.data;
+  return await apiMutation<FriendRequest>(
+    API_PATHS.friendRequest(targetUserId),
+    {
+      method: "DELETE",
+      failureMessage: "Failed to cancel friend request",
+    },
+  );
 }
 
-async function cancelFriendRequest(formData: FormData) {
-  const targetUserId = formData.get(FORM_FIELDS.targetUserId);
+async function acceptFriendRequest(
+  formData: FormData,
+): Promise<ActionResult<FriendRequestWithUsers>> {
+  const requestId = readFormField(formData, FORM_FIELDS.requestId);
 
-  if (typeof targetUserId !== "string") {
-    return { error: true, message: "Missing target user ID" };
+  if (requestId === undefined) {
+    return serverFailure("Missing request ID");
   }
 
-  const response = await fetch(API_PATHS.friendRequest(targetUserId), {
-    method: "DELETE",
-  });
-  const result = await response.json();
-
-  if (!response.ok) {
-    return {
-      error: true,
-      message: result.error?.message ?? "Failed to cancel friend request",
-    };
-  }
-
-  return result.data;
+  return await apiMutation<FriendRequestWithUsers>(
+    API_PATHS.friendRequestAccept(requestId),
+    {
+      method: "POST",
+      failureMessage: "Failed to accept friend request",
+    },
+  );
 }
 
-async function acceptFriendRequest(formData: FormData) {
-  const requestId = formData.get(FORM_FIELDS.requestId);
+async function declineFriendRequest(
+  formData: FormData,
+): Promise<ActionResult<FriendRequest>> {
+  const requestId = readFormField(formData, FORM_FIELDS.requestId);
 
-  if (typeof requestId !== "string") {
-    return { error: true, message: "Missing request ID" };
+  if (requestId === undefined) {
+    return serverFailure("Missing request ID");
   }
 
-  const response = await fetch(API_PATHS.friendRequestAccept(requestId), {
-    method: "POST",
-  });
-  const result = await response.json();
-
-  if (!response.ok) {
-    return {
-      error: true,
-      message: result.error?.message ?? "Failed to accept friend request",
-    };
-  }
-
-  return result.data;
-}
-
-async function declineFriendRequest(formData: FormData) {
-  const requestId = formData.get(FORM_FIELDS.requestId);
-
-  if (typeof requestId !== "string") {
-    return { error: true, message: "Missing request ID" };
-  }
-
-  const response = await fetch(API_PATHS.friendRequestDecline(requestId), {
-    method: "POST",
-  });
-  const result = await response.json();
-
-  if (!response.ok) {
-    return {
-      error: true,
-      message: result.error?.message ?? "Failed to decline friend request",
-    };
-  }
-
-  return result.data;
+  return await apiMutation<FriendRequest>(
+    API_PATHS.friendRequestDecline(requestId),
+    {
+      method: "POST",
+      failureMessage: "Failed to decline friend request",
+    },
+  );
 }
 
 async function getMessages(
   friendId: number,
   beforeId?: number,
 ): Promise<MessagesGetResponse> {
-  const searchParams = new URLSearchParams();
-
-  if (beforeId !== undefined) {
-    searchParams.set(QUERY_PARAMS.beforeId, String(beforeId));
-  }
-
-  const queryString = searchParams.toString();
-  const response = await fetch(
-    `${API_PATHS.messages(friendId)}${queryString ? `?${queryString}` : ""}`,
-  );
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Response(result.error?.message ?? "Failed to load messages", {
-      status: response.status,
-    });
-  }
-
-  return result;
+  return await apiFetch<MessagesGetResponse>(API_PATHS.messages(friendId), {
+    query: { [QUERY_PARAMS.beforeId]: beforeId },
+    failureMessage: "Failed to load messages",
+  });
 }
 
 async function sendMessage(
   friendId: number,
   content: string,
-): Promise<Message> {
-  const response = await fetch(API_PATHS.messages(friendId), {
+): Promise<ActionResult<Message>> {
+  return await apiMutation<Message>(API_PATHS.messages(friendId), {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ content }),
+    body: { json: { content } },
+    failureMessage: "Failed to send message",
   });
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.error?.message ?? "Failed to send message");
-  }
-
-  return result.data;
 }
 
 export {

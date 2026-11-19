@@ -3,6 +3,8 @@ import { useFetcher } from "react-router";
 import { FORM_FIELDS } from "../constants/fields";
 import { FORM_INTENTS } from "../constants/routes";
 import toast from "react-hot-toast";
+import type { ActionResult } from "../services/actionResult";
+import type { CommentRow } from "../services/comments";
 
 type CommentComposerProps = {
   postId: number;
@@ -14,29 +16,34 @@ type CommentComposerProps = {
 // comment — clearing native inputs React can't control — while validation
 // errors keep the form intact.
 function CommentComposer({ postId }: CommentComposerProps) {
-  const commentFetcher = useFetcher();
+  const commentFetcher = useFetcher<ActionResult<CommentRow>>();
 
-  const { data: commentFetcherData, state: commentFetcherState } =
-    commentFetcher;
+  const { state: commentFetcherState } = commentFetcher;
+  const commentResult = commentFetcher.data;
 
   const isPosting = commentFetcherState === "submitting";
-  const hasError = commentFetcherData?.error;
 
   // Form resets
-  const submissionId =
-    commentFetcherData && !hasError ? commentFetcherData.id : "initial";
+  const submissionId = commentResult?.ok ? commentResult.data.id : "initial";
 
   useEffect(() => {
-    if (commentFetcherState === "idle" && commentFetcherData) {
-      if (hasError) {
-        toast.error("Failed to create comment");
-      } else {
+    if (commentFetcherState === "idle" && commentResult) {
+      if (commentResult.ok) {
         toast.success("Comment posted");
+      } else {
+        toast.error(
+          commentResult.kind === "server"
+            ? commentResult.message
+            : "Failed to create comment",
+        );
       }
     }
-  }, [commentFetcherData, commentFetcherState, hasError]);
+  }, [commentResult, commentFetcherState]);
 
-  const contentErrors = commentFetcherData?.errors?.content;
+  const contentErrors =
+    commentResult?.ok === false && commentResult.kind === "validation"
+      ? commentResult.fieldErrors.content
+      : undefined;
 
   return (
     <section>

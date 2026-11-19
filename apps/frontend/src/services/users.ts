@@ -1,70 +1,60 @@
+import type { ActionResult } from "./actionResult";
+import type { AuthUser } from "./auth";
+import type { PostFeedItem, UsersGetResponse } from "@repo/zod-validations";
+import { serverFailure } from "./actionResult";
 import { API_PATHS } from "../constants/api";
 import { FORM_FIELDS, QUERY_PARAMS } from "../constants/fields";
+import { readFormField } from "../utils/formData";
+import { apiFetch, apiMutation } from "./http";
 
-async function getUsers(offset?: number) {
-  const searchParams = new URLSearchParams();
-
-  if (offset !== undefined) {
-    searchParams.set(QUERY_PARAMS.offset, String(offset));
-  }
-
-  const queryString = searchParams.toString();
-  const response = await fetch(
-    queryString ? `${API_PATHS.users}?${queryString}` : API_PATHS.users,
-  );
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Response(result.error?.message ?? "Failed to load users", {
-      status: response.status,
-    });
-  }
-
-  return result;
-}
-
-async function updateUser(formData: FormData) {
-  const userId = formData.get(FORM_FIELDS.userId);
-
-  if (typeof userId !== "string") {
-    return { error: true, message: "Missing user ID" };
-  }
-
-  const response = await fetch(API_PATHS.user(userId), {
-    method: "PUT",
-    credentials: "include",
-    body: formData,
+async function getUsers(offset?: number): Promise<UsersGetResponse> {
+  return await apiFetch<UsersGetResponse>(API_PATHS.users, {
+    query: { [QUERY_PARAMS.offset]: offset },
+    failureMessage: "Failed to load users",
   });
-  const result = await response.json();
-
-  if (!response.ok) {
-    return {
-      error: true,
-      message: result.error?.message ?? "Failed to update profile",
-    };
-  }
-
-  return result.data;
 }
 
-async function getUserProfile(userId: string | undefined) {
+async function updateUser(formData: FormData): Promise<ActionResult<AuthUser>> {
+  const userId = readFormField(formData, FORM_FIELDS.userId);
+
+  if (userId === undefined) {
+    return serverFailure("Missing user ID");
+  }
+
+  return await apiMutation<AuthUser>(API_PATHS.user(userId), {
+    method: "PUT",
+    body: { formData },
+    failureMessage: "Failed to update profile",
+  });
+}
+
+// What GET /api/users/:id actually ships: the backend's select covers
+// exactly these fields (UserWithPostsSchema in @repo/zod-validations
+// additionally asserts githubId/createdAt, which the endpoint never
+// returns). Embedded posts ride on the shared PostFeedItem type.
+type UserProfile = {
+  id: number;
+  username: string;
+  profileUrl: string | null;
+  noteToAll: string;
+  isFollowing: boolean;
+  posts: PostFeedItem[];
+};
+
+async function getUserProfile(
+  userId: string | undefined,
+): Promise<UserProfile> {
   if (!userId) {
     throw new Response("Missing user ID", { status: 400 });
   }
 
-  const searchParams = new URLSearchParams({
-    [QUERY_PARAMS.include]: "posts",
+  const body = await apiFetch<{ data: UserProfile }>(API_PATHS.user(userId), {
+    query: { [QUERY_PARAMS.include]: "posts" },
+    failureMessage: "Failed to load profile",
   });
-  const response = await fetch(`${API_PATHS.user(userId)}?${searchParams}`);
-  const result = await response.json();
 
-  if (!response.ok) {
-    throw new Response(result.error?.message ?? "Failed to load profile", {
-      status: response.status,
-    });
-  }
-
-  return result.data;
+  return body.data;
 }
 
+export type { UserProfile };
 export { getUsers, updateUser, getUserProfile };

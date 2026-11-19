@@ -2,18 +2,14 @@ import { Toaster, ToastBar } from "react-hot-toast";
 import { Outlet } from "react-router";
 import { ScrollRestoration } from "react-router";
 import { APP_ROUTES } from "./constants/routes";
-import { API_PATHS } from "./constants/api";
+import { getMe } from "./services/auth";
 
+// Any failure (expired session, backend down) reads as logged out — the
+// login page is the safe place to land either way.
 async function checkAuth() {
   try {
-    const response = await fetch(API_PATHS.authMe, {
-      method: "GET",
-      credentials: "include",
-    });
+    const user = await getMe();
 
-    if (!response.ok) return { isAuthenticated: false, user: null };
-
-    const user = await response.json();
     return { isAuthenticated: true, user };
   } catch {
     return { isAuthenticated: false, user: null };

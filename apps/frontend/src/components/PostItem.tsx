@@ -5,6 +5,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import toast from "react-hot-toast";
 import { postPath, userPath, FORM_INTENTS } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
+import type { ActionResult } from "../services/actionResult";
 import PostImageModal from "./PostImageModal";
 import getOptimizedImageUrl from "../utils/cloudinaryUrl";
 import { formatShortDate } from "../utils/formatDate";
@@ -23,26 +24,26 @@ function PostItem({
   includeHeader = true,
   deleteButton,
 }: PostItemProps) {
-  const likeFetcher = useFetcher();
+  const likeFetcher = useFetcher<ActionResult<PostFeedItem>>();
   const navigate = useNavigate();
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
-  const likeFetcherData = likeFetcher.data as
-    | (PostFeedItem & { error?: never })
-    | { error: true; message?: string }
-    | undefined;
+  const likeResult = likeFetcher.data;
   const currentPost =
-    likeFetcher.state === "idle" && likeFetcherData && !likeFetcherData.error
-      ? likeFetcherData
-      : post;
+    likeFetcher.state === "idle" && likeResult?.ok ? likeResult.data : post;
   const likesCount = currentPost._count.likes;
   const isLikedByMe = checkIfLiked(currentPost.likes);
   const images = currentPost.images;
 
   useEffect(() => {
-    if (likeFetcher.state === "idle" && likeFetcherData?.error) {
-      toast.error(likeFetcherData.message ?? "Failed to update like");
+    if (
+      likeFetcher.state === "idle" &&
+      likeResult &&
+      !likeResult.ok &&
+      likeResult.kind === "server"
+    ) {
+      toast.error(likeResult.message);
     }
-  }, [likeFetcher.state, likeFetcherData]);
+  }, [likeFetcher.state, likeResult]);
 
   function checkIfLiked(likes: PostLike[]) {
     return likes.some((like) => like.userId === userId);

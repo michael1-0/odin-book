@@ -3,6 +3,7 @@ import { useFetcher } from "react-router";
 import { type PostFeedItem } from "@repo/zod-validations";
 import { FORM_INTENTS } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
+import type { ActionResult } from "../services/actionResult";
 import PostItem from "./PostItem";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import toast from "react-hot-toast";
@@ -19,19 +20,24 @@ type YourPostsProps = {
 // effect removes the item from the feed pages via `removeItem`, owned by
 // the page's infinite feed. The list itself is never edited here.
 function YourPosts({ posts, userId, removeItem }: YourPostsProps) {
-  const deleteFetcher = useFetcher();
+  const deleteFetcher = useFetcher<ActionResult<{ id: number }>>();
   const [postToDeleteId, setPostToDeleteId] = useState<number | null>(null);
+  const deleteResult = deleteFetcher.data;
 
   useEffect(() => {
-    if (deleteFetcher.state === "idle" && deleteFetcher.data) {
-      if (deleteFetcher.data.error) {
-        toast.error(deleteFetcher.data.message ?? "Failed to delete post");
-      } else if (deleteFetcher.data.id) {
-        removeItem(deleteFetcher.data.id);
+    if (deleteFetcher.state === "idle" && deleteResult) {
+      if (deleteResult.ok) {
+        removeItem(deleteResult.data.id);
         toast.success("Post deleted");
+      } else {
+        toast.error(
+          deleteResult.kind === "server"
+            ? deleteResult.message
+            : "Failed to delete post",
+        );
       }
     }
-  }, [deleteFetcher.data, deleteFetcher.state, removeItem]);
+  }, [deleteResult, deleteFetcher.state, removeItem]);
 
   return (
     <section>

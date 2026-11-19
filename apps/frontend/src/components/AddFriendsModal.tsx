@@ -3,9 +3,10 @@ import { createPortal } from "react-dom";
 import { Link, useFetcher } from "react-router";
 import toast from "react-hot-toast";
 import { Check, Search, X } from "lucide-react";
-import type { FriendExploreItem } from "@repo/zod-validations";
+import type { FriendExploreItem, FriendRequest } from "@repo/zod-validations";
 import { FRIEND_REQUEST_STATUS } from "@repo/constants";
 import { exploreFriends } from "../services/friends";
+import type { ActionResult } from "../services/actionResult";
 import { APP_ROUTES, FORM_INTENTS, userPath } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
 import { FRIEND_SEARCH_DEBOUNCE_MS } from "../constants/ui";
@@ -20,17 +21,18 @@ function ExploreItem({
   onRequestSent: (userId: number, requestId: number) => void;
   onNavigate: () => void;
 }) {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<ActionResult<FriendRequest>>();
   const isPending = fetcher.state !== "idle";
+  const sendResult = fetcher.data;
 
   useEffect(() => {
-    if (fetcher.data?.error) {
-      toast.error(fetcher.data.message);
-    } else if (fetcher.data && !fetcher.data.error) {
-      onRequestSent(item.id, fetcher.data.id);
+    if (sendResult?.ok) {
+      onRequestSent(item.id, sendResult.data.id);
+    } else if (sendResult && !sendResult.ok && sendResult.kind === "server") {
+      toast.error(sendResult.message);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetcher.data]);
+  }, [sendResult]);
 
   const hasPendingRequest =
     item.requestStatus === FRIEND_REQUEST_STATUS.PENDING;

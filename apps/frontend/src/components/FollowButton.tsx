@@ -3,6 +3,8 @@ import { useFetcher } from "react-router";
 import toast from "react-hot-toast";
 import { FORM_FIELDS } from "../constants/fields";
 import { FORM_INTENTS } from "../constants/routes";
+import type { ActionResult } from "../services/actionResult";
+import type { FollowState } from "../services/follows";
 
 type FollowButtonProps = {
   targetUserId: number;
@@ -21,25 +23,23 @@ function FollowButton({
   targetUserId,
   isFollowing: initial,
 }: FollowButtonProps) {
-  const followFetcher = useFetcher();
-  const followFetcherData = followFetcher.data as
-    | ({ isFollowing: boolean } & { error?: never })
-    | { error: true; message?: string }
-    | undefined;
+  const followFetcher = useFetcher<ActionResult<FollowState>>();
+  const followResult = followFetcher.data;
   const isFollowing =
-    followFetcher.state === "idle" &&
-    followFetcherData &&
-    !followFetcherData.error
-      ? followFetcherData.isFollowing
+    followFetcher.state === "idle" && followResult?.ok
+      ? followResult.data.isFollowing
       : initial;
 
   useEffect(() => {
-    if (followFetcher.state === "idle" && followFetcherData?.error) {
-      toast.error(
-        followFetcherData.message ?? "Failed to update follow status",
-      );
+    if (
+      followFetcher.state === "idle" &&
+      followResult &&
+      !followResult.ok &&
+      followResult.kind === "server"
+    ) {
+      toast.error(followResult.message);
     }
-  }, [followFetcher.state, followFetcherData]);
+  }, [followFetcher.state, followResult]);
 
   return (
     <followFetcher.Form method="POST">
