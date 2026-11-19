@@ -58,6 +58,9 @@ function Updates() {
         content="Posts from people you follow, over the last 30 days."
       />
       <section className="flex w-full flex-col gap-4">
+        {posts.length === 0 && (
+          <div className="text-sm text-neutral-500">No updates yet.</div>
+        )}
         {posts.map((post) => (
           <PostItem key={post.id} post={post} userId={user.id} />
         ))}

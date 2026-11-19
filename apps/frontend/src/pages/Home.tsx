@@ -73,6 +73,11 @@ function Home() {
       />
       <PostComposer onCreated={insertItem} />
       <section className="flex w-full flex-col gap-4">
+        {posts.length === 0 && (
+          <div className="text-sm text-neutral-500">
+            No posts yet. Be the first!
+          </div>
+        )}
         {posts.map((post) => (
           <PostItem key={post.id} post={post} userId={user.id} />
         ))}

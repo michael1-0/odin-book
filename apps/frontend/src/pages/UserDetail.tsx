@@ -75,6 +75,11 @@ function UserDetail() {
       </section>
       <section>
         <div className="font-semibold">Posts</div>
+        {userWithPosts.posts.length === 0 && (
+          <div className="mt-2 text-sm text-neutral-500">
+            {userWithPosts.username} hasn't posted anything yet.
+          </div>
+        )}
         {userWithPosts.posts.map((post) => (
           <PostItem
             key={post.id}

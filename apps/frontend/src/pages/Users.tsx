@@ -57,6 +57,11 @@ function Users() {
     <PageContainer>
       <PageHead title="Users" content="Explore Ark users." />
       <section className="grid min-w-0 grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {users.length === 0 && (
+          <div className="col-span-full text-sm text-neutral-500">
+            No other users yet.
+          </div>
+        )}
         {users.map((user) => (
           <UserCard key={user.id} user={user} />
         ))}
