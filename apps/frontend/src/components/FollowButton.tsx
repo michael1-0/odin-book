@@ -3,7 +3,7 @@ import { useFetcher } from "react-router";
 import toast from "react-hot-toast";
 import { FORM_FIELDS } from "../constants/fields";
 import { FORM_INTENTS } from "../constants/routes";
-import type { ActionResult } from "../services/actionResult";
+import type { ActionResult } from "../utils/actionResult";
 import type { FollowState } from "../services/follows";
 
 type FollowButtonProps = {

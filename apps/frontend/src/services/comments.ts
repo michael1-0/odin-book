@@ -1,4 +1,4 @@
-import type { ActionResult } from "./actionResult";
+import type { ActionResult } from "../utils/actionResult";
 import { API_PATHS } from "../constants/api";
 import { apiMutation } from "./http";
 

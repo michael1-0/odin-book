@@ -10,7 +10,7 @@ import type {
 } from "@repo/zod-validations";
 import { FORM_INTENTS, userPath, APP_ROUTES } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
-import type { ActionResult } from "../services/actionResult";
+import type { ActionResult } from "../utils/actionResult";
 import Avatar from "./Avatar";
 
 type RequestItemProps = {

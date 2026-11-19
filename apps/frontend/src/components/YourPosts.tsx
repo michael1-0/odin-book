@@ -3,7 +3,7 @@ import { useFetcher } from "react-router";
 import { type PostFeedItem } from "@repo/zod-validations";
 import { FORM_INTENTS } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
-import type { ActionResult } from "../services/actionResult";
+import type { ActionResult } from "../utils/actionResult";
 import PostItem from "./PostItem";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import toast from "react-hot-toast";

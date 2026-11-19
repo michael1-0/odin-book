@@ -7,7 +7,7 @@ import {
 } from "@repo/constants";
 import { FORM_INTENTS } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
-import type { ActionResult } from "../services/actionResult";
+import type { ActionResult } from "../utils/actionResult";
 import type { AuthUser } from "../services/auth";
 import useProfilePicture from "../hooks/useProfilePicture";
 import ProfilePictureCropModal from "./ProfilePictureCropModal";

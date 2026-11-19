@@ -3,7 +3,7 @@ import { useFetcher } from "react-router";
 import { FORM_FIELDS } from "../constants/fields";
 import { FORM_INTENTS } from "../constants/routes";
 import toast from "react-hot-toast";
-import type { ActionResult } from "../services/actionResult";
+import type { ActionResult } from "../utils/actionResult";
 import type { CommentRow } from "../services/comments";
 
 type CommentComposerProps = {

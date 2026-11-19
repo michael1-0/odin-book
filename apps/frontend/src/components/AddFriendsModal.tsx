@@ -6,7 +6,7 @@ import { Check, Search, X } from "lucide-react";
 import type { FriendExploreItem, FriendRequest } from "@repo/zod-validations";
 import { FRIEND_REQUEST_STATUS } from "@repo/constants";
 import { exploreFriends } from "../services/friends";
-import type { ActionResult } from "../services/actionResult";
+import type { ActionResult } from "../utils/actionResult";
 import { APP_ROUTES, FORM_INTENTS, userPath } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
 import { FRIEND_SEARCH_DEBOUNCE_MS } from "../constants/ui";

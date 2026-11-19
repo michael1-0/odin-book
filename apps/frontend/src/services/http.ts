@@ -1,4 +1,4 @@
-import type { ActionResult } from "./actionResult";
+import type { ActionResult } from "../utils/actionResult";
 
 // The single HTTP primitive for every /api call. Wraps fetch with the
 // conventions every service used to hand-roll: cookie credentials on

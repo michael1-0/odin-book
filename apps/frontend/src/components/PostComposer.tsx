@@ -11,7 +11,7 @@ import {
 } from "@repo/zod-validations";
 import { FORM_FIELDS } from "../constants/fields";
 import { FORM_INTENTS } from "../constants/routes";
-import type { ActionResult } from "../services/actionResult";
+import type { ActionResult } from "../utils/actionResult";
 import useImagePicker from "../hooks/useImagePicker";
 import toast from "react-hot-toast";
 import { ImagePlus, X } from "lucide-react";

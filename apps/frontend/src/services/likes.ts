@@ -1,6 +1,6 @@
-import type { ActionResult } from "./actionResult";
+import type { ActionResult } from "../utils/actionResult";
 import type { PostFeedItem } from "@repo/zod-validations";
-import { serverFailure } from "./actionResult";
+import { serverFailure } from "../utils/actionResult";
 import { API_PATHS } from "../constants/api";
 import { FORM_FIELDS } from "../constants/fields";
 import { readFormField } from "../utils/formData";

@@ -5,7 +5,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import toast from "react-hot-toast";
 import { postPath, userPath, FORM_INTENTS } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
-import type { ActionResult } from "../services/actionResult";
+import type { ActionResult } from "../utils/actionResult";
 import PostImageModal from "./PostImageModal";
 import getOptimizedImageUrl from "../utils/cloudinaryUrl";
 import { formatShortDate } from "../utils/formatDate";
