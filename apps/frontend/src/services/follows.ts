@@ -21,10 +21,14 @@ async function followUser(
     return serverFailure("Missing target user ID");
   }
 
-  await apiMutation(API_PATHS.follows(targetUserId), {
+  const result = await apiMutation(API_PATHS.follows(targetUserId), {
     method: "POST",
     failureMessage: "Failed to follow user",
   });
+
+  if (!result.ok) {
+    return result;
+  }
 
   return { ok: true, data: { isFollowing: true } };
 }
@@ -38,10 +42,14 @@ async function unfollowUser(
     return serverFailure("Missing target user ID");
   }
 
-  await apiMutation(API_PATHS.follows(targetUserId), {
+  const result = await apiMutation(API_PATHS.follows(targetUserId), {
     method: "DELETE",
     failureMessage: "Failed to unfollow user",
   });
+
+  if (!result.ok) {
+    return result;
+  }
 
   return { ok: true, data: { isFollowing: false } };
 }

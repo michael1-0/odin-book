@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { coercedId } from "./common.js";
+import type { ValidationSpec } from "./common.js";
 import { UserSchema } from "./entities.js";
 import { PostFeedItemSchema } from "./posts.js";
 
@@ -40,7 +41,9 @@ export const UsersGetQuerySchema = z.object({
 });
 export type UsersGetQuery = z.infer<typeof UsersGetQuerySchema>;
 
-export const usersGetSpec = { query: UsersGetQuerySchema };
+export const usersGetSpec = {
+  query: UsersGetQuerySchema,
+} satisfies ValidationSpec;
 export type UsersGetSpec = typeof usersGetSpec;
 
 // Cursor is the next offset into the id-ordered user list (see
@@ -55,11 +58,11 @@ export type UsersGetResponse = z.infer<typeof UsersGetResponseSchema>;
 export const userGetSpec = {
   params: UserIdParamsSchema,
   query: UserGetQuerySchema,
-};
+} satisfies ValidationSpec;
 export type UserGetSpec = typeof userGetSpec;
 
 export const userUpdateSpec = {
   params: UserIdParamsSchema,
   body: UserUpdateBodySchema,
-};
+} satisfies ValidationSpec;
 export type UserUpdateSpec = typeof userUpdateSpec;

@@ -41,6 +41,7 @@ export const CommentSchema = z.object({
   postId: z.number().int().positive(),
   content: z
     .string()
+    .trim()
     .min(1, "Comment content cannot be empty")
     .max(
       MAX_CONTENT_LENGTH,
@@ -53,6 +54,7 @@ export const PostSchema = z.object({
   id: z.number().int().positive(),
   content: z
     .string()
+    .trim()
     .min(1, "Content cannot be empty")
     .max(
       MAX_CONTENT_LENGTH,

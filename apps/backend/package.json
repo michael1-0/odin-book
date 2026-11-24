@@ -3,14 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "tsc --noEmit -p tsconfig.test.json && vitest run",
+    "test:watch": "vitest",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "dev": "node --import tsx --watch --watch-path=.env --watch-path=src src/server.ts",
     "build": "tsc --build",
     "start": "node ./dist/server.js",
     "lint": "eslint .",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "check": "pnpm format:check && pnpm lint && pnpm build"
+    "check": "pnpm format:check && pnpm lint && pnpm build && pnpm test"
   },
   "type": "module",
   "packageManager": "pnpm@10.28.2",
@@ -51,12 +53,15 @@
     "@types/passport-github2": "^1.2.9",
     "@types/passport-jwt": "^4.0.1",
     "@types/pg": "^8.16.0",
+    "@types/supertest": "^7.2.1",
     "eslint": "^9.39.2",
     "globals": "^16.5.0",
     "prettier": "3.8.1",
     "prisma": "^7.4.0",
+    "supertest": "^7.3.2",
     "tsx": "^4.21.0",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.54.0"
+    "typescript-eslint": "^8.54.0",
+    "vitest": "^5.1.1"
   }
 }

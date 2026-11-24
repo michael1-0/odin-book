@@ -28,14 +28,19 @@ function verifyOAuthState(req: Request, res: Response, next: NextFunction) {
 
   res.clearCookie(OAUTH_STATE_COOKIE_NAME, SECURE_COOKIE_OPTIONS);
 
+  const queryBuffer =
+    typeof queryState === "string" ? Buffer.from(queryState, "utf8") : null;
+  const cookieBuffer =
+    typeof cookieState === "string" ? Buffer.from(cookieState, "utf8") : null;
+
+  // Compare UTF-8 buffers, not JS string lengths: `timingSafeEqual` throws
+  // when the byte lengths differ, and an empty state must never validate.
   const isValid =
-    typeof cookieState === "string" &&
-    typeof queryState === "string" &&
-    queryState.length === cookieState.length &&
-    crypto.timingSafeEqual(
-      Buffer.from(queryState, "utf8"),
-      Buffer.from(cookieState, "utf8"),
-    );
+    queryBuffer !== null &&
+    cookieBuffer !== null &&
+    queryBuffer.length > 0 &&
+    queryBuffer.length === cookieBuffer.length &&
+    crypto.timingSafeEqual(queryBuffer, cookieBuffer);
 
   if (!isValid) {
     return res.redirect(`${env.frontendUrl}${OAUTH_FAILURE_REDIRECT_PATH}`);

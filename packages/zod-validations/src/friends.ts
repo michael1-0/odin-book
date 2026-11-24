@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { coercedId, createdAt } from "./common.js";
+import type { ValidationSpec } from "./common.js";
 import { UserSchema } from "./entities.js";
 import { MessageSchema } from "./messages.js";
 import { FRIEND_REQUEST_STATUS } from "@repo/constants";
@@ -77,7 +78,9 @@ export const FriendExploreItemSchema = FriendUserSchema.extend({
 });
 export type FriendExploreItem = z.infer<typeof FriendExploreItemSchema>;
 
-export const friendExploreSpec = { query: FriendExploreQuerySchema };
+export const friendExploreSpec = {
+  query: FriendExploreQuerySchema,
+} satisfies ValidationSpec;
 export type FriendExploreSpec = typeof friendExploreSpec;
 
 // Cursor is the next offset into the id-ordered user list (see
@@ -88,10 +91,12 @@ export const FriendExploreResponseSchema = z.object({
 });
 export type FriendExploreResponse = z.infer<typeof FriendExploreResponseSchema>;
 
-export const targetUserIdParamsSpec = { params: TargetUserIdParamsSchema };
+export const targetUserIdParamsSpec = {
+  params: TargetUserIdParamsSchema,
+} satisfies ValidationSpec;
 export type TargetUserIdParamsSpec = typeof targetUserIdParamsSpec;
 
 export const friendRequestIdParamsSpec = {
   params: FriendRequestIdParamsSchema,
-};
+} satisfies ValidationSpec;
 export type FriendRequestIdParamsSpec = typeof friendRequestIdParamsSpec;

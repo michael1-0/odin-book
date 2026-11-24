@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { coercedId } from "./common.js";
+import type { ValidationSpec } from "./common.js";
 import {
   CommentSchema,
   PostImageSchema,
@@ -90,17 +91,23 @@ export const PostGetResponseSchema = z.object({
 });
 export type PostGetResponse = z.infer<typeof PostGetResponseSchema>;
 
-export const postIdParamsSpec = { params: PostIdParamsSchema };
+export const postIdParamsSpec = {
+  params: PostIdParamsSchema,
+} satisfies ValidationSpec;
 export type PostIdParamsSpec = typeof postIdParamsSpec;
 
-export const postsGetSpec = { query: PostsGetQuerySchema };
+export const postsGetSpec = {
+  query: PostsGetQuerySchema,
+} satisfies ValidationSpec;
 export type PostsGetSpec = typeof postsGetSpec;
 
 export const postGetSpec = {
   params: PostIdParamsSchema,
   query: PostGetQuerySchema,
-};
+} satisfies ValidationSpec;
 export type PostGetSpec = typeof postGetSpec;
 
-export const postCreateSpec = { body: PostCreateBodySchema };
+export const postCreateSpec = {
+  body: PostCreateBodySchema,
+} satisfies ValidationSpec;
 export type PostCreateSpec = typeof postCreateSpec;

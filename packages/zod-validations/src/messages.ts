@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { coercedId, createdAt, messageContent } from "./common.js";
+import type { ValidationSpec } from "./common.js";
 
 export const MessageSchema = z.object({
   id: z.number().int().positive(),
@@ -36,11 +37,11 @@ export type MessageCreateBody = z.infer<typeof MessageCreateBodySchema>;
 export const messagesGetSpec = {
   params: FriendIdParamsSchema,
   query: MessagesGetQuerySchema,
-};
+} satisfies ValidationSpec;
 export type MessagesGetSpec = typeof messagesGetSpec;
 
 export const messageCreateSpec = {
   params: FriendIdParamsSchema,
   body: MessageCreateBodySchema,
-};
+} satisfies ValidationSpec;
 export type MessageCreateSpec = typeof messageCreateSpec;
