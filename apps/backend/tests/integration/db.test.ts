@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "../../src/db/prisma.ts";
-import { isTestDatabaseName } from "../testDatabaseUrl.ts";
+import { testDatabaseName } from "../testDatabaseUrl.ts";
 import { resetDatabase } from "../helpers/db.ts";
 import {
   createAcceptedFriendship,
@@ -16,13 +16,12 @@ import {
 beforeEach(resetDatabase);
 
 describe("resetDatabase", () => {
-  it("runs against a database whose name ends in -test/_test", async () => {
+  it("runs against the configured test database", async () => {
     const [database] = await prisma.$queryRaw<
       { current_database: string }[]
     >`SELECT current_database()`;
 
-    expect(database).toBeDefined();
-    expect(isTestDatabaseName(database!.current_database)).toBe(true);
+    expect(database?.current_database).toBe(testDatabaseName());
   });
 
   it("clears every table and restarts identities", async () => {
