@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { apiMutation } from "./http";
-import { FORM_FIELDS } from "../constants/fields";
-import { API_PATHS } from "../constants/api";
-import { serverFailure } from "../utils/actionResult";
-import { likePost, unlikePost } from "./likes";
+import { apiMutation } from "../../../src/services/http";
+import { FORM_FIELDS } from "../../../src/constants/fields";
+import { API_PATHS } from "../../../src/constants/api";
+import { serverFailure } from "../../../src/utils/actionResult";
+import { likePost, unlikePost } from "../../../src/services/likes";
 
-vi.mock("./http", () => ({
+vi.mock(import("../../../src/services/http"), () => ({
   apiMutation: vi.fn(),
 }));
 

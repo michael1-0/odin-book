@@ -3,9 +3,9 @@ import {
   CommentCreateBodySchema,
   PostCreateBodySchema,
 } from "@repo/zod-validations";
-import { FORM_FIELDS } from "../constants/fields";
-import { serverFailure } from "./actionResult";
-import { submitForm } from "./formValidation";
+import { FORM_FIELDS } from "../../../src/constants/fields";
+import { serverFailure } from "../../../src/utils/actionResult";
+import { submitForm } from "../../../src/utils/formValidation";
 
 describe("submitForm", () => {
   it("validates the mapped fields and forwards the parsed data", async () => {

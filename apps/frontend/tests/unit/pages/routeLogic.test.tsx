@@ -1,48 +1,48 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { FORM_FIELDS } from "../constants/fields";
-import { FORM_INTENTS } from "../constants/routes";
-import { createComment } from "../services/comments";
-import { followUser, unfollowUser } from "../services/follows";
-import { likePost, unlikePost } from "../services/likes";
+import { FORM_FIELDS } from "../../../src/constants/fields";
+import { FORM_INTENTS } from "../../../src/constants/routes";
+import { createComment } from "../../../src/services/comments";
+import { followUser, unfollowUser } from "../../../src/services/follows";
+import { likePost, unlikePost } from "../../../src/services/likes";
 import {
   createPost,
   deletePost,
   getCurrentUserPosts,
   getLatestPosts,
   getPostWithComments,
-} from "../services/posts";
-import { updateUser } from "../services/users";
-import Home from "./Home";
-import PostDetail from "./PostDetail";
-import Profile from "./Profile";
-import UserDetail from "./UserDetail";
-import Users from "./Users";
+} from "../../../src/services/posts";
+import { updateUser } from "../../../src/services/users";
+import Home from "../../../src/pages/Home";
+import PostDetail from "../../../src/pages/PostDetail";
+import Profile from "../../../src/pages/Profile";
+import UserDetail from "../../../src/pages/UserDetail";
+import Users from "../../../src/pages/Users";
 
-vi.mock("../services/posts", () => ({
+vi.mock(import("../../../src/services/posts"), () => ({
   createPost: vi.fn(),
   deletePost: vi.fn(),
   getCurrentUserPosts: vi.fn(),
   getLatestPosts: vi.fn(),
   getPostWithComments: vi.fn(),
 }));
-vi.mock("../services/likes", () => ({
+vi.mock(import("../../../src/services/likes"), () => ({
   likePost: vi.fn(),
   unlikePost: vi.fn(),
 }));
-vi.mock("../services/users", () => ({
+vi.mock(import("../../../src/services/users"), () => ({
   updateUser: vi.fn(),
   getUsers: vi.fn(),
   getUserProfile: vi.fn(),
 }));
-vi.mock("../services/follows", () => ({
+vi.mock(import("../../../src/services/follows"), () => ({
   followUser: vi.fn(),
   unfollowUser: vi.fn(),
 }));
-vi.mock("../services/auth", () => ({
+vi.mock(import("../../../src/services/auth"), () => ({
   getMe: vi.fn(),
 }));
-vi.mock("../services/comments", () => ({
+vi.mock(import("../../../src/services/comments"), () => ({
   createComment: vi.fn(),
 }));
 

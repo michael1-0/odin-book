@@ -64,7 +64,7 @@ export function createBackendConfig({ tsconfigRootDir }) {
           {
             devDependencies: [
               "**/*.test.{ts,mts,cts}",
-              "tests/**",
+              "**/tests/**",
               "src/db/seed.ts",
               "vitest*.config.ts",
               "prisma.config.ts",

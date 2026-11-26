@@ -5,7 +5,7 @@ import {
   formatMessageTime,
   formatShortDate,
   isSameDay,
-} from "./formatDate";
+} from "../../../src/utils/formatDate";
 
 const NOW = new Date(2026, 10, 24, 15, 30);
 

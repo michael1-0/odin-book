@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readOffsetParam } from "./queryParams";
+import { readOffsetParam } from "../../../src/utils/queryParams";
 
 function requestWith(search: string) {
   return new Request(`http://localhost/posts?${search}`);

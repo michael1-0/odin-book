@@ -1,4 +1,4 @@
 {
   "extends": "@repo/typescript-config/frontend-app.json",
-  "include": ["src", "vite.config.ts", "vitest.config.ts"]
+  "include": ["src", "tests", "vite.config.ts", "vitest.config.ts"]
 }

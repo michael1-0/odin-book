@@ -2,7 +2,7 @@ import { createRoutesStub } from "react-router";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import toast from "react-hot-toast";
-import FollowButton from "./FollowButton";
+import FollowButton from "../../../src/components/FollowButton";
 
 vi.mock("react-hot-toast", () => ({
   default: { error: vi.fn() },

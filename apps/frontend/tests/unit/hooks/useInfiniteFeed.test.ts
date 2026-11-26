@@ -3,8 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { RefObject } from "react";
 import { FEED_PAGE_SIZE } from "@repo/constants";
 import toast from "react-hot-toast";
-import { LOAD_MORE_ROOT_MARGIN } from "../constants/ui";
-import useInfiniteFeed from "./useInfiniteFeed";
+import { LOAD_MORE_ROOT_MARGIN } from "../../../src/constants/ui";
+import useInfiniteFeed from "../../../src/hooks/useInfiniteFeed";
 
 vi.mock("react-hot-toast", () => ({
   default: { error: vi.fn() },

@@ -79,7 +79,7 @@ export function createFrontendConfig({ tsconfigRootDir, tailwindCssPath }) {
           {
             devDependencies: [
               "**/*.test.{ts,tsx}",
-              "src/test/**",
+              "**/tests/**",
               "vite.config.ts",
               "vitest.config.ts",
             ],

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { FORM_FIELDS } from "../constants/fields";
-import { readIntent, unknownIntent } from "./intent";
+import { FORM_FIELDS } from "../../../src/constants/fields";
+import { readIntent, unknownIntent } from "../../../src/utils/intent";
 
 describe("readIntent", () => {
   it("reads the intent field", () => {

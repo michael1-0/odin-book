@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { apiFetch } from "./http";
-import { API_PATHS } from "../constants/api";
-import { getMe, logout } from "./auth";
+import { apiFetch } from "../../../src/services/http";
+import { API_PATHS } from "../../../src/constants/api";
+import { getMe, logout } from "../../../src/services/auth";
 
-vi.mock("./http", () => ({
+vi.mock(import("../../../src/services/http"), () => ({
   apiFetch: vi.fn(),
 }));
 

@@ -9,10 +9,11 @@ export default [
     tsconfigRootDir: __dirname,
     tailwindCssPath: path.join(__dirname, "src", "index.css"),
   }),
-  // Every network call goes through services/http.ts; tests mock fetch.
+  // Every network call goes through services/http.ts. Tests live outside src/
+  // and are exempt from this scope.
   {
     files: ["src/**/*.{ts,tsx}"],
-    ignores: ["src/services/http.ts", "**/*.test.{ts,tsx}", "src/test/**"],
+    ignores: ["src/services/http.ts"],
     rules: {
       "no-restricted-globals": [
         "error",

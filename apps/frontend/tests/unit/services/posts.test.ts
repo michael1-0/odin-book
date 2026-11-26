@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { apiFetch, apiMutation } from "./http";
-import { FORM_FIELDS } from "../constants/fields";
-import { API_PATHS } from "../constants/api";
-import { serverFailure } from "../utils/actionResult";
+import { apiFetch, apiMutation } from "../../../src/services/http";
+import { FORM_FIELDS } from "../../../src/constants/fields";
+import { API_PATHS } from "../../../src/constants/api";
+import { serverFailure } from "../../../src/utils/actionResult";
 import {
   createPost,
   deletePost,
@@ -10,9 +10,9 @@ import {
   getFollowingPostsFromLastMonth,
   getLatestPosts,
   getPostWithComments,
-} from "./posts";
+} from "../../../src/services/posts";
 
-vi.mock("./http", () => ({
+vi.mock(import("../../../src/services/http"), () => ({
   apiFetch: vi.fn(),
   apiMutation: vi.fn(),
 }));

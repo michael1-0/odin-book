@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { apiFetch, apiMutation } from "./http";
+import { apiFetch, apiMutation } from "../../../src/services/http";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return {

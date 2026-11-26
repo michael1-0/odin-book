@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import getOptimizedImageUrl from "./cloudinaryUrl";
+import getOptimizedImageUrl from "../../../src/utils/cloudinaryUrl";
 
 describe("getOptimizedImageUrl", () => {
   it("leaves non-Cloudinary URLs untouched", () => {
