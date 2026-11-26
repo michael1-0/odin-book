@@ -108,7 +108,7 @@ describe("notFound", () => {
 });
 
 describe("validationErrorHandler", () => {
-  it("flattens issues per location and capitalizes the first one", () => {
+  it("flattens issues per location and capitalizes the first one", async () => {
     const { res, status, json } = createResponse();
     const errors = [
       {
@@ -123,7 +123,7 @@ describe("validationErrorHandler", () => {
       },
     ];
 
-    validationErrorHandler(
+    await validationErrorHandler(
       errors as never,
       createRequest(),
       res,

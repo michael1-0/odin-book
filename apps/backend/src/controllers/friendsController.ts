@@ -75,7 +75,8 @@ async function getFriends(req: Request, res: Response) {
     .filter((friend) => friend.lastMessage !== null)
     .sort(
       (a, b) =>
-        b.lastMessage!.createdAt.getTime() - a.lastMessage!.createdAt.getTime(),
+        (b.lastMessage?.createdAt.getTime() ?? 0) -
+        (a.lastMessage?.createdAt.getTime() ?? 0),
     );
   const friendsWithoutMessages = friends.filter(
     (friend) => friend.lastMessage === null,
@@ -225,7 +226,7 @@ async function cancelFriendRequest(
 
   const request = await findFriendRequestBetweenUsers(senderId, receiverId);
 
-  if (!request || request.status !== FRIEND_REQUEST_STATUS.PENDING) {
+  if (request?.status !== FRIEND_REQUEST_STATUS.PENDING) {
     throw new AppError("No pending request found", 404);
   }
 

@@ -75,6 +75,16 @@ function formEntries(data: FormData) {
   return Object.fromEntries(data.entries());
 }
 
+function firstCallArg<T>(mock: { mock: { calls: T[][] } }): T {
+  const arg = mock.mock.calls[0]?.[0];
+
+  if (arg === undefined) {
+    throw new Error("Expected the mock to have been called");
+  }
+
+  return arg;
+}
+
 async function runAction(
   action: PageAction | undefined,
   data: FormData,
@@ -168,10 +178,10 @@ describe("Home action", () => {
     await runAction(Home.action, likeData);
     await runAction(Home.action, unlikeData);
 
-    expect(formEntries(likePostMock.mock.calls[0]![0])).toEqual(
+    expect(formEntries(firstCallArg(likePostMock))).toEqual(
       formEntries(likeData),
     );
-    expect(formEntries(unlikePostMock.mock.calls[0]![0])).toEqual(
+    expect(formEntries(firstCallArg(unlikePostMock))).toEqual(
       formEntries(unlikeData),
     );
   });
@@ -234,7 +244,7 @@ describe("Profile action", () => {
     });
 
     await expect(runAction(Profile.action, data)).resolves.toBe(result);
-    expect(formEntries(deletePostMock.mock.calls[0]![0])).toEqual(
+    expect(formEntries(firstCallArg(deletePostMock))).toEqual(
       formEntries(data),
     );
   });
@@ -292,10 +302,10 @@ describe("Users action", () => {
     await expect(runAction(Users.action, followData)).resolves.toBe(result);
     await expect(runAction(Users.action, unfollowData)).resolves.toBe(result);
 
-    expect(formEntries(followUserMock.mock.calls[0]![0])).toEqual(
+    expect(formEntries(firstCallArg(followUserMock))).toEqual(
       formEntries(followData),
     );
-    expect(formEntries(unfollowUserMock.mock.calls[0]![0])).toEqual(
+    expect(formEntries(firstCallArg(unfollowUserMock))).toEqual(
       formEntries(unfollowData),
     );
   });
@@ -334,7 +344,7 @@ describe("UserDetail action", () => {
     await expect(
       runAction(UserDetail.action, followData, "http://localhost/users/2"),
     ).resolves.toBe(result);
-    expect(formEntries(followUserMock.mock.calls[0]![0])).toEqual(
+    expect(formEntries(firstCallArg(followUserMock))).toEqual(
       formEntries(followData),
     );
 

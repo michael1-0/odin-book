@@ -6,7 +6,9 @@ function loadImage(imageUrl: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
     image.addEventListener("load", () => resolve(image));
-    image.addEventListener("error", (error) => reject(error));
+    image.addEventListener("error", () =>
+      reject(new Error("Failed to load image")),
+    );
     image.src = imageUrl;
   });
 }

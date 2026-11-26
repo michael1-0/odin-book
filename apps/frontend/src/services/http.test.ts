@@ -5,7 +5,7 @@ function jsonResponse(body: unknown, status = 200): Response {
   return {
     ok: status >= 200 && status < 300,
     status,
-    json: async () => body,
+    json: () => Promise.resolve(body),
   } as Response;
 }
 
@@ -13,9 +13,7 @@ function unparseableResponse(status: number): Response {
   return {
     ok: false,
     status,
-    json: async () => {
-      throw new SyntaxError("Unexpected token <");
-    },
+    json: () => Promise.reject(new SyntaxError("Unexpected token <")),
   } as unknown as Response;
 }
 

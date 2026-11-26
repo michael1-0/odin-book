@@ -452,9 +452,8 @@ describe("post image uploads", () => {
   }
 
   it("stores uploaded image URLs on the post", async () => {
-    uploadPostImageMock.mockImplementation(
-      async (_buffer, publicId) =>
-        `https://res.cloudinary.com/test/${publicId}.png`,
+    uploadPostImageMock.mockImplementation((_buffer, publicId) =>
+      Promise.resolve(`https://res.cloudinary.com/test/${publicId}.png`),
     );
 
     const request = attachImage(

@@ -19,21 +19,26 @@ type RequestItemProps = {
 };
 
 function IncomingRequestItem({ request, onNavigate }: RequestItemProps) {
-  const acceptFetcher = useFetcher<ActionResult<FriendRequestWithUsers>>();
-  const declineFetcher = useFetcher<ActionResult<FriendRequest>>();
+  const acceptFetcher = useFetcher<
+    ActionResult<FriendRequestWithUsers> | undefined
+  >();
+  const declineFetcher = useFetcher<ActionResult<FriendRequest> | undefined>();
   const isPending =
     acceptFetcher.state !== "idle" || declineFetcher.state !== "idle";
   const acceptResult = acceptFetcher.data;
   const declineResult = declineFetcher.data;
 
   useEffect(() => {
-    if (acceptResult?.ok) {
+    if (!acceptResult) {
+      return;
+    }
+
+    if (acceptResult.ok) {
       toast.success(`You and ${request.sender.username} are now friends`);
-    } else if (
-      acceptResult &&
-      !acceptResult.ok &&
-      acceptResult.kind === "server"
-    ) {
+      return;
+    }
+
+    if (acceptResult.kind === "server") {
       toast.error(acceptResult.message);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,7 +101,7 @@ function IncomingRequestItem({ request, onNavigate }: RequestItemProps) {
 }
 
 function OutgoingRequestItem({ request, onNavigate }: RequestItemProps) {
-  const fetcher = useFetcher<ActionResult<FriendRequest>>();
+  const fetcher = useFetcher<ActionResult<FriendRequest> | undefined>();
   const isPending = fetcher.state !== "idle";
   const cancelResult = fetcher.data;
 

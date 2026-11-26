@@ -1,14 +1,10 @@
 import { useRef } from "react";
-import {
-  useLoaderData,
-  useRouteLoaderData,
-  type ActionFunctionArgs,
-} from "react-router";
+import { useLoaderData, type ActionFunctionArgs } from "react-router";
 import {
   UserUpdateBodySchema,
   type PostsGetResponse,
 } from "@repo/zod-validations";
-import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
+import { FORM_INTENTS } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
 import { LOAD_MORE_ERROR_TEXT, LOAD_MORE_ERROR_TOAST } from "../constants/ui";
 import { readIntent, unknownIntent } from "../utils/intent";
@@ -17,6 +13,7 @@ import { deletePost, getCurrentUserPosts } from "../services/posts";
 import { likePost, unlikePost } from "../services/likes";
 import { updateUser } from "../services/users";
 import useInfiniteFeed from "../hooks/useInfiniteFeed";
+import useCurrentUser from "../hooks/useCurrentUser";
 import ProfileForm from "../components/ProfileForm";
 import YourPosts from "../components/YourPosts";
 import PageHead from "../components/PageHead";
@@ -53,8 +50,8 @@ async function action({ request }: ActionFunctionArgs) {
 }
 
 function Profile() {
-  const { user } = useRouteLoaderData(ROUTE_ID);
-  const initialPage = useLoaderData() as PostsGetResponse;
+  const user = useCurrentUser();
+  const initialPage = useLoaderData<PostsGetResponse>();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   // Cursor-paginated list of the user's own posts (see useInfiniteFeed).
   const {

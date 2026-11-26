@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { FormEvent } from "react";
+import type { SubmitEvent } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router";
 import toast from "react-hot-toast";
@@ -174,7 +174,7 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
     }
   }
 
-  async function handleSend(event: FormEvent<HTMLFormElement>) {
+  async function handleSend(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const content = draft.trim();
@@ -285,8 +285,7 @@ function ChatModal({ friend, currentUserId, onClose }: ChatModalProps) {
               const showDaySeparator =
                 !previous || !isSameDay(previous.createdAt, message.createdAt);
               const groupedWithPrevious =
-                previous !== undefined &&
-                previous.senderId === message.senderId &&
+                previous?.senderId === message.senderId &&
                 new Date(message.createdAt).getTime() -
                   new Date(previous.createdAt).getTime() <
                   MESSAGE_GROUP_WINDOW_MS;

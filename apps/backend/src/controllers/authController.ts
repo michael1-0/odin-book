@@ -33,7 +33,7 @@ function githubCallback(req: Request, res: Response) {
   res.redirect(env.frontendUrl);
 }
 
-async function getMe(req: Request, res: Response) {
+function getMe(req: Request, res: Response) {
   requireUser(req);
 
   return res.json(req.user);

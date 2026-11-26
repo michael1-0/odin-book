@@ -1,47 +1,69 @@
 import type { Server as HttpServer } from "node:http";
-import { Server as SocketServer } from "socket.io";
+import { Server as SocketServer, type DefaultEventsMap } from "socket.io";
 import { parseCookie } from "cookie";
 import jwt from "jsonwebtoken";
 import env from "../config/env.ts";
 import { AUTH_COOKIE_NAME } from "../constants/auth.ts";
 import { findUserByJwtPayload } from "../utils/jwtUser.ts";
 
-let io: SocketServer | null = null;
+type SocketData = { userId: number };
+type AppSocketServer = SocketServer<
+  DefaultEventsMap,
+  DefaultEventsMap,
+  DefaultEventsMap,
+  SocketData
+>;
+
+let io: AppSocketServer | null = null;
 
 function userRoom(userId: number) {
   return `user:${userId}`;
 }
 
+async function getUserIdFromCookieHeader(cookieHeader: string) {
+  const token = parseCookie(cookieHeader)[AUTH_COOKIE_NAME];
+
+  if (!token) {
+    throw new Error("Unauthorized");
+  }
+
+  const payload = jwt.verify(token, env.jwtSecret);
+
+  if (typeof payload === "string") {
+    throw new Error("Unauthorized");
+  }
+
+  const user = await findUserByJwtPayload(payload);
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  return user.id;
+}
+
 function initSocketServer(httpServer: HttpServer) {
-  io = new SocketServer(httpServer, {
+  io = new SocketServer<
+    DefaultEventsMap,
+    DefaultEventsMap,
+    DefaultEventsMap,
+    SocketData
+  >(httpServer, {
     path: "/socket.io",
   });
 
-  io.use(async (socket, next) => {
-    try {
-      const cookies = parseCookie(socket.handshake.headers.cookie ?? "");
-      const token = cookies[AUTH_COOKIE_NAME];
-
-      if (!token) {
-        return next(new Error("Unauthorized"));
-      }
-
-      const payload = jwt.verify(token, env.jwtSecret) as jwt.JwtPayload;
-      const user = await findUserByJwtPayload(payload);
-
-      if (!user) {
-        return next(new Error("Unauthorized"));
-      }
-
-      socket.data.userId = user.id;
-      next();
-    } catch {
-      next(new Error("Unauthorized"));
-    }
+  io.use((socket, next) => {
+    getUserIdFromCookieHeader(socket.handshake.headers.cookie ?? "").then(
+      (userId) => {
+        socket.data.userId = userId;
+        next();
+      },
+      () => next(new Error("Unauthorized")),
+    );
   });
 
   io.on("connection", (socket) => {
-    socket.join(userRoom(socket.data.userId as number));
+    void socket.join(userRoom(socket.data.userId));
   });
 
   return io;

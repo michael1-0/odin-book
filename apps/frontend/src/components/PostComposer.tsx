@@ -78,7 +78,7 @@ function PostComposer({ onCreated }: PostComposerProps) {
         key={submissionId}
       >
         <div className="mb-2 min-h-8 text-sm text-red-600">
-          {contentErrors && contentErrors[0]}
+          {contentErrors?.[0]}
         </div>
         <label htmlFor="content" className="sr-only">
           Post Content

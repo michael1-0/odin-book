@@ -10,7 +10,7 @@
     "build": "prisma generate && tsc --build",
     "postinstall": "prisma generate",
     "start": "node --conditions=built ./dist/server.js",
-    "lint": "eslint .",
+    "lint": "eslint . --cache --max-warnings=0",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "check": "pnpm format:check && pnpm lint && pnpm build && pnpm test"

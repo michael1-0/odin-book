@@ -1,4 +1,4 @@
-import type { Router as RouterType } from "express";
+import type { RequestHandler, Router as RouterType } from "express";
 import { Router } from "express";
 import passport from "../middlewares/passportMiddleware.ts";
 import { githubCallback, postLogout } from "../controllers/authController.ts";
@@ -11,16 +11,23 @@ import {
 
 const authRouter: RouterType = Router();
 
+// passport's `authenticate()` is typed as `any`; pin the middleware shape.
+function githubAuth(options: {
+  session: boolean;
+  state?: string;
+}): RequestHandler {
+  return passport.authenticate("github", options) as RequestHandler;
+}
+
 authRouter.get("/github", initiateOAuthState, (req, res, next) => {
-  passport.authenticate("github", {
-    session: false,
-    state: res.locals.oauthState,
-  })(req, res, next);
+  const state = res.locals.oauthState as string;
+
+  githubAuth({ session: false, state })(req, res, next);
 });
 authRouter.get(
   "/github/callback",
   verifyOAuthState,
-  passport.authenticate("github", { session: false }),
+  githubAuth({ session: false }),
   githubCallback,
 );
 authRouter.get("/me", requireAuth, getMe);

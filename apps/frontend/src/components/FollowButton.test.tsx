@@ -28,7 +28,9 @@ beforeEach(() => {
 
 describe("FollowButton", () => {
   it("flips to Unfollow after a successful follow", async () => {
-    renderButton(async () => ({ ok: true, data: { isFollowing: true } }));
+    renderButton(() =>
+      Promise.resolve({ ok: true, data: { isFollowing: true } }),
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Follow" }));
 
@@ -39,11 +41,13 @@ describe("FollowButton", () => {
   });
 
   it("keeps the label and toasts when the follow fails", async () => {
-    renderButton(async () => ({
-      ok: false,
-      kind: "server",
-      message: "Failed to follow user",
-    }));
+    renderButton(() =>
+      Promise.resolve({
+        ok: false,
+        kind: "server",
+        message: "Failed to follow user",
+      }),
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Follow" }));
 

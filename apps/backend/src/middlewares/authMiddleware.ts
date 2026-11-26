@@ -2,13 +2,14 @@ import { AppError } from "../errors/AppError.ts";
 import { ERROR_MESSAGES } from "../constants/errors.ts";
 import passport from "./passportMiddleware.ts";
 
-import type { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, RequestHandler, Response } from "express";
 
 function requireAuth(req: Request, res: Response, next: NextFunction) {
-  passport.authenticate(
+  // passport's `authenticate()` is typed as `any`; pin the middleware shape.
+  const authenticate = passport.authenticate(
     "jwt",
     { session: false },
-    (err: unknown, user?: false | Express.User | null | undefined) => {
+    (err: unknown, user?: false | Express.User | null) => {
       if (err) {
         return next(err);
       }
@@ -20,7 +21,9 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
       req.user = user;
       next();
     },
-  )(req, res, next);
+  ) as RequestHandler;
+
+  authenticate(req, res, next);
 }
 
 function requireUser(

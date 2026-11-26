@@ -1,4 +1,4 @@
-import { z } from "@repo/zod-validations";
+import type { z } from "@repo/zod-validations";
 
 // Parses a real HTTP response body (JSON, so dates are strings) through the
 // same schema the frontend types consume. A mismatch fails the test instead

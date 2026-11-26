@@ -1,6 +1,6 @@
 import { z } from "@repo/zod-validations";
 import type { ActionResult } from "./actionResult";
-import { FORM_FIELDS } from "../constants/fields";
+import type { FORM_FIELDS } from "../constants/fields";
 
 type FormFieldName = (typeof FORM_FIELDS)[keyof typeof FORM_FIELDS];
 

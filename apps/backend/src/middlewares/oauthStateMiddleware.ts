@@ -22,7 +22,9 @@ function initiateOAuthState(_req: Request, res: Response, next: NextFunction) {
 }
 
 function verifyOAuthState(req: Request, res: Response, next: NextFunction) {
-  const cookieState = req.cookies?.[OAUTH_STATE_COOKIE_NAME];
+  // cookie-parser types every cookie value as `any`.
+  const cookies = req.cookies as Record<string, string | undefined> | undefined;
+  const cookieState = cookies?.[OAUTH_STATE_COOKIE_NAME];
   const queryState =
     typeof req.query.state === "string" ? req.query.state : undefined;
 

@@ -10,6 +10,16 @@ const COMMENTS_PER_POST = 20;
 const FRIEND_REQUESTS_PER_USER = 3;
 const MESSAGES_PER_FRIENDSHIP = 5;
 
+function at<T>(items: T[], index: number): T {
+  const item = items[index];
+
+  if (!item) {
+    throw new Error(`Missing seed item at index ${index}`);
+  }
+
+  return item;
+}
+
 async function main() {
   faker.seed(42);
 
@@ -76,7 +86,7 @@ async function generateFollows(users: { id: number }[]) {
     const followIds = Array.from({ length: FOLLOWS_PER_USER }, (_, offset) => {
       const targetIndex = (userIndex + offset + 1) % users.length;
 
-      return users[targetIndex]!.id;
+      return at(users, targetIndex).id;
     });
 
     return followIds.map((followingId) => ({
@@ -97,7 +107,7 @@ async function generateLikes(users: { id: number }[], posts: { id: number }[]) {
 
       return {
         userId: user.id,
-        postId: posts[postIndex]!.id,
+        postId: at(posts, postIndex).id,
       };
     }),
   );
@@ -117,7 +127,7 @@ async function generateComments(
 
       return {
         postId: post.id,
-        userId: users[userIndex]!.id,
+        userId: at(users, userIndex).id,
         content: `${faker.lorem.sentences({ min: 1, max: 2 })} #${postIndex + 1}-${commentIndex + 1}`,
       };
     }),
@@ -135,7 +145,7 @@ async function generateFriendRequests(users: { id: number }[]) {
 
       return {
         senderId: user.id,
-        receiverId: users[targetIndex]!.id,
+        receiverId: at(users, targetIndex).id,
         status:
           offset === FRIEND_REQUESTS_PER_USER - 1
             ? FRIEND_REQUEST_STATUS.PENDING
@@ -173,8 +183,8 @@ async function generateMessages() {
 }
 
 main()
-  .catch(async (e) => {
-    console.error(e);
+  .catch((error: unknown) => {
+    console.error(error);
     process.exit(1);
   })
   .finally(async () => {

@@ -38,7 +38,7 @@ async function action({ request }: ActionFunctionArgs) {
 // loader provides the first page, useInfiniteFeed accumulates pages as the
 // sentinel scrolls into view, and each card owns its follow button.
 function Users() {
-  const initialPage = useLoaderData() as UsersGetResponse;
+  const initialPage = useLoaderData<UsersGetResponse>();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const {
     items: users,

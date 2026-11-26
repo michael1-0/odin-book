@@ -1,6 +1,5 @@
 import {
   useLoaderData,
-  useRouteLoaderData,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "react-router";
@@ -9,7 +8,7 @@ import {
   type PostGetResponse,
 } from "@repo/zod-validations";
 import { FORM_FIELDS } from "../constants/fields";
-import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
+import { FORM_INTENTS } from "../constants/routes";
 import { readIntent, unknownIntent } from "../utils/intent";
 import { submitForm } from "../utils/formValidation";
 import { readOffsetParam } from "../utils/queryParams";
@@ -22,6 +21,7 @@ import CommentComposer from "../components/CommentComposer";
 import CommentItem from "../components/CommentItem";
 import LoadMoreComments from "../components/LoadMoreComments";
 import PageContainer from "../components/PageContainer";
+import useCurrentUser from "../hooks/useCurrentUser";
 
 async function loader({ request, params }: LoaderFunctionArgs) {
   return await getPostWithComments(params.postId, readOffsetParam(request));
@@ -55,8 +55,8 @@ async function action({ request }: ActionFunctionArgs) {
 // after each successful comment, and LoadMoreComments pages through older
 // ones via the offset query param.
 function PostDetail() {
-  const { user } = useRouteLoaderData(ROUTE_ID);
-  const { data: post, nextCursor } = useLoaderData() as PostGetResponse;
+  const user = useCurrentUser();
+  const { data: post, nextCursor } = useLoaderData<PostGetResponse>();
 
   return (
     <PageContainer>

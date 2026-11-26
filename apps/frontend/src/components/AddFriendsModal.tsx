@@ -21,14 +21,21 @@ function ExploreItem({
   onRequestSent: (userId: number, requestId: number) => void;
   onNavigate: () => void;
 }) {
-  const fetcher = useFetcher<ActionResult<FriendRequest>>();
+  const fetcher = useFetcher<ActionResult<FriendRequest> | undefined>();
   const isPending = fetcher.state !== "idle";
   const sendResult = fetcher.data;
 
   useEffect(() => {
-    if (sendResult?.ok) {
+    if (!sendResult) {
+      return;
+    }
+
+    if (sendResult.ok) {
       onRequestSent(item.id, sendResult.data.id);
-    } else if (sendResult && !sendResult.ok && sendResult.kind === "server") {
+      return;
+    }
+
+    if (sendResult.kind === "server") {
       toast.error(sendResult.message);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -50,6 +50,16 @@ class MockIntersectionObserver {
 const LOAD_ERROR_TEXT = "Couldn't load more posts.";
 const FAILURE_TOAST = "Failed to load more posts";
 
+function firstObserver(): MockIntersectionObserver {
+  const observer = MockIntersectionObserver.instances[0];
+
+  if (!observer) {
+    throw new Error("Expected an IntersectionObserver instance");
+  }
+
+  return observer;
+}
+
 function page(ids: number[], nextCursor: number | null): Page {
   return { data: ids.map((id) => ({ id })), nextCursor };
 }
@@ -95,7 +105,7 @@ describe("useInfiniteFeed", () => {
   });
 
   it("appends the next cursor page", async () => {
-    const loadPage = vi.fn(async () => page([11, 12], null));
+    const loadPage = vi.fn(() => Promise.resolve(page([11, 12], null)));
     const { result } = renderHook(() =>
       useInfiniteFeed({
         initialPage: page([1, 2, 3], 3),
@@ -217,7 +227,7 @@ describe("useInfiniteFeed", () => {
   });
 
   it("drops later pages when an item is inserted", async () => {
-    const loadPage = vi.fn(async () => page([11, 12], null));
+    const loadPage = vi.fn(() => Promise.resolve(page([11, 12], null)));
     const { result } = renderHook(() =>
       useInfiniteFeed({
         initialPage: page(range(1, FEED_PAGE_SIZE), FEED_PAGE_SIZE),
@@ -263,7 +273,7 @@ describe("useInfiniteFeed", () => {
   });
 
   it("removes an item from every loaded page", async () => {
-    const loadPage = vi.fn(async () => page([11, 12], null));
+    const loadPage = vi.fn(() => Promise.resolve(page([11, 12], null)));
     const { result } = renderHook(() =>
       useInfiniteFeed({
         initialPage: page(range(1, FEED_PAGE_SIZE), FEED_PAGE_SIZE),
@@ -286,7 +296,7 @@ describe("useInfiniteFeed", () => {
   });
 
   it("observes the sentinel and loads when it intersects", async () => {
-    const loadPage = vi.fn(async () => page([11, 12], null));
+    const loadPage = vi.fn(() => Promise.resolve(page([11, 12], null)));
     const loadMoreRef = sentinelRef();
     const { result } = renderHook(() =>
       useInfiniteFeed({
@@ -298,7 +308,7 @@ describe("useInfiniteFeed", () => {
     );
 
     expect(MockIntersectionObserver.instances).toHaveLength(1);
-    const observer = MockIntersectionObserver.instances[0]!;
+    const observer = firstObserver();
 
     expect(observer.observe).toHaveBeenCalledWith(loadMoreRef.current);
     expect(observer.options).toEqual({ rootMargin: LOAD_MORE_ROOT_MARGIN });
@@ -335,7 +345,7 @@ describe("useInfiniteFeed", () => {
       }),
     );
 
-    const observer = MockIntersectionObserver.instances[0]!;
+    const observer = firstObserver();
 
     unmount();
 

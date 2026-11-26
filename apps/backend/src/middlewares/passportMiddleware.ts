@@ -1,4 +1,5 @@
 import type { DoneCallback } from "passport";
+import type { Request } from "express";
 import type { JwtPayload } from "jsonwebtoken";
 import type { Profile } from "passport-github2";
 import passport from "passport";
@@ -10,6 +11,26 @@ import env from "../config/env.ts";
 import { createUser, findUserByGithubId } from "../db/queries/users.ts";
 import { findUserByJwtPayload } from "../utils/jwtUser.ts";
 
+function toError(error: unknown) {
+  return error instanceof Error ? error : new Error(String(error));
+}
+
+async function findOrCreateGitHubUser(profile: Profile) {
+  const existingUser = await findUserByGithubId(profile.id);
+
+  if (existingUser) {
+    return existingUser;
+  }
+
+  const primaryEmail = profile.emails?.[0]?.value ?? "";
+
+  return await createUser({
+    githubId: profile.id,
+    username: profile.username ?? "user",
+    profileUrl: createGravatarUrl(primaryEmail),
+  });
+}
+
 passport.use(
   new GitHubStrategy(
     {
@@ -18,55 +39,30 @@ passport.use(
       callbackURL: env.githubCallbackUrl,
       scope: ["user:email"],
     },
-    async function (
+    (
       _accessToken: string,
       _refreshToken: string,
       profile: Profile,
       done: DoneCallback,
-    ) {
-      let findUser;
-
-      try {
-        findUser = await findUserByGithubId(profile.id);
-      } catch (error) {
-        return done(error, null);
-      }
-
-      try {
-        if (!findUser) {
-          const primaryEmail = profile.emails?.[0]?.value || "";
-          const newUser = await createUser({
-            githubId: profile.id,
-            username: profile.username ?? "user",
-            profileUrl: createGravatarUrl(primaryEmail),
-          });
-          return done(null, newUser);
-        }
-        return done(null, findUser);
-      } catch (error) {
-        return done(error, null);
-      }
+    ) => {
+      findOrCreateGitHubUser(profile).then(
+        (user) => done(null, user),
+        (error: unknown) => done(toError(error), null),
+      );
     },
   ),
 );
 passport.use(
   new JwtStrategy(
     {
-      jwtFromRequest: cookieExtractor,
+      jwtFromRequest: (req: Request) => cookieExtractor(req) ?? null,
       secretOrKey: env.jwtSecret,
     },
-    async (jwtPayload: JwtPayload, done: DoneCallback) => {
-      try {
-        const user = await findUserByJwtPayload(jwtPayload);
-
-        if (user) {
-          return done(null, user);
-        }
-
-        return done(null, false);
-      } catch (error) {
-        return done(error, false);
-      }
+    (jwtPayload: JwtPayload, done: DoneCallback) => {
+      findUserByJwtPayload(jwtPayload).then(
+        (user) => done(null, user ?? false),
+        (error: unknown) => done(toError(error), false),
+      );
     },
   ),
 );

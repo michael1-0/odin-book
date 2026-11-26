@@ -1,18 +1,15 @@
 import { useRef } from "react";
-import {
-  useLoaderData,
-  useRouteLoaderData,
-  type ActionFunctionArgs,
-} from "react-router";
+import { useLoaderData, type ActionFunctionArgs } from "react-router";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
 import { getFollowingPostsFromLastMonth } from "../services/posts";
 import PageHead from "../components/PageHead";
 import PageContainer from "../components/PageContainer";
 import useInfiniteFeed from "../hooks/useInfiniteFeed";
+import useCurrentUser from "../hooks/useCurrentUser";
 import LoadMoreStatus from "../components/LoadMoreStatus";
 import type { PostsGetResponse } from "@repo/zod-validations";
-import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
+import { FORM_INTENTS } from "../constants/routes";
 import { LOAD_MORE_ERROR_TEXT, LOAD_MORE_ERROR_TOAST } from "../constants/ui";
 import { readIntent, unknownIntent } from "../utils/intent";
 
@@ -34,8 +31,8 @@ async function action({ request }: ActionFunctionArgs) {
 }
 
 function Updates() {
-  const { user } = useRouteLoaderData(ROUTE_ID);
-  const initialPage = useLoaderData() as PostsGetResponse;
+  const user = useCurrentUser();
+  const initialPage = useLoaderData<PostsGetResponse>();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const {
     items: posts,

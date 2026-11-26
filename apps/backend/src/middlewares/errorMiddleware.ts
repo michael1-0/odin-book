@@ -13,7 +13,7 @@ function notFound(req: Request, _res: Response, next: NextFunction) {
   next(new AppError(`Route ${req.originalUrl} not found`, 404));
 }
 
-const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
+const errorHandler: ErrorRequestHandler = (error: unknown, req, res, next) => {
   void next;
 
   let statusCode = 500;

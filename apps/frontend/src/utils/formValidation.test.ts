@@ -12,8 +12,8 @@ describe("submitForm", () => {
     const formData = new FormData();
     formData.set(FORM_FIELDS.content, "Hello");
 
-    const submit = vi.fn(
-      async (_formData: FormData, data: { content: string }) => ({
+    const submit = vi.fn((_formData: FormData, data: { content: string }) =>
+      Promise.resolve({
         ok: true as const,
         data,
       }),
@@ -57,13 +57,11 @@ describe("submitForm", () => {
     formData.set(FORM_FIELDS.content, "Nice post");
 
     const submit = vi.fn(
-      async (
-        _formData: FormData,
-        data: { postId: number; content: string },
-      ) => ({
-        ok: true as const,
-        data,
-      }),
+      (_formData: FormData, data: { postId: number; content: string }) =>
+        Promise.resolve({
+          ok: true as const,
+          data,
+        }),
     );
 
     const result = await submitForm(
@@ -92,7 +90,7 @@ describe("submitForm", () => {
       PostCreateBodySchema,
       formData,
       { content: FORM_FIELDS.content },
-      async () => failure,
+      () => Promise.resolve(failure),
     );
 
     expect(result).toBe(failure);

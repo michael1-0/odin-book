@@ -5,7 +5,7 @@ type LoadMoreStatusProps = {
   hasMore: boolean;
   isLoadingMore: boolean;
   loadError: string | null;
-  onRetry: () => void;
+  onRetry: () => Promise<void>;
 };
 
 // Status slot below a scroll-paginated feed: a retry button after a failed

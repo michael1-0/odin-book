@@ -17,4 +17,25 @@ export default [
       },
     },
   },
+  // Supertest response bodies are `any`; asserting on them is the point of
+  // an integration test, so the unsafe-* family is off in tests only.
+  {
+    files: ["tests/**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "no-console": "off",
+    },
+  },
+  // The startup banner is the one legitimate console.log.
+  {
+    files: ["src/server.ts"],
+    rules: {
+      "no-console": ["error", { allow: ["warn", "error", "log"] }],
+    },
+  },
 ];

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 import { coercedId } from "./common.js";
 import type { ValidationSpec } from "./common.js";
 import { CommentSchema } from "./entities.js";

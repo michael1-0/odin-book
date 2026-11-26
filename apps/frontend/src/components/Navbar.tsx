@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactEventHandler } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import Logo from "./Logo";
 import { NavLink, useNavigate } from "react-router";
@@ -7,8 +7,8 @@ import { logout } from "../services/auth";
 
 type NavProps = {
   isOpen: boolean;
-  toggleSidebar: ReactEventHandler;
-  handleLogout: ReactEventHandler;
+  toggleSidebar: () => void;
+  handleLogout: () => Promise<void>;
 };
 
 function DesktopMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
@@ -50,7 +50,7 @@ function DesktopMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
         </NavLink>
         <button
           className="rounded-sm border bg-black p-2 text-sm text-white"
-          onClick={handleLogout}
+          onClick={() => void handleLogout()}
         >
           Log out
         </button>
@@ -121,7 +121,7 @@ function MobileMenu({ isOpen, toggleSidebar, handleLogout }: NavProps) {
         </NavLink>
         <button
           className="rounded-sm bg-black p-2 text-sm text-white"
-          onClick={handleLogout}
+          onClick={() => void handleLogout()}
         >
           Log out
         </button>
@@ -142,9 +142,9 @@ function Navbar() {
     try {
       await logout();
 
-      navigate(APP_ROUTES.login);
+      void navigate(APP_ROUTES.login);
     } catch {
-      navigate(APP_ROUTES.home);
+      void navigate(APP_ROUTES.home);
     }
   }
 

@@ -16,7 +16,7 @@ async function followUser(
   const followedById = req.user.id;
   const followingId = req.params.followingId;
 
-  if (followedById == followingId) {
+  if (followedById === followingId) {
     throw new AppError("Can't follow yourself", 400);
   }
 

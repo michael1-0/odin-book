@@ -10,19 +10,50 @@ export function createFrontendConfig({ tsconfigRootDir, tailwindCssPath }) {
   return defineConfig([
     globalIgnores(["dist"]),
     {
+      linterOptions: { reportUnusedDisableDirectives: "error" },
+    },
+    {
       files: ["**/*.{ts,tsx}"],
       extends: [
         js.configs.recommended,
-        tseslint.configs.recommended,
+        ...tseslint.configs.strictTypeChecked,
         reactHooks.configs.flat.recommended,
         reactRefresh.configs.vite,
       ],
       languageOptions: {
-        ecmaVersion: 2020,
+        ecmaVersion: 2022,
         globals: globals.browser,
         parserOptions: {
           tsconfigRootDir,
+          projectService: true,
         },
+      },
+      rules: {
+        // `onClick={() => setOpen(true)}` shorthand is idiomatic.
+        "@typescript-eslint/no-confusing-void-expression": [
+          "error",
+          { ignoreArrowShorthand: true },
+        ],
+        // Number interpolation is safe and used for ids, offsets, and paths.
+        "@typescript-eslint/restrict-template-expressions": [
+          "error",
+          { allowNumber: true },
+        ],
+        // React Router loaders/actions signal errors by throwing a Response.
+        "@typescript-eslint/only-throw-error": [
+          "error",
+          { allow: [{ from: "lib", name: "Response" }] },
+        ],
+        "@typescript-eslint/switch-exhaustiveness-check": [
+          "error",
+          { considerDefaultExhaustiveForUnions: true },
+        ],
+        "@typescript-eslint/consistent-type-imports": "error",
+        "@typescript-eslint/consistent-type-exports": "error",
+        "@typescript-eslint/prefer-optional-chain": "error",
+        "@typescript-eslint/prefer-nullish-coalescing": "error",
+        eqeqeq: ["error", "always"],
+        "no-console": ["error", { allow: ["warn", "error"] }],
       },
     },
     {

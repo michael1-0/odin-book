@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 import { LikeSchema } from "./entities.js";
 
 export const PostLikeSchema = LikeSchema.pick({

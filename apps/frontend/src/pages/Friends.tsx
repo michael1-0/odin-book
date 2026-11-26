@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ActionFunctionArgs } from "react-router";
-import { useLoaderData, useRouteLoaderData } from "react-router";
+import { useLoaderData } from "react-router";
 import { UserPlus, Users } from "lucide-react";
 import type { FriendsGetResponse } from "@repo/zod-validations";
 import PageContainer from "../components/PageContainer";
@@ -11,6 +11,7 @@ import ChatModal from "../components/ChatModal";
 import FriendRequestsModal from "../components/FriendRequestsModal";
 import AddFriendsModal from "../components/AddFriendsModal";
 import useFriendsSocket from "../hooks/useFriendsSocket";
+import useCurrentUser from "../hooks/useCurrentUser";
 import {
   acceptFriendRequest,
   cancelFriendRequest,
@@ -18,11 +19,10 @@ import {
   getFriends,
   sendFriendRequest,
 } from "../services/friends";
-import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
+import { FORM_INTENTS } from "../constants/routes";
 import { readIntent, unknownIntent } from "../utils/intent";
 
 type FriendsLoaderData = FriendsGetResponse["data"];
-type UserData = { user: { id: number } };
 
 async function loader() {
   return await getFriends();
@@ -47,8 +47,8 @@ async function action({ request }: ActionFunctionArgs) {
 
 function Friends() {
   const { friends, incomingRequests, outgoingRequests } =
-    useLoaderData() as FriendsLoaderData;
-  const { user } = useRouteLoaderData<UserData>(ROUTE_ID)!;
+    useLoaderData<FriendsLoaderData>();
+  const user = useCurrentUser();
   const { revalidate } = useFriendsSocket();
 
   const [activeModal, setActiveModal] = useState<"requests" | "add" | null>(
@@ -62,7 +62,7 @@ function Friends() {
 
   function handleChatClose() {
     setChatFriendId(null);
-    revalidate();
+    void revalidate();
   }
 
   return (

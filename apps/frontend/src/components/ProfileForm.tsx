@@ -125,7 +125,7 @@ function ProfileForm({ user }: ProfileFormProps) {
               className="rounded-sm bg-white p-3 shadow-sm"
             />
             <div className="mt-2 min-h-4 text-xs text-red-600">
-              {usernameErrors && usernameErrors[0]}
+              {usernameErrors?.[0]}
             </div>
           </div>
           <div className="flex flex-col">
@@ -142,7 +142,7 @@ function ProfileForm({ user }: ProfileFormProps) {
               defaultValue={user.noteToAll}
             />
             <div className="mt-2 min-h-8 text-xs text-red-600">
-              {noteToAllErrors && noteToAllErrors[0]}
+              {noteToAllErrors?.[0]}
             </div>
           </div>
           <button

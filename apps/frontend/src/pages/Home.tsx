@@ -1,14 +1,10 @@
 import { useRef } from "react";
-import {
-  useRouteLoaderData,
-  useLoaderData,
-  type ActionFunctionArgs,
-} from "react-router";
+import { useLoaderData, type ActionFunctionArgs } from "react-router";
 import {
   PostCreateBodySchema,
   type PostsGetResponse,
 } from "@repo/zod-validations";
-import { FORM_INTENTS, ROUTE_ID } from "../constants/routes";
+import { FORM_INTENTS } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
 import { LOAD_MORE_ERROR_TEXT, LOAD_MORE_ERROR_TOAST } from "../constants/ui";
 import { readIntent, unknownIntent } from "../utils/intent";
@@ -16,6 +12,7 @@ import { submitForm } from "../utils/formValidation";
 import { createPost, getLatestPosts } from "../services/posts";
 import { likePost, unlikePost } from "../services/likes";
 import useInfiniteFeed from "../hooks/useInfiniteFeed";
+import useCurrentUser from "../hooks/useCurrentUser";
 import PostComposer from "../components/PostComposer";
 import LoadMoreStatus from "../components/LoadMoreStatus";
 import PostItem from "../components/PostItem";
@@ -47,8 +44,8 @@ async function action({ request }: ActionFunctionArgs) {
 }
 
 function Home() {
-  const { user } = useRouteLoaderData(ROUTE_ID);
-  const initialPage = useLoaderData() as PostsGetResponse;
+  const user = useCurrentUser();
+  const initialPage = useLoaderData<PostsGetResponse>();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const {
     items: posts,

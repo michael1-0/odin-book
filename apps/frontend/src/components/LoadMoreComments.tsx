@@ -22,7 +22,7 @@ function LoadMoreComments({ nextCursor }: LoadMoreCommentsProps) {
 
   const isLoadMorePending =
     navigation.state === "loading" &&
-    navigation.location?.search.includes(QUERY_PARAMS.offset);
+    navigation.location.search.includes(QUERY_PARAMS.offset);
 
   return (
     <section className="flex justify-center">

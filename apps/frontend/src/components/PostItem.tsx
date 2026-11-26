@@ -51,7 +51,7 @@ function PostItem({
   }
 
   function handleCardClick() {
-    navigate(postPath(post.id));
+    void navigate(postPath(post.id));
   }
 
   return (

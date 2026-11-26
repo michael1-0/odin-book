@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { User } from "../../src/db/generated/prisma/client.ts";
 import { prisma } from "../../src/db/prisma.ts";
 import { emitToUser } from "../../src/socket/io.ts";
+import type * as socketIoModule from "../../src/socket/io.ts";
 import { api } from "../helpers/api.ts";
 import { authCookie } from "../helpers/auth.ts";
 import { expectContract } from "../helpers/contracts.ts";
@@ -18,8 +19,7 @@ import {
 } from "../helpers/factories.ts";
 
 vi.mock("../../src/socket/io.ts", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../../src/socket/io.ts")>();
+  const actual = await importOriginal<typeof socketIoModule>();
 
   return { ...actual, emitToUser: vi.fn() };
 });
