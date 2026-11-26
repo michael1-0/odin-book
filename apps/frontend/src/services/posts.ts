@@ -11,7 +11,8 @@ import { readFormField } from "../utils/formData";
 import { apiFetch, apiMutation } from "./http";
 
 type LoadPostsOptions = {
-  cursor?: number;
+  // undefined and absent both mean "omit the cursor query param".
+  cursor?: number | undefined;
   scope?: "all" | "me" | "following";
   period?: "month";
 };

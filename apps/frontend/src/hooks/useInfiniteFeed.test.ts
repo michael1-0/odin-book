@@ -24,7 +24,7 @@ class MockIntersectionObserver {
   readonly root = null;
   readonly rootMargin = "";
   readonly thresholds: number[] = [];
-  readonly options?: IntersectionObserverInit;
+  readonly options: IntersectionObserverInit | undefined;
 
   private readonly callback: ObserverCallback;
 

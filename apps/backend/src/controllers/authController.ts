@@ -39,7 +39,7 @@ async function getMe(req: Request, res: Response) {
   return res.json(req.user);
 }
 
-function postLogout(req: Request, res: Response) {
+function postLogout(_req: Request, res: Response) {
   res.clearCookie(AUTH_COOKIE_NAME, SECURE_COOKIE_OPTIONS);
 
   res.status(200).json({ success: true });

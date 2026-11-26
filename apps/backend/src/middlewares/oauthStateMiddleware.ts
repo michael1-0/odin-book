@@ -9,7 +9,7 @@ import {
   SECURE_COOKIE_OPTIONS,
 } from "../constants/auth.ts";
 
-function initiateOAuthState(req: Request, res: Response, next: NextFunction) {
+function initiateOAuthState(_req: Request, res: Response, next: NextFunction) {
   const state = crypto.randomBytes(OAUTH_STATE_BYTES).toString("hex");
 
   res.cookie(OAUTH_STATE_COOKIE_NAME, state, {

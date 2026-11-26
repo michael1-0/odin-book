@@ -33,6 +33,7 @@ function PostItem({
   const likesCount = currentPost._count.likes;
   const isLikedByMe = checkIfLiked(currentPost.likes);
   const images = currentPost.images;
+  const singleImage = images.length === 1 ? images[0] : undefined;
 
   useEffect(() => {
     if (
@@ -73,14 +74,14 @@ function PostItem({
         </Link>
       )}
       <div>{post.content}</div>
-      {images.length === 1 && (
+      {singleImage && (
         <img
-          src={getOptimizedImageUrl(images[0].url, IMAGE_WIDTHS.large)}
+          src={getOptimizedImageUrl(singleImage.url, IMAGE_WIDTHS.large)}
           alt="Post image 1"
           loading="lazy"
           onClick={(e) => {
             e.stopPropagation();
-            setSelectedImageUrl(images[0].url);
+            setSelectedImageUrl(singleImage.url);
           }}
           className="max-h-80 w-full rounded-sm object-cover"
         />

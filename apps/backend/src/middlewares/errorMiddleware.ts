@@ -9,7 +9,7 @@ import type { ErrorRequestHandler as ValidationErrorHandler } from "express-zod-
 import { Prisma } from "../db/generated/prisma/client.ts";
 import { AppError } from "../errors/AppError.ts";
 
-function notFound(req: Request, res: Response, next: NextFunction) {
+function notFound(req: Request, _res: Response, next: NextFunction) {
   next(new AppError(`Route ${req.originalUrl} not found`, 404));
 }
 
