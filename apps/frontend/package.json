@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc --noEmit && vite build",
     "lint": "eslint .",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "test": "tsc --noEmit -p tsconfig.app.json && vitest run",
+    "test": "tsc --noEmit && vitest run",
     "test:watch": "vitest",
     "check": "pnpm format:check && pnpm lint && pnpm build && pnpm test",
     "preview": "vite preview"

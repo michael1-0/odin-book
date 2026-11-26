@@ -1,8 +1,0 @@
-{
-  "extends": "@repo/typescript-config/frontend-app.json",
-  "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "jsx": "react-jsx"
-  },
-  "include": ["src"]
-}
