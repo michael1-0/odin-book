@@ -13,8 +13,8 @@ describe("cookieExtractor", () => {
     );
   });
 
-  it("returns undefined when the auth cookie is absent", () => {
-    expect(cookieExtractor(requestWithCookies({}))).toBeUndefined();
+  it("returns null when the auth cookie is absent", () => {
+    expect(cookieExtractor(requestWithCookies({}))).toBeNull();
   });
 
   it("returns null when cookie-parser did not run", () => {

@@ -21,7 +21,7 @@ function ExploreItem({
   onRequestSent: (userId: number, requestId: number) => void;
   onNavigate: () => void;
 }) {
-  const fetcher = useFetcher<ActionResult<FriendRequest> | undefined>();
+  const fetcher = useFetcher<ActionResult<FriendRequest>>();
   const isPending = fetcher.state !== "idle";
   const sendResult = fetcher.data;
 

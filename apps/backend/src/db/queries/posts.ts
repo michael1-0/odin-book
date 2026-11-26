@@ -2,6 +2,7 @@ import { prisma } from "../prisma.ts";
 import type { Prisma } from "../generated/prisma/client.ts";
 import type { PostWhereInput } from "../generated/prisma/models.ts";
 import { COMMENTS_PAGE_SIZE, FEED_PAGE_SIZE } from "@repo/constants";
+import { TRENDING_WINDOW_MS } from "../../constants/feed.ts";
 
 const postFeedSelect = {
   id: true,
@@ -48,14 +49,46 @@ async function postExists(
   return post !== null;
 }
 
+type FeedPostsQuery = {
+  scope: "all" | "me" | "following";
+  period?: "month" | undefined;
+  viewerId: number;
+};
+
+function buildFeedWhere({ scope, period, viewerId }: FeedPostsQuery) {
+  const where: PostWhereInput = {};
+
+  if (period === "month") {
+    where.createdAt = {
+      gte: new Date(Date.now() - TRENDING_WINDOW_MS),
+    };
+  }
+
+  if (scope === "me") {
+    where.user = { id: viewerId };
+  }
+
+  if (scope === "following") {
+    where.user = {
+      following: {
+        some: {
+          followedById: viewerId,
+        },
+      },
+    };
+  }
+
+  return where;
+}
+
 function getFeedPosts(
-  where: PostWhereInput,
+  query: FeedPostsQuery,
   cursor: number | undefined,
   client: Prisma.TransactionClient = prisma,
 ) {
   return client.post.findMany({
     select: postFeedSelect,
-    where,
+    where: buildFeedWhere(query),
     orderBy: {
       id: "desc",
     },

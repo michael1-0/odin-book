@@ -5,7 +5,6 @@ import {
   type LoaderFunctionArgs,
 } from "react-router";
 import { getUserProfile } from "../services/users";
-import type { UserProfile } from "../services/users";
 import { getMe } from "../services/auth";
 import PostItem from "../components/PostItem";
 import { likePost, unlikePost } from "../services/likes";
@@ -55,7 +54,7 @@ async function action({ request }: ActionFunctionArgs) {
 
 function UserDetail() {
   const user = useCurrentUser();
-  const userWithPosts = useLoaderData<UserProfile>();
+  const userWithPosts = useLoaderData<typeof loader>();
 
   return (
     <PageContainer>

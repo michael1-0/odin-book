@@ -8,32 +8,32 @@ import {
   OAUTH_STATE_MAX_AGE_MS,
   SECURE_COOKIE_OPTIONS,
 } from "../constants/auth.ts";
+import { readCookie } from "../utils/cookieExtractor.ts";
 
-function initiateOAuthState(_req: Request, res: Response, next: NextFunction) {
+// Issues the state cookie and returns the value for the strategy's `state`
+// option, so no untyped `res.locals` contract is needed.
+function issueOAuthState(res: Response): string {
   const state = crypto.randomBytes(OAUTH_STATE_BYTES).toString("hex");
 
   res.cookie(OAUTH_STATE_COOKIE_NAME, state, {
     ...SECURE_COOKIE_OPTIONS,
     maxAge: OAUTH_STATE_MAX_AGE_MS,
   });
-  res.locals.oauthState = state;
 
-  next();
+  return state;
 }
 
 function verifyOAuthState(req: Request, res: Response, next: NextFunction) {
-  // cookie-parser types every cookie value as `any`.
-  const cookies = req.cookies as Record<string, string | undefined> | undefined;
-  const cookieState = cookies?.[OAUTH_STATE_COOKIE_NAME];
+  const cookieState = readCookie(req, OAUTH_STATE_COOKIE_NAME);
   const queryState =
     typeof req.query.state === "string" ? req.query.state : undefined;
 
   res.clearCookie(OAUTH_STATE_COOKIE_NAME, SECURE_COOKIE_OPTIONS);
 
   const queryBuffer =
-    typeof queryState === "string" ? Buffer.from(queryState, "utf8") : null;
+    queryState === undefined ? null : Buffer.from(queryState, "utf8");
   const cookieBuffer =
-    typeof cookieState === "string" ? Buffer.from(cookieState, "utf8") : null;
+    cookieState === undefined ? null : Buffer.from(cookieState, "utf8");
 
   // Compare UTF-8 buffers, not JS string lengths: `timingSafeEqual` throws
   // when the byte lengths differ, and an empty state must never validate.
@@ -45,10 +45,11 @@ function verifyOAuthState(req: Request, res: Response, next: NextFunction) {
     crypto.timingSafeEqual(queryBuffer, cookieBuffer);
 
   if (!isValid) {
-    return res.redirect(`${env.frontendUrl}${OAUTH_FAILURE_REDIRECT_PATH}`);
+    res.redirect(`${env.frontendUrl}${OAUTH_FAILURE_REDIRECT_PATH}`);
+    return;
   }
 
   next();
 }
 
-export { initiateOAuthState, verifyOAuthState };
+export { issueOAuthState, verifyOAuthState };

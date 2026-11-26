@@ -3,10 +3,7 @@ import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "react-router";
-import {
-  CommentCreateBodySchema,
-  type PostGetResponse,
-} from "@repo/zod-validations";
+import { CommentCreateBodySchema } from "@repo/zod-validations";
 import { FORM_FIELDS } from "../constants/fields";
 import { FORM_INTENTS } from "../constants/routes";
 import { readIntent, unknownIntent } from "../utils/intent";
@@ -56,7 +53,7 @@ async function action({ request }: ActionFunctionArgs) {
 // ones via the offset query param.
 function PostDetail() {
   const user = useCurrentUser();
-  const { data: post, nextCursor } = useLoaderData<PostGetResponse>();
+  const { data: post, nextCursor } = useLoaderData<typeof loader>();
 
   return (
     <PageContainer>

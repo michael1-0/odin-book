@@ -10,9 +10,9 @@ async function checkAuth() {
   try {
     const user = await getMe();
 
-    return { isAuthenticated: true, user };
+    return { isAuthenticated: true as const, user };
   } catch {
-    return { isAuthenticated: false, user: null };
+    return { isAuthenticated: false as const, user: null };
   }
 }
 
@@ -41,6 +41,8 @@ async function guestLoader() {
 
   return null;
 }
+
+export type ProtectedRouteData = Awaited<ReturnType<typeof protectedLoader>>;
 
 function App() {
   return (

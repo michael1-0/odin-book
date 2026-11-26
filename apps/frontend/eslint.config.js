@@ -25,13 +25,14 @@ export default [
       "no-restricted-syntax": [
         "error",
         {
-          selector: "CallExpression[callee.name='fetch']",
+          selector:
+            "MemberExpression[object.name=/^(window|globalThis|self)$/][property.name='fetch']",
           message:
             "Use apiFetch/apiMutation from services/http.ts instead of calling fetch directly.",
         },
         {
           selector:
-            "CallExpression[callee.object.name=/^(window|globalThis|self)$/][callee.property.name='fetch']",
+            "MemberExpression[object.name=/^(window|globalThis|self)$/][computed=true][property.value='fetch']",
           message:
             "Use apiFetch/apiMutation from services/http.ts instead of calling fetch directly.",
         },

@@ -6,7 +6,7 @@ import type {
 } from "express";
 import type { ErrorRequestHandler as ValidationErrorHandler } from "express-zod-safe";
 
-import { Prisma } from "../db/generated/prisma/client.ts";
+import { isPrismaKnownRequestError } from "../db/errors.ts";
 import { AppError } from "../errors/AppError.ts";
 
 function notFound(req: Request, _res: Response, next: NextFunction) {
@@ -22,7 +22,7 @@ const errorHandler: ErrorRequestHandler = (error: unknown, req, res, next) => {
   if (error instanceof AppError) {
     statusCode = error.statusCode;
     message = error.message;
-  } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
+  } else if (isPrismaKnownRequestError(error)) {
     switch (error.code) {
       case "P2025":
         statusCode = 404;

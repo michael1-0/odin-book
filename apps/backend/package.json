@@ -10,7 +10,7 @@
     "build": "prisma generate && tsc --build",
     "postinstall": "prisma generate",
     "start": "node --conditions=built ./dist/server.js",
-    "lint": "eslint . --cache --max-warnings=0",
+    "lint": "eslint . --max-warnings=0",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "check": "pnpm format:check && pnpm lint && pnpm build && pnpm test"
@@ -38,7 +38,6 @@
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
     "@faker-js/faker": "^10.5.0",
     "@repo/eslint-config": "workspace:*",
     "@repo/prettier-config": "workspace:*",
@@ -56,13 +55,11 @@
     "@types/pg": "^8.16.0",
     "@types/supertest": "^7.2.1",
     "eslint": "^9.39.2",
-    "globals": "^16.5.0",
     "prettier": "3.8.1",
     "prisma": "^7.4.0",
     "supertest": "^7.3.2",
     "tsx": "^4.21.0",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.54.0",
     "vitest": "^5.1.1"
   }
 }

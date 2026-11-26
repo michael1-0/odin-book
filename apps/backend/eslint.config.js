@@ -6,7 +6,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default [
   ...createBackendConfig({ tsconfigRootDir: __dirname }),
-  // Only the data-access layer may touch the Prisma client directly.
+  // Only the data-access layer may touch Prisma directly. Generated *types*
+  // are also kept behind src/db so controllers do not depend on Prisma.
   {
     files: ["src/**/*.ts"],
     ignores: ["src/db/**"],
@@ -19,13 +20,36 @@ export default [
               group: [
                 "**/db/prisma",
                 "**/db/prisma.ts",
-                "./db/prisma.ts",
-                "../db/prisma.ts",
+                "**/db/prisma.js",
+                "**/db/prisma.mjs",
+                "**/db/prisma.cjs",
               ],
               message:
                 "Only src/db/** may import the Prisma client; use a queries/ helper.",
             },
+            {
+              group: ["**/db/generated/prisma/**"],
+              message:
+                "Only src/db/** may import generated Prisma modules; re-export what controllers need from src/db.",
+            },
+            {
+              group: ["@prisma/client", "@prisma/adapter-pg"],
+              message:
+                "Only src/db/** may configure Prisma; controllers and middleware must use query helpers.",
+            },
           ],
+        },
+      ],
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "ImportExpression",
+          message:
+            "Dynamic imports are banned outside src/db/**; use a static import or a query helper.",
+        },
+        {
+          selector: "NewExpression[callee.name='PrismaClient']",
+          message: "Only src/db/prisma.ts may construct the Prisma client.",
         },
       ],
     },
@@ -41,18 +65,23 @@ export default [
       },
     },
   },
-  // Supertest response bodies are `any`; asserting on them is the point of
-  // an integration test, so the unsafe-* family is off in tests only.
   {
     files: ["tests/**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "no-console": "off",
+    },
+  },
+  // Supertest response bodies are `any`; asserting on them is the point of
+  // an integration test, so the unsafe-* family is off there only.
+  {
+    files: ["tests/integration/**/*.ts"],
     rules: {
       "@typescript-eslint/no-unsafe-argument": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unsafe-return": "off",
-      "@typescript-eslint/no-non-null-assertion": "off",
-      "no-console": "off",
     },
   },
   // The startup banner is the one legitimate console.log.

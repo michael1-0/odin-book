@@ -1,9 +1,6 @@
 import { useRef } from "react";
 import { useLoaderData, type ActionFunctionArgs } from "react-router";
-import {
-  PostCreateBodySchema,
-  type PostsGetResponse,
-} from "@repo/zod-validations";
+import { PostCreateBodySchema } from "@repo/zod-validations";
 import { FORM_INTENTS } from "../constants/routes";
 import { FORM_FIELDS } from "../constants/fields";
 import { LOAD_MORE_ERROR_TEXT, LOAD_MORE_ERROR_TOAST } from "../constants/ui";
@@ -45,7 +42,7 @@ async function action({ request }: ActionFunctionArgs) {
 
 function Home() {
   const user = useCurrentUser();
-  const initialPage = useLoaderData<PostsGetResponse>();
+  const initialPage = useLoaderData<typeof loader>();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const {
     items: posts,
@@ -84,7 +81,7 @@ function Home() {
         hasMore={hasMore}
         isLoadingMore={isLoadingMore}
         loadError={loadError}
-        onRetry={() => loadNextPage(true)}
+        onRetry={() => void loadNextPage(true)}
       />
     </PageContainer>
   );

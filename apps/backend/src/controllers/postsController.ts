@@ -8,7 +8,6 @@ import type {
   PostsGetResponse,
   PostsGetSpec,
 } from "@repo/zod-validations";
-import type { PostWhereInput } from "../db/generated/prisma/models.ts";
 import { AppError } from "../errors/AppError.ts";
 import { requireUser } from "../middlewares/authMiddleware.ts";
 import {
@@ -24,37 +23,20 @@ import {
   savePost,
 } from "../db/queries/posts.ts";
 import { COMMENTS_PAGE_SIZE, FEED_PAGE_SIZE } from "@repo/constants";
-import { TRENDING_WINDOW_MS } from "../constants/feed.ts";
 import { ERROR_MESSAGES } from "../constants/errors.ts";
 import { splitPage } from "../utils/pagination.ts";
 
 async function getPosts(req: ValidatedRequest<PostsGetSpec>, res: Response) {
   requireUser(req);
 
-  const scope = req.query.scope ?? "all";
-  const where: PostWhereInput = {};
-
-  if (req.query.period === "month") {
-    where.createdAt = {
-      gte: new Date(Date.now() - TRENDING_WINDOW_MS),
-    };
-  }
-
-  if (scope === "me") {
-    where.user = { id: req.user.id };
-  }
-
-  if (scope === "following") {
-    where.user = {
-      following: {
-        some: {
-          followedById: req.user.id,
-        },
-      },
-    };
-  }
-
-  const fetchedPosts = await getFeedPosts(where, req.query.cursor);
+  const fetchedPosts = await getFeedPosts(
+    {
+      scope: req.query.scope ?? "all",
+      period: req.query.period,
+      viewerId: req.user.id,
+    },
+    req.query.cursor,
+  );
 
   const { items: pagedPosts, hasMore } = splitPage(
     fetchedPosts,

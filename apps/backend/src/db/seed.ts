@@ -13,7 +13,7 @@ const MESSAGES_PER_FRIENDSHIP = 5;
 function at<T>(items: T[], index: number): T {
   const item = items[index];
 
-  if (!item) {
+  if (item === undefined) {
     throw new Error(`Missing seed item at index ${index}`);
   }
 

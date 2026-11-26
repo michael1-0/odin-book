@@ -2,10 +2,11 @@
 // that read the auth cookie: the passport JWT strategy (HTTP) and the
 // socket.io handshake middleware.
 import type { JwtPayload } from "jsonwebtoken";
-import type { User } from "../db/generated/prisma/client.ts";
 import { findUserById } from "../db/queries/users.ts";
 
-function findUserByJwtPayload(payload: JwtPayload): Promise<User | null> {
+type JwtUser = NonNullable<Awaited<ReturnType<typeof findUserById>>>;
+
+function findUserByJwtPayload(payload: JwtPayload): Promise<JwtUser | null> {
   const userId = Number(payload.sub);
 
   if (!Number.isInteger(userId)) {

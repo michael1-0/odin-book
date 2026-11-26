@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "lint": "eslint . --cache --max-warnings=0",
+    "lint": "eslint . --max-warnings=0",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "check": "pnpm format:check && pnpm lint && tsc --noEmit"
@@ -21,10 +21,8 @@
     "@repo/prettier-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "eslint": "^9.39.2",
-    "globals": "^16.5.0",
     "prettier": "3.8.1",
-    "typescript": "~5.9.3",
-    "typescript-eslint": "^8.54.0"
+    "typescript": "~5.9.3"
   },
   "dependencies": {
     "@repo/constants": "workspace:*",

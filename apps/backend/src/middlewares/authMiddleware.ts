@@ -11,11 +11,13 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
     { session: false },
     (err: unknown, user?: false | Express.User | null) => {
       if (err) {
-        return next(err);
+        next(err);
+        return;
       }
 
       if (!user) {
-        return next(new AppError(ERROR_MESSAGES.unauthenticated, 401));
+        next(new AppError(ERROR_MESSAGES.unauthenticated, 401));
+        return;
       }
 
       req.user = user;

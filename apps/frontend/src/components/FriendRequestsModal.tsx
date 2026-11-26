@@ -19,10 +19,8 @@ type RequestItemProps = {
 };
 
 function IncomingRequestItem({ request, onNavigate }: RequestItemProps) {
-  const acceptFetcher = useFetcher<
-    ActionResult<FriendRequestWithUsers> | undefined
-  >();
-  const declineFetcher = useFetcher<ActionResult<FriendRequest> | undefined>();
+  const acceptFetcher = useFetcher<ActionResult<FriendRequestWithUsers>>();
+  const declineFetcher = useFetcher<ActionResult<FriendRequest>>();
   const isPending =
     acceptFetcher.state !== "idle" || declineFetcher.state !== "idle";
   const acceptResult = acceptFetcher.data;
@@ -101,7 +99,7 @@ function IncomingRequestItem({ request, onNavigate }: RequestItemProps) {
 }
 
 function OutgoingRequestItem({ request, onNavigate }: RequestItemProps) {
-  const fetcher = useFetcher<ActionResult<FriendRequest> | undefined>();
+  const fetcher = useFetcher<ActionResult<FriendRequest>>();
   const isPending = fetcher.state !== "idle";
   const cancelResult = fetcher.data;
 

@@ -1,17 +1,22 @@
 import type { Request } from "express";
 import { AUTH_COOKIE_NAME } from "../constants/auth.ts";
 
-// cookie-parser types every cookie value as `any`; narrow at the boundary.
-// Returns `null` when cookie-parser did not run, `undefined` when the cookie
-// is absent — passport-jwt treats both as "no token".
-function cookieExtractor(req: Request): string | null | undefined {
-  const cookies = req.cookies as Record<string, string | undefined> | undefined;
+// cookie-parser types every cookie value as `any`; narrow once here.
+function readCookie(req: Request, name: string): string | undefined {
+  const cookies: unknown = req.cookies;
 
-  if (!cookies) {
-    return null;
+  if (typeof cookies !== "object" || cookies === null) {
+    return undefined;
   }
 
-  return cookies[AUTH_COOKIE_NAME];
+  const value = (cookies as Record<string, unknown>)[name];
+
+  return typeof value === "string" ? value : undefined;
 }
 
+function cookieExtractor(req: Request): string | null {
+  return readCookie(req, AUTH_COOKIE_NAME) ?? null;
+}
+
+export { readCookie };
 export default cookieExtractor;

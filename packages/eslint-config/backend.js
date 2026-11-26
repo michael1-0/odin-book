@@ -29,7 +29,8 @@ export function createBackendConfig({ tsconfigRootDir }) {
         },
       },
       settings: {
-        // no-cycle only follows modules whose extension is listed here.
+        // no-cycle silently stops following modules whose extension is
+        // missing here.
         "import-x/extensions": [".js", ".mjs", ".cjs", ".ts", ".mts", ".cts"],
         "import-x/resolver": {
           typescript: {
@@ -38,8 +39,12 @@ export function createBackendConfig({ tsconfigRootDir }) {
         },
       },
       rules: {
-        // Express handlers deliberately `return res.status(...).json(...)`.
-        "@typescript-eslint/no-confusing-void-expression": "off",
+        // Express handlers deliberately `return res.status(...).json(...)`;
+        // the rule still applies everywhere else.
+        "@typescript-eslint/no-confusing-void-expression": [
+          "error",
+          { ignoreVoidReturningFunctions: true },
+        ],
         // Number interpolation is safe and used for ids/ports/room names.
         "@typescript-eslint/restrict-template-expressions": [
           "error",
@@ -58,6 +63,7 @@ export function createBackendConfig({ tsconfigRootDir }) {
           "error",
           {
             devDependencies: [
+              "**/*.test.{ts,mts,cts}",
               "tests/**",
               "src/db/seed.ts",
               "vitest*.config.ts",

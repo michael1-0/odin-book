@@ -11,7 +11,8 @@ import {
 
 function githubCallback(req: Request, res: Response) {
   if (!req.user) {
-    return res.redirect(`${env.frontendUrl}${OAUTH_FAILURE_REDIRECT_PATH}`);
+    res.redirect(`${env.frontendUrl}${OAUTH_FAILURE_REDIRECT_PATH}`);
+    return;
   }
 
   const user = req.user;

@@ -4,7 +4,6 @@ import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "react-router";
-import type { UsersGetResponse } from "@repo/zod-validations";
 import { FORM_INTENTS } from "../constants/routes";
 import { LOAD_MORE_USERS_ERROR_TEXT } from "../constants/ui";
 import { readIntent, unknownIntent } from "../utils/intent";
@@ -38,7 +37,7 @@ async function action({ request }: ActionFunctionArgs) {
 // loader provides the first page, useInfiniteFeed accumulates pages as the
 // sentinel scrolls into view, and each card owns its follow button.
 function Users() {
-  const initialPage = useLoaderData<UsersGetResponse>();
+  const initialPage = useLoaderData<typeof loader>();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const {
     items: users,
@@ -71,7 +70,7 @@ function Users() {
         hasMore={hasMore}
         isLoadingMore={isLoadingMore}
         loadError={loadError}
-        onRetry={() => loadNextPage(true)}
+        onRetry={() => void loadNextPage(true)}
       />
     </PageContainer>
   );

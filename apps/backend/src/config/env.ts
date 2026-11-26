@@ -11,44 +11,61 @@ const requiredEnvKeys = [
 
 type RequiredEnvKey = (typeof requiredEnvKeys)[number];
 
-function requireEnv(key: RequiredEnvKey): string {
-  const value = process.env[key];
+function readRequiredEnv(): Record<RequiredEnvKey, string> {
+  const missing: RequiredEnvKey[] = [];
+  const entries = requiredEnvKeys.map((key) => {
+    const value = process.env[key];
 
-  if (!value) {
-    // Unreachable after the missing-key check below, but keeps the type honest.
-    throw new Error(`Missing required environment variable: ${key}`);
+    if (!value) {
+      missing.push(key);
+    }
+
+    return [key, value ?? ""] as const;
+  });
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required environment variables: ${missing.join(", ")}. Copy apps/backend/.env.example to .env and fill in the values.`,
+    );
   }
 
-  return value;
+  return Object.fromEntries(entries) as Record<RequiredEnvKey, string>;
+}
+
+function envOrDefault(value: string | undefined, fallback: string): string {
+  const trimmed = value?.trim();
+
+  return trimmed === undefined || trimmed === "" ? fallback : trimmed;
 }
 
 function parsePort(value: string | undefined): number {
+  if (value === undefined || value.trim() === "") {
+    return 5000;
+  }
+
   const port = Number(value);
 
-  return Number.isInteger(port) && port > 0 ? port : 5000;
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error(`Invalid PORT: ${value}`);
+  }
+
+  return port;
 }
 
-const missingEnvKeys = requiredEnvKeys.filter((key) => !process.env[key]);
-
-if (missingEnvKeys.length > 0) {
-  throw new Error(
-    `Missing required environment variables: ${missingEnvKeys.join(", ")}. Copy apps/backend/.env.example to .env and fill in the values.`,
-  );
-}
-
-const nodeEnv = process.env.NODE_ENV ?? "development";
+const requiredEnv = readRequiredEnv();
+const nodeEnv = envOrDefault(process.env.NODE_ENV, "development");
 
 const env = {
   port: parsePort(process.env.PORT),
   nodeEnv,
   isProd: nodeEnv === "production",
-  databaseUrl: requireEnv("DATABASE_URL"),
-  jwtSecret: requireEnv("JWT_SECRET"),
-  frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:5173",
-  githubClientId: requireEnv("GITHUB_CLIENT_ID"),
-  githubClientSecret: requireEnv("GITHUB_CLIENT_SECRET"),
-  githubCallbackUrl: requireEnv("GITHUB_CALLBACK_URL"),
-  cloudinaryUrl: requireEnv("CLOUDINARY_URL"),
+  databaseUrl: requiredEnv.DATABASE_URL,
+  jwtSecret: requiredEnv.JWT_SECRET,
+  frontendUrl: envOrDefault(process.env.FRONTEND_URL, "http://localhost:5173"),
+  githubClientId: requiredEnv.GITHUB_CLIENT_ID,
+  githubClientSecret: requiredEnv.GITHUB_CLIENT_SECRET,
+  githubCallbackUrl: requiredEnv.GITHUB_CALLBACK_URL,
+  cloudinaryUrl: requiredEnv.CLOUDINARY_URL,
 };
 
 export default env;

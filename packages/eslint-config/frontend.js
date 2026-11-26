@@ -32,7 +32,8 @@ export function createFrontendConfig({ tsconfigRootDir, tailwindCssPath }) {
         },
       },
       settings: {
-        // no-cycle only follows modules whose extension is listed here.
+        // no-cycle silently stops following modules whose extension is
+        // missing here.
         "import-x/extensions": [
           ".js",
           ".mjs",

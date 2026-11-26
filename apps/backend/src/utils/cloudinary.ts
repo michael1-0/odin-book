@@ -32,7 +32,10 @@ function uploadBufferAsImage(
       (error, result) => {
         if (error || !result) {
           reject(
-            new Error(error?.message ?? "Cloudinary returned no upload result"),
+            new Error(
+              error?.message ?? "Cloudinary returned no upload result",
+              error ? { cause: error } : undefined,
+            ),
           );
           return;
         }

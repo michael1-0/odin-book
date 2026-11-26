@@ -2,7 +2,6 @@ import { useState } from "react";
 import type { ActionFunctionArgs } from "react-router";
 import { useLoaderData } from "react-router";
 import { UserPlus, Users } from "lucide-react";
-import type { FriendsGetResponse } from "@repo/zod-validations";
 import PageContainer from "../components/PageContainer";
 import PageHead from "../components/PageHead";
 import FriendList from "../components/FriendList";
@@ -21,8 +20,6 @@ import {
 } from "../services/friends";
 import { FORM_INTENTS } from "../constants/routes";
 import { readIntent, unknownIntent } from "../utils/intent";
-
-type FriendsLoaderData = FriendsGetResponse["data"];
 
 async function loader() {
   return await getFriends();
@@ -47,7 +44,7 @@ async function action({ request }: ActionFunctionArgs) {
 
 function Friends() {
   const { friends, incomingRequests, outgoingRequests } =
-    useLoaderData<FriendsLoaderData>();
+    useLoaderData<typeof loader>();
   const user = useCurrentUser();
   const { revalidate } = useFriendsSocket();
 

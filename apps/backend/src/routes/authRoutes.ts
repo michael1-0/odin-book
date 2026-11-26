@@ -5,7 +5,7 @@ import { githubCallback, postLogout } from "../controllers/authController.ts";
 import { getMe } from "../controllers/authController.ts";
 import requireAuth from "../middlewares/authMiddleware.ts";
 import {
-  initiateOAuthState,
+  issueOAuthState,
   verifyOAuthState,
 } from "../middlewares/oauthStateMiddleware.ts";
 
@@ -19,8 +19,8 @@ function githubAuth(options: {
   return passport.authenticate("github", options) as RequestHandler;
 }
 
-authRouter.get("/github", initiateOAuthState, (req, res, next) => {
-  const state = res.locals.oauthState as string;
+authRouter.get("/github", (req, res, next) => {
+  const state = issueOAuthState(res);
 
   githubAuth({ session: false, state })(req, res, next);
 });

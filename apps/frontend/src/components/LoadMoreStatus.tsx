@@ -5,7 +5,7 @@ type LoadMoreStatusProps = {
   hasMore: boolean;
   isLoadingMore: boolean;
   loadError: string | null;
-  onRetry: () => Promise<void>;
+  onRetry: () => void;
 };
 
 // Status slot below a scroll-paginated feed: a retry button after a failed
@@ -27,7 +27,7 @@ function LoadMoreStatus({
       {loadError ? (
         <button
           type="button"
-          onClick={() => void onRetry()}
+          onClick={onRetry}
           className="rounded-sm bg-neutral-100 px-4 py-2 text-black transition-colors hover:bg-neutral-200"
         >
           Retry loading more

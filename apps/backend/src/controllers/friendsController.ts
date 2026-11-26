@@ -20,6 +20,10 @@ import {
 import { ERROR_MESSAGES } from "../constants/errors.ts";
 import { emitToUser } from "../socket/io.ts";
 import { splitPage } from "../utils/pagination.ts";
+
+type FriendWithLastMessage = Friend & {
+  lastMessage: NonNullable<Friend["lastMessage"]>;
+};
 import {
   deleteFriendRequestById,
   findFriendRequestBetweenUsers,
@@ -72,11 +76,12 @@ async function getFriends(req: Request, res: Response) {
   );
 
   const friendsWithMessages = friends
-    .filter((friend) => friend.lastMessage !== null)
+    .filter(
+      (friend): friend is FriendWithLastMessage => friend.lastMessage !== null,
+    )
     .sort(
       (a, b) =>
-        (b.lastMessage?.createdAt.getTime() ?? 0) -
-        (a.lastMessage?.createdAt.getTime() ?? 0),
+        b.lastMessage.createdAt.getTime() - a.lastMessage.createdAt.getTime(),
     );
   const friendsWithoutMessages = friends.filter(
     (friend) => friend.lastMessage === null,

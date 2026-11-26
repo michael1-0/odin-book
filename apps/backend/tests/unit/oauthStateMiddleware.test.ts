@@ -12,7 +12,7 @@ import {
   OAUTH_STATE_MAX_AGE_MS,
 } from "../../src/constants/auth.ts";
 import {
-  initiateOAuthState,
+  issueOAuthState,
   verifyOAuthState,
 } from "../../src/middlewares/oauthStateMiddleware.ts";
 
@@ -28,7 +28,6 @@ function createResponse() {
     redirect,
     json,
     status,
-    locals: {} as Record<string, string>,
   };
 
   status.mockReturnValue(res);
@@ -65,16 +64,11 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("initiateOAuthState", () => {
-  it("sets a random state cookie and exposes it to the strategy", () => {
+describe("issueOAuthState", () => {
+  it("sets a random state cookie and returns it to the strategy", () => {
     const { res, cookie } = createResponse();
-    const nextHandler = next();
 
-    initiateOAuthState(createRequest({}), res, nextHandler);
-
-    const locals = (res as unknown as { locals: Record<string, string> })
-      .locals;
-    const state = locals.oauthState;
+    const state = issueOAuthState(res);
 
     expect(state).toMatch(/^[0-9a-f]+$/);
     expect(state).toHaveLength(OAUTH_STATE_BYTES * 2);
@@ -88,7 +82,6 @@ describe("initiateOAuthState", () => {
         maxAge: OAUTH_STATE_MAX_AGE_MS,
       }),
     );
-    expect(nextHandler).toHaveBeenCalledTimes(1);
   });
 });
 
