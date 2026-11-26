@@ -1,5 +1,7 @@
 import js from "@eslint/js";
 import globals from "globals";
+import importX from "eslint-plugin-import-x";
+import path from "node:path";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tailwindcss from "eslint-plugin-tailwindcss";
@@ -20,12 +22,30 @@ export function createFrontendConfig({ tsconfigRootDir, tailwindCssPath }) {
         reactHooks.configs.flat.recommended,
         reactRefresh.configs.vite,
       ],
+      plugins: { "import-x": importX },
       languageOptions: {
         ecmaVersion: 2022,
         globals: globals.browser,
         parserOptions: {
           tsconfigRootDir,
           projectService: true,
+        },
+      },
+      settings: {
+        // no-cycle only follows modules whose extension is listed here.
+        "import-x/extensions": [
+          ".js",
+          ".mjs",
+          ".cjs",
+          ".ts",
+          ".mts",
+          ".cts",
+          ".tsx",
+        ],
+        "import-x/resolver": {
+          typescript: {
+            project: path.join(tsconfigRootDir, "tsconfig.json"),
+          },
         },
       },
       rules: {
@@ -52,6 +72,19 @@ export function createFrontendConfig({ tsconfigRootDir, tailwindCssPath }) {
         "@typescript-eslint/consistent-type-exports": "error",
         "@typescript-eslint/prefer-optional-chain": "error",
         "@typescript-eslint/prefer-nullish-coalescing": "error",
+        "import-x/no-cycle": ["error", { ignoreExternal: true }],
+        "import-x/no-extraneous-dependencies": [
+          "error",
+          {
+            devDependencies: [
+              "**/*.test.{ts,tsx}",
+              "src/test/**",
+              "vite.config.ts",
+              "vitest.config.ts",
+            ],
+            optionalDependencies: false,
+          },
+        ],
         eqeqeq: ["error", "always"],
         "no-console": ["error", { allow: ["warn", "error"] }],
       },
