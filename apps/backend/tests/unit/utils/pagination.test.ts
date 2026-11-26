@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { splitPage } from "../../src/utils/pagination.ts";
+import { splitPage } from "../../../src/utils/pagination.ts";
 
 describe("splitPage", () => {
   it("returns an empty page", () => {

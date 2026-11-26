@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import createGravatarUrl from "../../src/utils/createGravatarUrl.ts";
+import createGravatarUrl from "../../../src/utils/createGravatarUrl.ts";
 
 // SHA-256 of the normalized address, per the Gravatar URL scheme used here.
 const TEST_EMAIL_HASH =

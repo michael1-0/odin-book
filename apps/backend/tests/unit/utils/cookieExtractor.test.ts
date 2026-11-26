@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Request } from "express";
-import cookieExtractor from "../../src/utils/cookieExtractor.ts";
+import cookieExtractor from "../../../src/utils/cookieExtractor.ts";
 
 function requestWithCookies(cookies?: Record<string, string>) {
   return { cookies } as unknown as Request;

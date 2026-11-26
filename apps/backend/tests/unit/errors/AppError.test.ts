@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AppError } from "../../src/errors/AppError.ts";
+import { AppError } from "../../../src/errors/AppError.ts";
 
 describe("AppError", () => {
   it("defaults to an operational 500", () => {

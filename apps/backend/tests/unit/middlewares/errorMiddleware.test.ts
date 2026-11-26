@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { NextFunction, Request, Response } from "express";
-import { Prisma } from "../../src/db/generated/prisma/client.ts";
-import { AppError } from "../../src/errors/AppError.ts";
+import { Prisma } from "../../../src/db/generated/prisma/client.ts";
+import { AppError } from "../../../src/errors/AppError.ts";
 import {
   errorHandler,
   notFound,
   validationErrorHandler,
-} from "../../src/middlewares/errorMiddleware.ts";
+} from "../../../src/middlewares/errorMiddleware.ts";
 
 function createResponse() {
   const status = vi.fn();

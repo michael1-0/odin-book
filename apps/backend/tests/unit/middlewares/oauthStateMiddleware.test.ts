@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { NextFunction, Request, Response } from "express";
-import env from "../../src/config/env.ts";
-import { githubCallback } from "../../src/controllers/authController.ts";
+import env from "../../../src/config/env.ts";
+import { githubCallback } from "../../../src/controllers/authController.ts";
 import {
   AUTH_COOKIE_NAME,
   AUTH_TOKEN_TTL_MS,
@@ -10,11 +10,11 @@ import {
   OAUTH_STATE_BYTES,
   OAUTH_STATE_COOKIE_NAME,
   OAUTH_STATE_MAX_AGE_MS,
-} from "../../src/constants/auth.ts";
+} from "../../../src/constants/auth.ts";
 import {
   issueOAuthState,
   verifyOAuthState,
-} from "../../src/middlewares/oauthStateMiddleware.ts";
+} from "../../../src/middlewares/oauthStateMiddleware.ts";
 
 function createResponse() {
   const cookie = vi.fn();
