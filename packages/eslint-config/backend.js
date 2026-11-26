@@ -8,7 +8,7 @@ import { defineConfig } from "eslint/config";
 export function createBackendConfig({ tsconfigRootDir }) {
   return defineConfig([
     {
-      ignores: ["dist/**", "src/db/generated/prisma/**", "prisma.config.ts"],
+      ignores: ["dist/**", "src/db/generated/prisma/**"],
     },
     {
       linterOptions: { reportUnusedDisableDirectives: "error" },
@@ -67,6 +67,7 @@ export function createBackendConfig({ tsconfigRootDir }) {
               "tests/**",
               "src/db/seed.ts",
               "vitest*.config.ts",
+              "prisma.config.ts",
             ],
             optionalDependencies: false,
           },

@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "tsc --noEmit -p tsconfig.test.json && vitest run",
+    "test": "tsc --noEmit && vitest run",
     "test:watch": "vitest",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "dev": "node --import tsx --watch --watch-path=.env --watch-path=src src/server.ts",
-    "build": "prisma generate && tsc --build",
+    "build": "prisma generate && tsc --build tsconfig.build.json",
     "postinstall": "prisma generate",
     "start": "node --conditions=built ./dist/server.js",
     "lint": "eslint . --max-warnings=0",

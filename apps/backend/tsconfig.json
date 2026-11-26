@@ -1,9 +1,7 @@
 {
   "extends": "@repo/typescript-config/backend.json",
   "compilerOptions": {
-    "rootDir": "./src",
-    "outDir": "./dist"
+    "noEmit": true
   },
-  "include": ["src"],
-  "exclude": ["prisma.config.ts", "dist"]
+  "include": ["src", "tests", "vitest*.config.ts", "prisma.config.ts"]
 }
