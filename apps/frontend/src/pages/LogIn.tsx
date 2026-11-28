@@ -11,7 +11,7 @@ function LogIn() {
           <button
             type="button"
             onClick={() => {
-              window.location.href = `${import.meta.env.VITE_API_URL}/auth/github`;
+              window.location.href = "/api/auth/github";
             }}
             className="relative flex w-full items-center justify-center gap-2 rounded-sm border bg-black px-4 py-2 text-sm font-semibold text-white focus:ring-2 focus:outline-none"
           >
